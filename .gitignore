@@ -7,11 +7,14 @@ __pycache__/
 venv/
 .env
 .env.local
+.env*.local
 
 # Build & output
 dist/
 build/
 *.egg
+.next/
+out/
 
 # IDE & OS
 .idea/
