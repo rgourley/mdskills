@@ -1,3 +1,5 @@
+import { createClient } from '@/lib/supabase/server'
+
 export interface Skill {
   id: string
   slug: string
@@ -16,170 +18,122 @@ export interface Skill {
   skillContent?: string
 }
 
-// Seed/mock data - replace with Supabase when ready
-const MOCK_SKILLS: Skill[] = [
-  {
-    id: '1',
-    slug: 'find-skills',
-    name: 'find-skills',
-    description: 'Discover and install skills from the open agent skills ecosystem.',
-    owner: 'vercel-labs',
-    repo: 'skills',
-    skillPath: 'find-skills',
-    weeklyInstalls: 193300,
-    tags: ['discovery', 'search', 'skills'],
-    platforms: ['claude-code', 'codex', 'gemini-cli', 'github-copilot'],
-  },
-  {
-    id: '2',
-    slug: 'vercel-react-best-practices',
-    name: 'vercel-react-best-practices',
-    description: 'React and Next.js performance optimization guidelines from Vercel Engineering.',
-    owner: 'vercel-labs',
-    repo: 'agent-skills',
-    skillPath: 'vercel-react-best-practices',
-    weeklyInstalls: 45000,
-    tags: ['react', 'nextjs', 'performance'],
-    platforms: ['claude-code', 'codex'],
-  },
-  {
-    id: '3',
-    slug: 'security-pr-review',
-    name: 'security-pr-review',
-    description: 'Review pull requests for security vulnerabilities and best practices.',
-    owner: 'vercel-labs',
-    repo: 'agent-skills',
-    skillPath: 'security-pr-review',
-    weeklyInstalls: 28000,
-    tags: ['security', 'code-review', 'pr'],
-    platforms: ['claude-code', 'codex', 'cursor'],
-    upvotes: 234,
-    forksCount: 23,
-    commentsCount: 8,
-    updatedAt: '2 days ago',
-    skillContent: `# Security PR Review
+/** DB row shape (snake_case) */
+interface SkillRow {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  owner: string
+  repo: string
+  skill_path: string
+  github_url: string | null
+  weekly_installs: number
+  tags: string[]
+  platforms: string[]
+  created_at: string
+  updated_at: string
+  content: string | null
+  mdskills_upvotes: number | null
+  mdskills_forks: number | null
+}
 
-## Description
-Automated security analysis for pull requests. Review code changes for common vulnerabilities and security best practices.
+function mapRow(row: SkillRow, commentsCount?: number): Skill {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description ?? '',
+    owner: row.owner,
+    repo: row.repo,
+    skillPath: row.skill_path,
+    weeklyInstalls: row.weekly_installs ?? 0,
+    tags: row.tags ?? [],
+    platforms: row.platforms ?? [],
+    upvotes: row.mdskills_upvotes ?? undefined,
+    forksCount: row.mdskills_forks ?? undefined,
+    commentsCount,
+    updatedAt: row.updated_at ? formatRelativeTime(row.updated_at) : undefined,
+    skillContent: row.content ?? undefined,
+  }
+}
 
-## When to Use This Skill
-
-Use this skill when the user:
-- Asks for a security review of a pull request
-- Wants to check for vulnerabilities before merging
-- Requests analysis of authentication or authorization changes
-- Needs help identifying SQL injection, XSS, or other OWASP top 10 issues
-
-## Instructions
-
-Review the pull request for:
-
-### SQL Injection
-- Unparameterized queries
-- String concatenation in SQL
-- User input passed directly to database calls
-
-### XSS Attack Vectors
-- Unsanitized user input in HTML
-- dangerouslySetInnerHTML usage
-- DOM-based XSS patterns
-
-### Authentication & Authorization
-- Session fixation vulnerabilities
-- Insecure direct object references
-- Missing authorization checks
-
-### Sensitive Data Exposure
-- Hardcoded secrets or credentials
-- Logging of sensitive information
-- Insecure transmission of PII
-
-## Output Format
-
-Provide findings in a structured format:
-1. **Severity** (Critical/High/Medium/Low)
-2. **Location** (file:line)
-3. **Issue** (brief description)
-4. **Recommendation** (how to fix)
-5. **References** (CWE, OWASP links if applicable)`,
-  },
-  {
-    id: '4',
-    slug: 'api-integration',
-    name: 'api-integration',
-    description: 'Create and test API integrations with common patterns and authentication.',
-    owner: 'composio',
-    repo: 'awesome-claude-skills',
-    skillPath: 'api-integration',
-    weeklyInstalls: 12000,
-    tags: ['api', 'integration', 'testing'],
-    platforms: ['claude-code', 'codex'],
-  },
-  {
-    id: '5',
-    slug: 'documentation-generator',
-    name: 'documentation-generator',
-    description: 'Generate and maintain documentation from code and comments.',
-    owner: 'composio',
-    repo: 'awesome-claude-skills',
-    skillPath: 'documentation-generator',
-    weeklyInstalls: 8500,
-    tags: ['docs', 'documentation', 'markdown'],
-    platforms: ['claude-code', 'codex', 'cursor'],
-  },
-  {
-    id: '6',
-    slug: 'test-generator',
-    name: 'test-generator',
-    description: 'Generate unit and integration tests for your codebase.',
-    owner: 'vercel-labs',
-    repo: 'agent-skills',
-    skillPath: 'test-generator',
-    weeklyInstalls: 32000,
-    tags: ['testing', 'jest', 'playwright'],
-    platforms: ['claude-code', 'codex'],
-  },
-]
+function formatRelativeTime(iso: string): string {
+  const date = new Date(iso)
+  const now = new Date()
+  const sec = (now.getTime() - date.getTime()) / 1000
+  if (sec < 60) return 'just now'
+  if (sec < 3600) return `${Math.floor(sec / 60)} minutes ago`
+  if (sec < 86400) return `${Math.floor(sec / 3600)} hours ago`
+  if (sec < 86400 * 7) return `${Math.floor(sec / 86400)} days ago`
+  if (sec < 86400 * 30) return `${Math.floor(sec / 86400 / 7)} weeks ago`
+  return date.toLocaleDateString()
+}
 
 export async function getFeaturedSkills(): Promise<Skill[]> {
-  // TODO: Fetch from Supabase
-  return MOCK_SKILLS.slice(0, 6)
+  const supabase = await createClient()
+  if (!supabase) return []
+
+  const { data, error } = await supabase
+    .from('skills')
+    .select('id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks')
+    .or('status.eq.published,status.is.null')
+    .order('featured', { ascending: false })
+    .order('weekly_installs', { ascending: false })
+    .limit(6)
+
+  if (error || !data?.length) return []
+  return data.map((row) => mapRow(row as SkillRow))
 }
 
 export async function getSkills(query?: string, tags?: string[]): Promise<Skill[]> {
-  // TODO: Fetch from Supabase with filters
-  let skills = [...MOCK_SKILLS]
-  if (query) {
-    const q = query.toLowerCase()
-    skills = skills.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q) ||
-        s.tags.some((t) => t.toLowerCase().includes(q))
-    )
+  const supabase = await createClient()
+  if (!supabase) return []
+
+  let q = supabase
+    .from('skills')
+    .select('id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks')
+    .or('status.eq.published,status.is.null')
+    .order('weekly_installs', { ascending: false })
+
+  if (query?.trim()) {
+    const safe = query.trim().toLowerCase().replace(/,/g, ' ')
+    const term = `%${safe}%`
+    q = q.or(`name.ilike.${term},description.ilike.${term}`)
   }
   if (tags?.length) {
-    skills = skills.filter((s) => tags.some((t) => s.tags.includes(t)))
+    q = q.overlaps('tags', tags)
   }
-  return skills
+
+  const { data, error } = await q
+  if (error) return []
+  if (!data?.length) return []
+  return data.map((row) => mapRow(row as SkillRow))
 }
 
 export async function getSkillBySlug(slug: string): Promise<Skill | null> {
-  // TODO: Fetch from Supabase
-  const skill = MOCK_SKILLS.find((s) => s.slug === slug) ?? null
-  if (skill && !skill.skillContent) {
-    skill.skillContent = `# ${skill.name}
+  const supabase = await createClient()
+  if (!supabase) return null
 
-## Description
-${skill.description}
+  const { data: row, error } = await supabase
+    .from('skills')
+    .select('id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks')
+    .eq('slug', slug)
+    .or('status.eq.published,status.is.null')
+    .single()
 
-## When to Use This Skill
+  if (error || !row) return null
 
-Use this skill when the user needs help with tasks related to this domain.
+  let commentsCount: number | undefined
+  const { count } = await supabase
+    .from('comments')
+    .select('id', { count: 'exact', head: true })
+    .eq('skill_id', row.id)
+  commentsCount = count ?? 0
 
-## Instructions
-
-Add your instructions here.`
+  const skill = mapRow(row as SkillRow, commentsCount)
+  if (!skill.skillContent) {
+    skill.skillContent = `# ${skill.name}\n\n## Description\n${skill.description}\n\n## When to Use This Skill\n\nUse this skill when the user needs help with tasks related to this domain.\n\n## Instructions\n\nAdd your instructions here.`
   }
   return skill
 }

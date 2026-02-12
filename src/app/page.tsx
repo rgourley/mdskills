@@ -73,9 +73,15 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {skills.map((skill) => (
-              <SkillCard key={skill.id} skill={skill} />
-            ))}
+            {skills.length > 0 ? (
+              skills.map((skill) => (
+                <SkillCard key={skill.id} skill={skill} />
+              ))
+            ) : (
+              <p className="col-span-full text-neutral-500 py-8 text-center">
+                No skills yet. <Link href="/skills" className="text-blue-600 hover:underline">Browse all</Link> or run <code className="bg-neutral-100 px-1 rounded">npm run import</code> to seed from GitHub.
+              </p>
+            )}
           </div>
         </div>
       </section>

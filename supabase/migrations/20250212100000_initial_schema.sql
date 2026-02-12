@@ -1,10 +1,8 @@
--- mdskills.ai schema (base)
--- Optional: run this in SQL Editor if you prefer not to use the CLI. Otherwise use: npx supabase db push --linked (see supabase/README.md).
+-- mdskills.ai base schema (skills table)
+-- Applied first when using Supabase CLI; safe to skip if you already ran schema.sql in the dashboard.
 
--- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
--- Skills table (can be synced from skills.sh or created via mdskills)
 create table if not exists public.skills (
   id uuid primary key default uuid_generate_v4(),
   slug text not null unique,
@@ -21,15 +19,13 @@ create table if not exists public.skills (
   updated_at timestamptz default now()
 );
 
--- Index for search
 create index if not exists skills_slug_idx on public.skills (slug);
 create index if not exists skills_name_idx on public.skills using gin (to_tsvector('english', name));
 create index if not exists skills_tags_idx on public.skills using gin (tags);
 
--- Enable RLS (Row Level Security)
 alter table public.skills enable row level security;
 
--- Allow public read access to skills
+drop policy if exists "Skills are viewable by everyone" on public.skills;
 create policy "Skills are viewable by everyone"
   on public.skills for select
   using (true);

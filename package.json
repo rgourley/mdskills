@@ -8,7 +8,8 @@
     "build": "npx next build",
     "start": "npx next start",
     "lint": "npx next lint",
-    "cli": "node bin/mdskills.js"
+    "cli": "node bin/mdskills.js",
+    "import": "tsx scripts/import-skills.ts"
   },
   "dependencies": {
     "next": "^14.2.0",
@@ -16,9 +17,12 @@
     "react-dom": "^18.3.0",
     "@supabase/supabase-js": "^2.45.0",
     "@supabase/ssr": "^0.5.0",
-    "lucide-react": "^0.454.0"
+    "lucide-react": "^0.454.0",
+    "@octokit/rest": "^20.0.2",
+    "dotenv": "^16.0.0"
   },
   "devDependencies": {
+    "tsx": "^4.7.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
