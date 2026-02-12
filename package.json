@@ -1,0 +1,32 @@
+{
+  "name": "mdskills",
+  "version": "1.0.0",
+  "description": "AI skills marketplace - find, branch, vote, upload and download AI agent skills",
+  "main": "index.js",
+  "bin": {
+    "mdskills": "bin/mdskills.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rgourley/mdskills.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rgourley/mdskills/issues"
+  },
+  "homepage": "https://mdskills.ai",
+  "keywords": [
+    "ai",
+    "skills",
+    "agents",
+    "markdown",
+    "cli",
+    "mcp",
+    "claude",
+    "md"
+  ],
+  "author": "Rob Gourley",
+  "license": "MIT"
+}
