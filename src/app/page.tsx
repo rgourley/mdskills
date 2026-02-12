@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { SkillCard } from '@/components/SkillCard'
 import { CopyButton } from '@/components/CopyButton'
+import { AgentStrip } from '@/components/AgentStrip'
 import { getFeaturedSkills } from '@/lib/skills'
 
 export default async function HomePage() {
@@ -46,6 +47,7 @@ export default async function HomePage() {
                   Create Skill
                 </Link>
               </div>
+              <AgentStrip />
             </div>
             <div className="flex-shrink-0 lg:w-[40%] lg:self-start lg:-mt-24 lg:flex lg:justify-end">
               <div className="relative w-[450px] h-[450px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] flex items-center justify-center">
