@@ -14,7 +14,8 @@
     "seed:fake": "tsx scripts/seed-fake-skill.ts",
     "seed:interface-design": "tsx scripts/seed-interface-design.ts",
     "seed:clients": "tsx scripts/seed-listing-clients.ts",
-    "seed:examples": "tsx scripts/seed-examples.ts"
+    "seed:examples": "tsx scripts/seed-examples.ts",
+    "seed:skills": "tsx scripts/seed-skills.ts"
   },
   "dependencies": {
     "next": "^14.2.0",

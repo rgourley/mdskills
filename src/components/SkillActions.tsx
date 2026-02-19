@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 import { CopyButton } from '@/components/CopyButton'
-import { Download, Copy, Terminal, GitFork, ThumbsUp, Share2, Check } from 'lucide-react'
+import { Download, Terminal, GitFork, ThumbsUp, Share2 } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 
 interface SkillActionsProps {
@@ -12,7 +11,6 @@ interface SkillActionsProps {
 }
 
 export function SkillActions({ skill, installCommand }: SkillActionsProps) {
-  const [copyLabel, setCopyLabel] = useState(false)
   const shareTitle = `${skill.name} - mdskills.ai`
 
   const handleDownload = () => {
@@ -24,12 +22,6 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
     a.download = 'SKILL.md'
     a.click()
     URL.revokeObjectURL(url)
-  }
-
-  const handleCopyCommand = async () => {
-    await navigator.clipboard.writeText(installCommand)
-    setCopyLabel(true)
-    setTimeout(() => setCopyLabel(false), 2000)
   }
 
   const handleShare = async () => {
@@ -47,32 +39,16 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Add this skill — 3 ways */}
+      {/* Add this skill */}
       <div>
         <p className="text-sm font-medium text-neutral-700 mb-3">Add this skill</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             onClick={handleDownload}
             className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors"
           >
             <Download className="w-4 h-4 shrink-0" />
-            Download
-          </button>
-          <button
-            onClick={handleCopyCommand}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors"
-          >
-            {copyLabel ? (
-              <>
-                <Check className="w-4 h-4 shrink-0 text-green-600" />
-                Copied
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 shrink-0" />
-                Copy command
-              </>
-            )}
+            Download SKILL.md
           </button>
           <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-neutral-900 text-white">
             <Terminal className="w-4 h-4 shrink-0" />
