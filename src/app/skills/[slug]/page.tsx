@@ -89,7 +89,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         license={skill.license}
         category={skill.categoryName}
       />
-    <div className="py-12 sm:py-16">
+    <div className="py-6 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <Link
           href="/skills"
