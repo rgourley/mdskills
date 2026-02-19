@@ -25,8 +25,8 @@ async function installCommand(args) {
   const yes = args.includes('--yes') || args.includes('-y')
 
   if (!input) {
-    console.log(chalk.red('  Usage: mdskills install <owner/slug>'))
-    console.log(chalk.dim('  Example: mdskills install anthropics/pdf'))
+    console.error(chalk.red('  Usage: mdskills install <owner/slug>'))
+    console.error(chalk.dim('  Example: mdskills install anthropics/pdf'))
     process.exit(1)
   }
 

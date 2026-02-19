@@ -4,6 +4,7 @@ const { fetchSkills } = require('../api')
 const { skillsTable } = require('../ui/format')
 
 async function listCommand(args) {
+  const json = args.includes('--json')
   const getArg = (flag) => {
     const idx = args.indexOf(flag)
     return idx !== -1 && idx + 1 < args.length ? args[idx + 1] : undefined
@@ -16,7 +17,7 @@ async function listCommand(args) {
   const limit = Number(getArg('--limit') || 20)
 
   const label = featured ? 'Featured skills' : category ? `Skills in "${category}"` : 'Popular skills'
-  const spinner = ora(`Loading ${label.toLowerCase()}...`).start()
+  const spinner = json ? null : ora(`Loading ${label.toLowerCase()}...`).start()
 
   try {
     const { skills } = await fetchSkills({
@@ -26,7 +27,12 @@ async function listCommand(args) {
       featured,
       limit,
     })
-    spinner.stop()
+    if (spinner) spinner.stop()
+
+    if (json) {
+      console.log(JSON.stringify({ skills, count: skills.length }))
+      return
+    }
 
     if (skills.length === 0) {
       console.log(chalk.yellow(`\n  No skills found\n`))
@@ -40,8 +46,12 @@ async function listCommand(args) {
     console.log(chalk.dim('  Run ') + chalk.cyan('mdskills install <owner>/<slug>') + chalk.dim(' to install'))
     console.log('')
   } catch (err) {
-    spinner.fail('Failed to load skills')
-    console.error(chalk.red(`  ${err.message}`))
+    if (spinner) spinner.fail('Failed to load skills')
+    if (json) {
+      console.log(JSON.stringify({ error: err.message }))
+    } else {
+      console.error(chalk.red(`  ${err.message}`))
+    }
     process.exit(1)
   }
 }

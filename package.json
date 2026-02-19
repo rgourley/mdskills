@@ -2,6 +2,9 @@
   "name": "mdskills",
   "version": "1.0.0",
   "description": "AI skills marketplace - find, browse, and install AI agent skills",
+  "engines": {
+    "node": ">=18"
+  },
   "files": [
     "bin/",
     "cli/"
