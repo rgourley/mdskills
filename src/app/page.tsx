@@ -6,6 +6,12 @@ import { AgentStrip } from '@/components/AgentStrip'
 import { getFeaturedSkills, getPluginSkills } from '@/lib/skills'
 import { getCategories } from '@/lib/categories'
 import type { Metadata } from 'next'
+import {
+  Palette, SearchCode, BookOpen, TestTube, Shield, Plug, BarChart3,
+  Zap, Sparkles, Rocket, Search, PenTool, Code, Terminal, Globe,
+  Puzzle, Wrench, Database, Cloud, Lock, FileText, GitBranch, Cpu,
+  Package, type LucideIcon,
+} from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'mdskills.ai — Free AI Skills for Claude Code, Cursor & More',
@@ -21,37 +27,37 @@ export const metadata: Metadata = {
 // Cache for 60s, revalidate in background
 export const revalidate = 60
 
-/** Map DB icon slugs to emoji */
-const CATEGORY_ICONS: Record<string, string> = {
-  'palette': '🎨',
-  'code-review': '🔍',
-  'book': '📖',
-  'test-tube': '🧪',
-  'shield': '🛡️',
-  'api': '🔌',
-  'chart': '📊',
-  'lightning': '⚡',
-  'sparkles': '✨',
-  'rocket': '🚀',
-  'search': '🔎',
-  'pen-tool': '✏️',
-  'code': '💻',
-  'terminal': '🖥️',
-  'globe': '🌐',
-  'puzzle': '🧩',
-  'wrench': '🔧',
-  'database': '🗄️',
-  'cloud': '☁️',
-  'lock': '🔒',
-  'file-text': '📄',
-  'git-branch': '🔀',
-  'cpu': '🧠',
-  'zap': '⚡',
+/** Map DB icon slugs to Lucide icons */
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  'palette': Palette,
+  'code-review': SearchCode,
+  'book': BookOpen,
+  'test-tube': TestTube,
+  'shield': Shield,
+  'api': Plug,
+  'chart': BarChart3,
+  'lightning': Zap,
+  'sparkles': Sparkles,
+  'rocket': Rocket,
+  'search': Search,
+  'pen-tool': PenTool,
+  'code': Code,
+  'terminal': Terminal,
+  'globe': Globe,
+  'puzzle': Puzzle,
+  'wrench': Wrench,
+  'database': Database,
+  'cloud': Cloud,
+  'lock': Lock,
+  'file-text': FileText,
+  'git-branch': GitBranch,
+  'cpu': Cpu,
+  'zap': Zap,
 }
 
-function getCategoryEmoji(icon?: string): string {
-  if (!icon) return '📦'
-  return CATEGORY_ICONS[icon] || '📦'
+function getCategoryIcon(icon?: string): LucideIcon {
+  if (!icon) return Package
+  return CATEGORY_ICONS[icon] || Package
 }
 
 export default async function HomePage() {
@@ -177,14 +183,16 @@ export default async function HomePage() {
               </Link>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.filter(c => (c.skillCount ?? 0) > 0).map((category) => (
+              {categories.filter(c => (c.skillCount ?? 0) > 0).map((category) => {
+                const IconComponent = getCategoryIcon(category.icon)
+                return (
                 <Link
                   key={category.id}
                   href={`/skills?category=${category.slug}`}
                   className="group flex items-start gap-4 p-5 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md transition-all"
                 >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200 flex items-center justify-center text-lg transition-colors">
-                    {getCategoryEmoji(category.icon)}
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200 flex items-center justify-center transition-colors">
+                    <IconComponent className="w-5 h-5 text-neutral-600" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-medium text-neutral-900 group-hover:text-blue-600 transition-colors">
@@ -198,7 +206,8 @@ export default async function HomePage() {
                     </p>
                   </div>
                 </Link>
-              ))}
+                )
+              })}
             </div>
           </div>
         </section>
