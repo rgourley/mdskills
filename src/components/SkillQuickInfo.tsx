@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Github, Star, GitFork, Puzzle, FolderOpen, FolderEdit, Terminal, Globe, GitBranch } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 
@@ -11,17 +12,16 @@ const ARTIFACT_LABELS: Record<string, string> = {
   template_bundle: 'Starter Kit',
 }
 
-const FORMAT_LABELS: Record<string, string> = {
-  skill_md: 'SKILL.md',
-  agents_md: 'AGENTS.md',
-  claude_md: 'CLAUDE.md',
-  cursorrules: '.cursorrules',
-  copilot_instructions: 'copilot-instructions.md',
-  gemini_md: 'GEMINI.md',
-  clinerules: '.clinerules',
-  windsurf_rules: '.windsurfrules',
-  mdc: '.mdc',
-  generic: 'Generic',
+const FORMAT_INFO: Record<string, { label: string; specPath?: string }> = {
+  skill_md: { label: 'SKILL.md', specPath: '/specs/skill-md' },
+  agents_md: { label: 'AGENTS.md', specPath: '/specs/agents-md' },
+  claude_md: { label: 'CLAUDE.md', specPath: '/specs/claude-md' },
+  cursorrules: { label: '.cursorrules', specPath: '/specs/cursorrules' },
+  copilot_instructions: { label: 'copilot-instructions.md' },
+  gemini_md: { label: 'GEMINI.md' },
+  clinerules: { label: '.clinerules' },
+  windsurf_rules: { label: '.windsurfrules' },
+  mdc: { label: '.mdc', specPath: '/specs/cursorrules' },
 }
 
 interface SkillQuickInfoProps {
@@ -53,11 +53,17 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
             <dd className="font-medium text-neutral-900">Skill + Plugin</dd>
           </div>
         )}
-        {skill.formatStandard && skill.formatStandard !== 'skill_md' && (
+        {skill.formatStandard && skill.formatStandard !== 'skill_md' && skill.formatStandard !== 'generic' && FORMAT_INFO[skill.formatStandard] && (
           <div>
             <dt className="text-neutral-500">Format</dt>
             <dd className="font-medium text-neutral-900">
-              {FORMAT_LABELS[skill.formatStandard] ?? skill.formatStandard}
+              {FORMAT_INFO[skill.formatStandard].specPath ? (
+                <Link href={FORMAT_INFO[skill.formatStandard].specPath!} className="text-blue-600 hover:text-blue-700">
+                  {FORMAT_INFO[skill.formatStandard].label}
+                </Link>
+              ) : (
+                FORMAT_INFO[skill.formatStandard].label
+              )}
             </dd>
           </div>
         )}

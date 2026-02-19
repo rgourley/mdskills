@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { url, slug, name, category, platforms, artifactType, dryRun } = body
+    const { url, slug, name, category, platforms, artifactType, formatStandard, dryRun } = body
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid GitHub URL' }, { status: 400 })
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       category: category || undefined,
       platforms: platforms ? (Array.isArray(platforms) ? platforms : platforms.split(',').map((s: string) => s.trim())) : undefined,
       artifactType: artifactType || undefined,
+      formatStandard: formatStandard || undefined,
       dryRun: dryRun || false,
     })
 

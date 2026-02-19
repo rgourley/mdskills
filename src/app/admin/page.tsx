@@ -23,6 +23,7 @@ interface QueueItem {
   status: 'pending' | 'importing' | 'done' | 'error'
   result?: ImportResult
   artifactType?: string
+  formatStandard?: string
   category?: string
   slug?: string
   name?: string
@@ -39,6 +40,20 @@ const ARTIFACT_TYPES = [
   { value: 'extension', label: 'Extension' },
 ]
 
+const FORMAT_STANDARDS = [
+  { value: '', label: 'Auto-detect' },
+  { value: 'skill_md', label: 'SKILL.md' },
+  { value: 'agents_md', label: 'AGENTS.md' },
+  { value: 'claude_md', label: 'CLAUDE.md' },
+  { value: 'cursorrules', label: '.cursorrules' },
+  { value: 'mdc', label: '.mdc (Cursor rules)' },
+  { value: 'copilot_instructions', label: 'copilot-instructions.md' },
+  { value: 'gemini_md', label: 'GEMINI.md' },
+  { value: 'clinerules', label: '.clinerules' },
+  { value: 'windsurf_rules', label: '.windsurfrules' },
+  { value: 'generic', label: 'Generic (README)' },
+]
+
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -48,6 +63,7 @@ export default function AdminPage() {
   // Import form
   const [urlInput, setUrlInput] = useState('')
   const [artifactType, setArtifactType] = useState('')
+  const [formatStandard, setFormatStandard] = useState('')
   const [category, setCategory] = useState('')
   const [customSlug, setCustomSlug] = useState('')
   const [customName, setCustomName] = useState('')
@@ -113,6 +129,7 @@ export default function AdminPage() {
       url,
       status: 'pending',
       artifactType: artifactType || undefined,
+      formatStandard: formatStandard || undefined,
       category: category || undefined,
       slug: customSlug || undefined,
       name: customName || undefined,
@@ -144,6 +161,7 @@ export default function AdminPage() {
           body: JSON.stringify({
             url: item.url,
             artifactType: item.artifactType,
+            formatStandard: item.formatStandard,
             category: item.category,
             slug: item.slug,
             name: item.name,
@@ -243,7 +261,7 @@ export default function AdminPage() {
           </div>
 
           {/* Options row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-medium text-neutral-500 mb-1">Type</label>
               <select
@@ -254,6 +272,20 @@ export default function AdminPage() {
                 {ARTIFACT_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-neutral-500 mb-1">Format</label>
+              <select
+                value={formatStandard}
+                onChange={(e) => setFormatStandard(e.target.value)}
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+              >
+                {FORMAT_STANDARDS.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
                   </option>
                 ))}
               </select>
@@ -273,6 +305,8 @@ export default function AdminPage() {
                 ))}
               </select>
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-neutral-500 mb-1">
                 Custom Slug

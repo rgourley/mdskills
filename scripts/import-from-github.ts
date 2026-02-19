@@ -496,6 +496,54 @@ function generateSlug(owner: string, repo: string, skillPath: string): string {
     .replace(/^-|-$/g, '')
 }
 
+// ── Category auto-detection ──────────────────────────────────────
+
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  'code-review': ['code review', 'lint', 'linting', 'eslint', 'prettier', 'code quality', 'static analysis', 'code style'],
+  'documentation': ['documentation', 'docs', 'readme', 'jsdoc', 'typedoc', 'api docs', 'docstring'],
+  'testing': ['testing', 'test', 'jest', 'mocha', 'pytest', 'unit test', 'e2e', 'qa', 'quality assurance', 'playwright', 'cypress', 'vitest'],
+  'security': ['security', 'vulnerability', 'audit', 'cve', 'owasp', 'pentest', 'encryption', 'auth', 'authentication'],
+  'api-development': ['api', 'rest', 'graphql', 'openapi', 'swagger', 'endpoint', 'webhook', 'grpc'],
+  'data-analysis': ['data analysis', 'data science', 'analytics', 'visualization', 'pandas', 'jupyter', 'notebook', 'csv', 'dataset'],
+  'productivity': ['productivity', 'automation', 'workflow', 'task', 'todo', 'scheduling', 'time tracking', 'cli tool'],
+  'creative': ['creative', 'writing', 'content', 'copywriting', 'blog', 'storytelling', 'image', 'art'],
+  'design-systems': ['design system', 'ui', 'component', 'tailwind', 'css', 'react component', 'figma', 'storybook', 'frontend'],
+  'information-architecture': ['information architecture', 'navigation', 'sitemap', 'taxonomy', 'content structure'],
+  'resume-writing': ['resume', 'cv', 'cover letter', 'career', 'job', 'hiring', 'interview'],
+  'devops-ci-cd': ['devops', 'ci/cd', 'docker', 'kubernetes', 'terraform', 'github actions', 'deployment', 'infrastructure', 'pipeline', 'aws', 'gcp', 'azure'],
+  'database-design': ['database', 'sql', 'postgres', 'mysql', 'mongodb', 'schema', 'migration', 'orm', 'prisma', 'supabase'],
+  'content-creation': ['content creation', 'blog post', 'marketing', 'seo', 'social media', 'newsletter', 'copywriting'],
+  'research-analysis': ['research', 'analysis', 'literature review', 'synthesis', 'survey', 'paper', 'academic'],
+  'code-generation': ['code generation', 'scaffolding', 'boilerplate', 'generator', 'template', 'starter', 'cli'],
+}
+
+function detectCategory(topics: string[], description: string, repoName: string, readme: string | null): string | null {
+  const text = [
+    ...topics,
+    description,
+    repoName.replace(/[-_]/g, ' '),
+    (readme || '').slice(0, 500),
+  ].join(' ').toLowerCase()
+
+  let bestCategory: string | null = null
+  let bestScore = 0
+
+  for (const [slug, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    let score = 0
+    for (const kw of keywords) {
+      if (text.includes(kw)) {
+        score += topics.some(t => t.toLowerCase().includes(kw)) ? 3 : 1
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score
+      bestCategory = slug
+    }
+  }
+
+  return bestScore >= 2 ? bestCategory : null
+}
+
 // ── Category lookup ──────────────────────────────────────────────
 
 async function getCategoryId(slug: string): Promise<string | null> {
@@ -615,17 +663,30 @@ async function main() {
   ])).slice(0, 15)
 
   // Category
+  let categorySlug = args.category || null
+  if (!categorySlug) {
+    categorySlug = detectCategory(meta.topics, meta.description, repo, readme)
+    if (categorySlug) {
+      console.log(`  Auto-detected category: ${categorySlug}`)
+    }
+  }
+
   let categoryId: string | null = null
-  if (args.category) {
-    categoryId = await getCategoryId(args.category)
+  if (categorySlug) {
+    categoryId = await getCategoryId(categorySlug)
     if (!categoryId) {
-      console.error(`\n✗ Category "${args.category}" not found.`)
-      const cats = await listCategories()
-      console.error('  Available categories:')
-      for (const c of cats) {
-        console.error(`    ${c.slug.padEnd(24)} ${c.name}`)
+      if (args.category) {
+        // Only error out if the user explicitly specified a category
+        console.error(`\n✗ Category "${categorySlug}" not found.`)
+        const cats = await listCategories()
+        console.error('  Available categories:')
+        for (const c of cats) {
+          console.error(`    ${c.slug.padEnd(24)} ${c.name}`)
+        }
+        process.exit(1)
+      } else {
+        console.log(`  Warning: Auto-detected category "${categorySlug}" not found in database, skipping`)
       }
-      process.exit(1)
     }
   }
 

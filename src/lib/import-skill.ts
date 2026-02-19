@@ -21,6 +21,7 @@ export interface ImportOptions {
   category?: string
   platforms?: string[]
   artifactType?: string
+  formatStandard?: string
   dryRun?: boolean
 }
 
@@ -294,6 +295,60 @@ function generateSlug(repo: string, skillPath: string): string {
   return base.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
 }
 
+// ── Category auto-detection ──────────────────────────────────────
+
+/** Map of category slugs to keywords that signal that category */
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  'code-review': ['code review', 'lint', 'linting', 'eslint', 'prettier', 'code quality', 'static analysis', 'code style'],
+  'documentation': ['documentation', 'docs', 'readme', 'jsdoc', 'typedoc', 'api docs', 'docstring'],
+  'testing': ['testing', 'test', 'jest', 'mocha', 'pytest', 'unit test', 'e2e', 'qa', 'quality assurance', 'playwright', 'cypress', 'vitest'],
+  'security': ['security', 'vulnerability', 'audit', 'cve', 'owasp', 'pentest', 'encryption', 'auth', 'authentication'],
+  'api-development': ['api', 'rest', 'graphql', 'openapi', 'swagger', 'endpoint', 'webhook', 'grpc'],
+  'data-analysis': ['data analysis', 'data science', 'analytics', 'visualization', 'pandas', 'jupyter', 'notebook', 'csv', 'dataset'],
+  'productivity': ['productivity', 'automation', 'workflow', 'task', 'todo', 'scheduling', 'time tracking', 'cli tool'],
+  'creative': ['creative', 'writing', 'content', 'copywriting', 'blog', 'storytelling', 'image', 'art'],
+  'design-systems': ['design system', 'ui', 'component', 'tailwind', 'css', 'react component', 'figma', 'storybook', 'frontend'],
+  'information-architecture': ['information architecture', 'navigation', 'sitemap', 'taxonomy', 'content structure'],
+  'resume-writing': ['resume', 'cv', 'cover letter', 'career', 'job', 'hiring', 'interview'],
+  'devops-ci-cd': ['devops', 'ci/cd', 'docker', 'kubernetes', 'terraform', 'github actions', 'deployment', 'infrastructure', 'pipeline', 'aws', 'gcp', 'azure'],
+  'database-design': ['database', 'sql', 'postgres', 'mysql', 'mongodb', 'schema', 'migration', 'orm', 'prisma', 'supabase'],
+  'content-creation': ['content creation', 'blog post', 'marketing', 'seo', 'social media', 'newsletter', 'copywriting'],
+  'research-analysis': ['research', 'analysis', 'literature review', 'synthesis', 'survey', 'paper', 'academic'],
+  'code-generation': ['code generation', 'scaffolding', 'boilerplate', 'generator', 'template', 'starter', 'cli'],
+}
+
+function detectCategory(topics: string[], description: string, repoName: string, readme: string | null): string | null {
+  // Build a single searchable text blob from all signals
+  const text = [
+    ...topics,
+    description,
+    repoName.replace(/[-_]/g, ' '),
+    // Only use first ~500 chars of readme to avoid false positives from long docs
+    (readme || '').slice(0, 500),
+  ].join(' ').toLowerCase()
+
+  // Score each category by keyword matches
+  let bestCategory: string | null = null
+  let bestScore = 0
+
+  for (const [slug, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    let score = 0
+    for (const kw of keywords) {
+      if (text.includes(kw)) {
+        // Topics get a stronger signal (they're intentionally chosen by the author)
+        score += topics.some(t => t.toLowerCase().includes(kw)) ? 3 : 1
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score
+      bestCategory = slug
+    }
+  }
+
+  // Require at least 2 points to avoid weak matches
+  return bestScore >= 2 ? bestCategory : null
+}
+
 // ── Main import function ─────────────────────────────────────────
 
 export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
@@ -372,12 +427,20 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   const { skillType, hasPlugin } = detectSkillType(skillPath)
   const tags = Array.from(new Set([...(fm.tags || []), ...meta.topics.slice(0, 10)])).slice(0, 15)
 
+  let categorySlug = opts.category || null
+  if (!categorySlug) {
+    categorySlug = detectCategory(meta.topics, meta.description, repo, readme)
+    if (categorySlug) {
+      log(`Auto-detected category: ${categorySlug}`)
+    }
+  }
+
   let categoryId: string | null = null
-  if (opts.category) {
-    const { data } = await supabase.from('categories').select('id').eq('slug', opts.category).single()
+  if (categorySlug) {
+    const { data } = await supabase.from('categories').select('id').eq('slug', categorySlug).single()
     categoryId = data?.id ?? null
     if (!categoryId) {
-      log(`Warning: Category "${opts.category}" not found`)
+      log(`Warning: Category "${categorySlug}" not found`)
     }
   }
 
@@ -412,7 +475,7 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
     platforms,
     tags,
     artifact_type: artifactType,
-    format_standard: usingReadmeFallback ? 'generic' : 'skill_md',
+    format_standard: opts.formatStandard || (usingReadmeFallback ? 'generic' : 'skill_md'),
     ...permissions,
   }
 
