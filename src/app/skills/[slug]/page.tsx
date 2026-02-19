@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getSkillBySlug } from '@/lib/skills'
 import { getSkillClients } from '@/lib/clients'
 import { Package, Star } from 'lucide-react'
+import { SkillJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
 import { SkillDetailTabs, type TabId } from '@/components/SkillDetailTabs'
 import { SkillOverviewTab } from '@/components/SkillOverviewTab'
 import { SkillSourceCode } from '@/components/SkillSourceCode'
@@ -13,10 +14,50 @@ import { SkillCommentsTab } from '@/components/SkillCommentsTab'
 import { SkillActions } from '@/components/SkillActions'
 import { SkillBadges } from '@/components/SkillBadges'
 import { SkillQuickInfo } from '@/components/SkillQuickInfo'
+import type { Metadata } from 'next'
 
 interface PageProps {
   params: Promise<{ slug: string }>
   searchParams: Promise<{ tab?: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const skill = await getSkillBySlug(slug)
+  if (!skill) return { title: 'Skill Not Found' }
+
+  const title = `${skill.name} — AI Agent Skill`
+  const description = skill.description.length > 160
+    ? skill.description.slice(0, 157) + '...'
+    : skill.description
+  const platforms = skill.platforms.length > 0
+    ? ` Works with ${skill.platforms.slice(0, 3).join(', ')}${skill.platforms.length > 3 ? ' and more' : ''}.`
+    : ''
+
+  return {
+    title,
+    description: `${description}${platforms}`,
+    alternates: { canonical: `/skills/${slug}` },
+    openGraph: {
+      title: `${skill.name} — mdskills.ai`,
+      description: `${description}${platforms}`,
+      url: `/skills/${slug}`,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${skill.name} — AI Agent Skill`,
+      description,
+    },
+    keywords: [
+      skill.name,
+      'AI skill',
+      'SKILL.md',
+      'agent skill',
+      ...(skill.tags ?? []),
+      ...(skill.platforms ?? []),
+    ],
+  }
 }
 
 export default async function SkillDetailPage({ params, searchParams }: PageProps) {
@@ -33,6 +74,22 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const activeTab: TabId = tab && (validTabs as readonly string[]).includes(tab) ? (tab as TabId) : 'overview'
 
   return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: '/' },
+          { name: 'Skills', url: '/skills' },
+          { name: skill.name, url: `/skills/${skill.slug}` },
+        ]}
+      />
+      <SkillJsonLd
+        name={skill.name}
+        description={skill.description}
+        url={`/skills/${skill.slug}`}
+        author={skill.owner}
+        license={skill.license}
+        category={skill.categoryName}
+      />
     <div className="py-12 sm:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="lg:flex lg:gap-10">
@@ -55,7 +112,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             <p className="mt-2 text-neutral-600">{skill.description}</p>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-neutral-500">
               <span>by @{skill.owner}</span>
-              <span>{skill.weeklyInstalls.toLocaleString()} installs</span>
+              {skill.weeklyInstalls > 0 && (
+                <span>{skill.weeklyInstalls.toLocaleString()} installs</span>
+              )}
               {skill.upvotes != null && (
                 <span className="flex items-center gap-1">
                   <Star className="w-4 h-4" />
@@ -112,5 +171,6 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         </div>
       </div>
     </div>
+    </>
   )
 }

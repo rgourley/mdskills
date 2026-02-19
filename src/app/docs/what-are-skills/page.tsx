@@ -3,8 +3,15 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'What are Agent Skills? — mdskills.ai',
-  description: 'Learn about Agent Skills — the open SKILL.md format for extending AI agent capabilities with specialized knowledge and workflows.',
+  title: 'What are Agent Skills?',
+  description: 'Learn about Agent Skills — the open SKILL.md format for extending AI agent capabilities. Understand progressive disclosure, frontmatter fields, and how 27+ agents use skills.',
+  alternates: { canonical: '/docs/what-are-skills' },
+  openGraph: {
+    title: 'What are Agent Skills? — mdskills.ai',
+    description: 'The open SKILL.md format for extending AI agent capabilities. Progressive disclosure, frontmatter fields, and how 27+ agents discover and use skills.',
+    url: '/docs/what-are-skills',
+  },
+  keywords: ['SKILL.md', 'agent skills', 'what are skills', 'AI skills format', 'progressive disclosure', 'agentskills.io'],
 }
 
 export default function WhatAreSkillsPage() {

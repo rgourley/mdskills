@@ -1,6 +1,18 @@
 import Link from 'next/link'
 import { getClients } from '@/lib/clients'
 import { ExternalLink } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'AI Agents & Clients',
+  description: 'Browse 27+ AI agents and tools that support SKILL.md. See compatible skills for Claude Code, Cursor, Codex, Gemini CLI, VS Code, Windsurf, and more.',
+  alternates: { canonical: '/clients' },
+  openGraph: {
+    title: 'AI Agents & Clients — mdskills.ai',
+    description: 'Browse 27+ AI agents and tools that support SKILL.md. See compatible skills for Claude Code, Cursor, Codex, Gemini CLI, VS Code, Windsurf, and more.',
+    url: '/clients',
+  },
+}
 
 export default async function ClientsPage() {
   const clients = await getClients()

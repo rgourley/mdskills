@@ -1,5 +1,17 @@
 import Link from 'next/link'
 import { Package, Server, Workflow, Shield, Plug, FileCode } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Submit a Skill',
+  description: 'Share your AI agent skill with the open skills ecosystem. Publish SKILL.md files, MCP servers, workflows, and rulesets to the mdskills.ai marketplace.',
+  alternates: { canonical: '/submit' },
+  openGraph: {
+    title: 'Submit a Skill — mdskills.ai',
+    description: 'Share your AI agent skill with the open skills ecosystem. Publish SKILL.md files, MCP servers, workflows, and rulesets to the mdskills.ai marketplace.',
+    url: '/submit',
+  },
+}
 
 const ARTIFACT_TYPES = [
   {

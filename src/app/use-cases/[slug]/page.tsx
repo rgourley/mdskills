@@ -3,9 +3,33 @@ import { notFound } from 'next/navigation'
 import { getCategoryBySlug } from '@/lib/categories'
 import { getSkills } from '@/lib/skills'
 import { SkillCard } from '@/components/SkillCard'
+import type { Metadata } from 'next'
 
 interface PageProps {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const category = await getCategoryBySlug(slug)
+  if (!category) return { title: 'Category Not Found' }
+
+  const title = `${category.name} — AI Agent Skills`
+  const description = category.description
+    ? `${category.description} Browse ${category.skillCount ?? 0} AI agent skills for ${category.name.toLowerCase()}.`
+    : `Browse AI agent skills for ${category.name.toLowerCase()}. Find and install SKILL.md files for your AI tools.`
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/use-cases/${slug}` },
+    openGraph: {
+      title: `${category.name} Skills — mdskills.ai`,
+      description,
+      url: `/use-cases/${slug}`,
+    },
+    keywords: [category.name, 'AI skills', 'SKILL.md', 'agent skills', 'use case', slug],
+  }
 }
 
 export default async function UseCaseDetailPage({ params }: PageProps) {

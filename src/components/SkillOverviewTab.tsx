@@ -8,6 +8,93 @@ interface SkillOverviewTabProps {
   installCommand: string
 }
 
+/** Render markdown-ish content as styled HTML (headings, code blocks, lists, paragraphs) */
+function SkillContent({ content }: { content: string }) {
+  const lines = content.split('\n')
+  const elements: React.ReactNode[] = []
+  let i = 0
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // Code blocks
+    if (line.startsWith('```')) {
+      const codeLines: string[] = []
+      i++
+      while (i < lines.length && !lines[i].startsWith('```')) {
+        codeLines.push(lines[i])
+        i++
+      }
+      i++ // skip closing ```
+      elements.push(
+        <pre key={`code-${i}`} className="p-4 rounded-lg bg-neutral-900 text-white text-sm font-mono overflow-x-auto my-4">
+          <code>{codeLines.join('\n')}</code>
+        </pre>
+      )
+      continue
+    }
+
+    // Headings
+    if (line.startsWith('### ')) {
+      elements.push(<h4 key={`h4-${i}`} className="text-base font-semibold text-neutral-900 mt-6 mb-2">{line.slice(4)}</h4>)
+      i++
+      continue
+    }
+    if (line.startsWith('## ')) {
+      elements.push(<h3 key={`h3-${i}`} className="text-lg font-semibold text-neutral-900 mt-8 mb-3">{line.slice(3)}</h3>)
+      i++
+      continue
+    }
+    if (line.startsWith('# ')) {
+      // Skip the top-level heading (it's already the page title)
+      i++
+      continue
+    }
+
+    // List items
+    if (line.match(/^[-*] /)) {
+      const listItems: string[] = []
+      while (i < lines.length && lines[i].match(/^[-*] /)) {
+        listItems.push(lines[i].replace(/^[-*] /, ''))
+        i++
+      }
+      elements.push(
+        <ul key={`ul-${i}`} className="list-disc list-inside space-y-1 text-neutral-600 my-2">
+          {listItems.map((item, j) => <li key={j}>{item}</li>)}
+        </ul>
+      )
+      continue
+    }
+
+    // Numbered list items
+    if (line.match(/^\d+\. /)) {
+      const listItems: string[] = []
+      while (i < lines.length && lines[i].match(/^\d+\. /)) {
+        listItems.push(lines[i].replace(/^\d+\. /, ''))
+        i++
+      }
+      elements.push(
+        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-1 text-neutral-600 my-2">
+          {listItems.map((item, j) => <li key={j}>{item}</li>)}
+        </ol>
+      )
+      continue
+    }
+
+    // Empty lines
+    if (line.trim() === '') {
+      i++
+      continue
+    }
+
+    // Regular paragraphs
+    elements.push(<p key={`p-${i}`} className="text-neutral-600 leading-relaxed my-2">{line}</p>)
+    i++
+  }
+
+  return <div>{elements}</div>
+}
+
 export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProps) {
   const pluginCommand = skill.hasPlugin ? `/plugin marketplace add ${skill.owner}/${skill.slug}` : null
 
@@ -38,11 +125,12 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
         </div>
       </section>
 
-      {/* What this skill does */}
-      <section>
-        <h3 className="text-sm font-semibold text-neutral-900 mb-3">What this skill does</h3>
-        <p className="text-neutral-600 leading-relaxed">{skill.description}</p>
-      </section>
+      {/* Skill content / README */}
+      {skill.skillContent && (
+        <section>
+          <SkillContent content={skill.skillContent} />
+        </section>
+      )}
 
       {/* Tags & Platforms */}
       <section className="flex flex-wrap gap-8">

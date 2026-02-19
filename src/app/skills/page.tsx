@@ -4,6 +4,18 @@ import { SearchBar } from '@/components/SearchBar'
 import { ExploreFilters } from '@/components/ExploreFilters'
 import { getClients } from '@/lib/clients'
 import { getCategoriesLight } from '@/lib/categories'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Explore AI Agent Skills',
+  description: 'Browse and search AI agent skills, MCP servers, workflows, and rulesets. Filter by agent compatibility, category, and type. Install with one command.',
+  alternates: { canonical: '/skills' },
+  openGraph: {
+    title: 'Explore AI Agent Skills — mdskills.ai',
+    description: 'Browse and search AI agent skills, MCP servers, workflows, and rulesets. Filter by agent compatibility, category, and type.',
+    url: '/skills',
+  },
+}
 
 interface PageProps {
   searchParams: Promise<{

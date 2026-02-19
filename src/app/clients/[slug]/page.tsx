@@ -4,9 +4,31 @@ import { getClientBySlug } from '@/lib/clients'
 import { getSkills } from '@/lib/skills'
 import { SkillCard } from '@/components/SkillCard'
 import { ExternalLink } from 'lucide-react'
+import type { Metadata } from 'next'
 
 interface PageProps {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const client = await getClientBySlug(slug)
+  if (!client) return { title: 'Client Not Found' }
+
+  const title = `${client.name} — AI Agent Skills`
+  const description = `Browse AI agent skills compatible with ${client.name}. Find and install SKILL.md files, MCP servers, and workflows for ${client.name}.`
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/clients/${slug}` },
+    openGraph: {
+      title: `${client.name} Skills — mdskills.ai`,
+      description,
+      url: `/clients/${slug}`,
+    },
+    keywords: [client.name, 'AI skills', 'SKILL.md', 'agent skills', slug],
+  }
 }
 
 /** Map of which artifact types each client generally supports */

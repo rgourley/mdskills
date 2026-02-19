@@ -3,8 +3,15 @@ import { BookOpen, Puzzle, Server, FileText, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Docs — mdskills.ai',
-  description: 'Understanding the AI agent ecosystem: rules, skills, and tools.',
+  title: 'Docs: AI Agent Ecosystem',
+  description: 'Understand the AI agent ecosystem: rules (CLAUDE.md, AGENTS.md, .cursorrules), skills (SKILL.md), and tools (MCP servers). Learn how they work together to extend AI agents.',
+  alternates: { canonical: '/docs' },
+  openGraph: {
+    title: 'AI Agent Ecosystem Guide — mdskills.ai',
+    description: 'Understand the AI agent ecosystem: rules, skills, and tools. Learn how SKILL.md, AGENTS.md, MCP servers, and more extend AI agent capabilities.',
+    url: '/docs',
+  },
+  keywords: ['AI agent ecosystem', 'SKILL.md', 'AGENTS.md', 'CLAUDE.md', '.cursorrules', 'MCP servers', 'AI tools', 'agent configuration'],
 }
 
 const LAYERS = [

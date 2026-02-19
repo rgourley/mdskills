@@ -49,10 +49,12 @@ export function SkillCard({ skill }: SkillCardProps) {
             {skill.description}
           </p>
           <div className="mt-4 flex items-center gap-4 text-xs text-neutral-500">
-            <span className="flex items-center gap-1">
-              <Star className="w-3.5 h-3.5" />
-              {skill.weeklyInstalls.toLocaleString()} weekly
-            </span>
+            {skill.weeklyInstalls > 0 && (
+              <span className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5" />
+                {skill.weeklyInstalls.toLocaleString()} weekly
+              </span>
+            )}
             <span>{skill.owner}/{skill.repo}</span>
           </div>
         </div>

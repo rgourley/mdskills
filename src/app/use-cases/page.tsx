@@ -1,5 +1,17 @@
 import Link from 'next/link'
 import { getCategories } from '@/lib/categories'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Use Cases',
+  description: 'Browse AI agent skills by use case. Find skills for code generation, DevOps, testing, documentation, design systems, data analysis, and more.',
+  alternates: { canonical: '/use-cases' },
+  openGraph: {
+    title: 'AI Agent Skill Use Cases — mdskills.ai',
+    description: 'Browse AI agent skills by use case. Find skills for code generation, DevOps, testing, documentation, design systems, data analysis, and more.',
+    url: '/use-cases',
+  },
+}
 
 export default async function UseCasesPage() {
   const categories = await getCategories()

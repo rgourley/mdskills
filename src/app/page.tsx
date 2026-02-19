@@ -4,6 +4,18 @@ import { SkillCard } from '@/components/SkillCard'
 import { CopyButton } from '@/components/CopyButton'
 import { AgentStrip } from '@/components/AgentStrip'
 import { getFeaturedSkills, getPluginSkills } from '@/lib/skills'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'mdskills.ai — AI Agent Skills Marketplace',
+  description: 'The open skills marketplace for AI agents. Discover, create, fork, and share SKILL.md files for Claude Code, Cursor, Codex, Gemini CLI, and 27+ AI tools.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'mdskills.ai — AI Agent Skills Marketplace',
+    description: 'The open skills marketplace for AI agents. Discover, create, fork, and share SKILL.md files for Claude Code, Cursor, Codex, Gemini CLI, and 27+ AI tools.',
+    url: '/',
+  },
+}
 
 export default async function HomePage() {
   const [skills, pluginSkills] = await Promise.all([getFeaturedSkills(), getPluginSkills(6)])
