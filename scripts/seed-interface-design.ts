@@ -1,5 +1,5 @@
 /**
- * Seed the interface-design plugin skill (Design & Frontend, Claude Code plugin).
+ * Seed the interface-design plugin skill with real SKILL.md content from GitHub.
  * Requires: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in .env
  * Run: npm run seed:interface-design
  */
@@ -16,23 +16,73 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+async function fetchSkillMd(): Promise<string | null> {
+  // The SKILL.md lives at .claude/skills/interface-design/SKILL.md
+  const url = 'https://raw.githubusercontent.com/Dammyjay93/interface-design/main/.claude/skills/interface-design/SKILL.md';
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.log(`  ⚠ HTTP ${res.status} fetching SKILL.md`);
+      return null;
+    }
+    return await res.text();
+  } catch (e) {
+    console.log(`  ⚠ Failed to fetch SKILL.md`);
+    return null;
+  }
+}
+
+/** Parse YAML frontmatter */
+function parseFrontmatter(content: string): { name: string; description: string } {
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return { name: '', description: '' };
+  const fm = match[1];
+  const nameMatch = fm.match(/^name:\s*(.+)$/m);
+  const descMatch = fm.match(/^description:\s*(.+)$/m);
+  return {
+    name: nameMatch ? nameMatch[1].trim() : '',
+    description: descMatch ? descMatch[1].trim() : '',
+  };
+}
+
 async function main() {
+  console.log('Fetching real SKILL.md from Dammyjay93/interface-design...');
+
+  const content = await fetchSkillMd();
+  if (!content) {
+    console.error('Failed to fetch SKILL.md');
+    process.exit(1);
+  }
+  console.log(`✓ Fetched ${content.length} bytes`);
+
+  const { name, description } = parseFrontmatter(content);
+  console.log(`  Name: ${name}`);
+  console.log(`  Description: ${description.slice(0, 80)}...`);
+
   const { data: cat } = await supabase
     .from('categories')
     .select('id')
     .eq('slug', 'design-frontend')
     .single();
 
-  const categoryId = cat?.id ?? null;
+  // Also try design-systems if design-frontend doesn't exist
+  let categoryId = cat?.id ?? null;
+  if (!categoryId) {
+    const { data: cat2 } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', 'design-systems')
+      .single();
+    categoryId = cat2?.id ?? null;
+  }
 
   const skill = {
     slug: 'interface-design',
-    name: 'Interface Design',
-    description:
-      'Design systems with persistent memory for professional, consistent UIs. Build dashboards, apps, and tools with intention.',
+    name: name || 'Interface Design',
+    description: description || 'Build interface design with craft and consistency. For dashboards, admin panels, apps, tools, and interactive products.',
     owner: 'Dammyjay93',
     repo: 'interface-design',
-    skill_path: '.claude',
+    skill_path: '.claude/skills/interface-design',
     github_url: 'https://github.com/Dammyjay93/interface-design',
     status: 'published',
     featured: true,
@@ -42,62 +92,22 @@ async function main() {
     difficulty: 'beginner',
     category_id: categoryId,
     author_username: 'Dammyjay93',
-    weekly_installs: 1600,
+    weekly_installs: 0,
     mdskills_upvotes: 0,
     mdskills_forks: 0,
-    github_stars: 1600,
-    github_forks: 136,
+    github_stars: 0,
+    github_forks: 0,
     license: 'MIT',
     artifact_type: 'skill_pack',
+    format_standard: 'skill_md',
     perm_filesystem_read: true,
     perm_filesystem_write: true,
     perm_shell_exec: false,
     perm_network_access: false,
     perm_git_write: false,
     tags: ['design-systems', 'ui-design', 'frontend', 'professional-design', 'consistency', 'dashboards'],
-    platforms: ['claude-code', 'claude-web', 'claude-desktop', 'cursor', 'windsurf', 'codex'],
-    content: `# Interface Design
-
-Design systems with persistent memory for professional, consistent UIs.
-
-## Quick Start (Claude Code)
-
-\`\`\`bash
-/plugin marketplace add Dammyjay93/interface-design
-/plugin menu
-# Select interface-design, restart
-
-/interface-design:init
-\`\`\`
-
-**Get full features:**
-- Persistent \`.interface-design/system.md\`
-- Cross-session memory
-- Commands: \`/status\`, \`/audit\`, \`/extract\`
-
-## Basic Install (Other Platforms)
-
-\`\`\`bash
-npx mdskills install Dammyjay93/interface-design
-\`\`\`
-
-## What this skill does
-
-Creates persistent design systems for building consistent, professional interfaces.
-
-**With interface-design:**
-- System loads automatically each session (Claude Code)
-- Patterns reused (Button: 36px, Card: 16px padding)
-- Spacing stays on grid (4px, 8px, 12px, 16px)
-- Consistent depth and surface treatment
-
-## Commands (Claude Code only)
-
-- \`/interface-design:init\` — Start with design principles
-- \`/interface-design:status\` — Show current system
-- \`/interface-design:audit\` — Check code against system
-- \`/interface-design:extract\` — Extract patterns from code
-`,
+    platforms: ['claude-code', 'claude-desktop', 'cursor', 'windsurf', 'codex'],
+    content,
   };
 
   const { data, error } = await supabase
@@ -110,7 +120,7 @@ Creates persistent design systems for building consistent, professional interfac
     console.error('Insert failed:', error.message);
     process.exit(1);
   }
-  console.log('✓ Plugin skill added:', data?.name, `(slug: ${data?.slug})`);
+  console.log(`✓ Saved: ${data?.name} (slug: ${data?.slug})`);
 
   // Populate listing_clients with per-client install instructions
   if (data?.id) {
@@ -146,13 +156,12 @@ Creates persistent design systems for building consistent, professional interfac
           install_instructions: ci.instructions,
           is_primary: ci.primary,
         }, { onConflict: 'skill_id,client_id' });
-        console.log(`  ✓ Linked to ${ci.slug}`);
+        console.log(`  → ${ci.slug}`);
       }
     }
   }
 
-  console.log('  View at: /skills/interface-design');
-  console.log('  Plugins list: /skills?plugin=1');
+  console.log('\n✅ Done! View at: /skills/interface-design');
 }
 
-main();
+main().catch(console.error);
