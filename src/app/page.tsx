@@ -21,6 +21,39 @@ export const metadata: Metadata = {
 // Cache for 60s, revalidate in background
 export const revalidate = 60
 
+/** Map DB icon slugs to emoji */
+const CATEGORY_ICONS: Record<string, string> = {
+  'palette': '🎨',
+  'code-review': '🔍',
+  'book': '📖',
+  'test-tube': '🧪',
+  'shield': '🛡️',
+  'api': '🔌',
+  'chart': '📊',
+  'lightning': '⚡',
+  'sparkles': '✨',
+  'rocket': '🚀',
+  'search': '🔎',
+  'pen-tool': '✏️',
+  'code': '💻',
+  'terminal': '🖥️',
+  'globe': '🌐',
+  'puzzle': '🧩',
+  'wrench': '🔧',
+  'database': '🗄️',
+  'cloud': '☁️',
+  'lock': '🔒',
+  'file-text': '📄',
+  'git-branch': '🔀',
+  'cpu': '🧠',
+  'zap': '⚡',
+}
+
+function getCategoryEmoji(icon?: string): string {
+  if (!icon) return '📦'
+  return CATEGORY_ICONS[icon] || '📦'
+}
+
 export default async function HomePage() {
   const [skills, pluginSkills, categories] = await Promise.all([
     getFeaturedSkills(),
@@ -151,7 +184,7 @@ export default async function HomePage() {
                   className="group flex items-start gap-4 p-5 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md transition-all"
                 >
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200 flex items-center justify-center text-lg transition-colors">
-                    {category.icon || '📦'}
+                    {getCategoryEmoji(category.icon)}
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-medium text-neutral-900 group-hover:text-blue-600 transition-colors">
