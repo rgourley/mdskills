@@ -50,7 +50,7 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
             <Download className="w-4 h-4 shrink-0" />
             Download SKILL.md
           </button>
-          <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-neutral-900 text-white">
+          <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#1e1e2e] text-neutral-300">
             <Terminal className="w-4 h-4 shrink-0" />
             <code className="text-sm font-mono truncate flex-1 min-w-0">{installCommand}</code>
             <CopyButton text={installCommand} />

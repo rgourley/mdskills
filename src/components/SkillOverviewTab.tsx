@@ -31,7 +31,7 @@ function SkillContent({ content }: { content: string }) {
   const cleaned = stripHtml(stripFrontmatter(content))
 
   return (
-    <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-800 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-neutral-900 prose-pre:text-white prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
+    <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-700 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[13px] prose-code:before:content-none prose-code:after:content-none prose-pre:bg-[#1e1e2e] prose-pre:text-neutral-300 prose-pre:rounded-xl prose-pre:border prose-pre:border-neutral-200/10 prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
       <ReactMarkdown>{cleaned}</ReactMarkdown>
     </div>
   )
@@ -48,18 +48,18 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
         {skill.hasPlugin && pluginCommand && (
           <>
             <p className="text-sm font-medium text-neutral-700 mb-2">Best experience: Claude Code</p>
-            <div className="p-4 rounded-xl bg-neutral-900 text-white mb-4">
+            <div className="p-4 rounded-xl bg-[#1e1e2e] text-neutral-300 mb-4">
               <div className="flex items-center gap-3">
                 <code className="flex-1 font-mono text-sm break-all">{pluginCommand}</code>
                 <CopyButton text={pluginCommand} />
               </div>
-              <p className="text-xs text-neutral-400 mt-2">Then /plugin menu → select skill → restart. Use /skill-name:init for first-time setup.</p>
+              <p className="text-xs text-neutral-500 mt-2">Then /plugin menu → select skill → restart. Use /skill-name:init for first-time setup.</p>
             </div>
             <p className="text-sm font-medium text-neutral-700 mb-2">Other platforms</p>
           </>
         )}
-        <div className="p-6 rounded-xl bg-neutral-900 text-white">
-          <p className="text-sm font-medium text-neutral-300 mb-3">Install via CLI</p>
+        <div className="p-6 rounded-xl bg-[#1e1e2e] text-neutral-300">
+          <p className="text-sm font-medium text-neutral-400 mb-3">Install via CLI</p>
           <div className="flex items-center gap-3">
             <code className="flex-1 font-mono text-sm break-all">{installCommand}</code>
             <CopyButton text={installCommand} />
