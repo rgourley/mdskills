@@ -8,9 +8,14 @@ interface SkillOverviewTabProps {
   installCommand: string
 }
 
+/** Strip YAML frontmatter (---\n...\n---) from content */
+function stripFrontmatter(content: string): string {
+  return content.replace(/^---\n[\s\S]*?\n---\n?/, '').trim()
+}
+
 /** Render markdown-ish content as styled HTML (headings, code blocks, lists, paragraphs) */
 function SkillContent({ content }: { content: string }) {
-  const lines = content.split('\n')
+  const lines = stripFrontmatter(content).split('\n')
   const elements: React.ReactNode[] = []
   let i = 0
 
