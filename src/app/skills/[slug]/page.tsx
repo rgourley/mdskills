@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSkillBySlug } from '@/lib/skills'
 import { getSkillClients } from '@/lib/clients'
-import { Package, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { SkillJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
 import { SkillDetailTabs, type TabId } from '@/components/SkillDetailTabs'
 import { SkillOverviewTab } from '@/components/SkillOverviewTab'
@@ -91,21 +91,17 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
       />
     <div className="py-12 sm:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="lg:flex lg:gap-10">
-          <div className="min-w-0 flex-1 max-w-4xl">
         <Link
           href="/skills"
-          className="text-sm text-neutral-500 hover:text-neutral-700 mb-8 inline-block"
+          className="text-sm text-neutral-500 hover:text-neutral-700 mb-6 inline-block"
         >
           ← Back to skills
         </Link>
+        <div className="lg:flex lg:gap-10">
+          <div className="min-w-0 flex-1 max-w-4xl">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start gap-6 mb-8">
-          <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-neutral-100 flex items-center justify-center">
-            <Package className="w-7 h-7 text-neutral-600" />
-          </div>
-          <div className="min-w-0 flex-1">
+        <div className="mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">{skill.name}</h1>
             <SkillBadges skill={skill} />
             <p className="mt-2 text-neutral-600">{skill.description}</p>
@@ -122,7 +118,6 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               )}
               {skill.updatedAt && <span>Updated {skill.updatedAt}</span>}
             </div>
-          </div>
         </div>
 
         {/* Action buttons */}
