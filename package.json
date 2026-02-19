@@ -10,6 +10,7 @@
     "lint": "npx next lint",
     "cli": "node bin/mdskills.js",
     "import": "tsx scripts/import-skills.ts",
+    "import:github": "tsx scripts/import-from-github.ts",
     "clear:skills": "tsx scripts/clear-skills.ts",
     "seed:fake": "tsx scripts/seed-fake-skill.ts",
     "seed:interface-design": "tsx scripts/seed-interface-design.ts",
