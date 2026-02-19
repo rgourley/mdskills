@@ -17,6 +17,7 @@ const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 interface SkillDef {
   slug: string;
+  display_name: string;
   owner: string;
   repo: string;
   skill_path: string;
@@ -86,6 +87,7 @@ const SKILLS: SkillDef[] = [
   // ── Anthropic Official Skills ─────────────────────────────────
   {
     slug: 'pdf-processing',
+    display_name: 'PDF Processing',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/pdf',
@@ -106,6 +108,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'docx-documents',
+    display_name: 'Word Documents (DOCX)',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/docx',
@@ -126,6 +129,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'spreadsheets-xlsx',
+    display_name: 'Spreadsheets (XLSX)',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/xlsx',
@@ -146,6 +150,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'presentations-pptx',
+    display_name: 'Presentations (PPTX)',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/pptx',
@@ -166,6 +171,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'mcp-builder',
+    display_name: 'MCP Server Builder',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/mcp-builder',
@@ -186,6 +192,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'webapp-testing',
+    display_name: 'Web App Testing',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/webapp-testing',
@@ -206,6 +213,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'skill-creator',
+    display_name: 'Skill Creator',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/skill-creator',
@@ -226,6 +234,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'algorithmic-art',
+    display_name: 'Algorithmic Art',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/algorithmic-art',
@@ -246,6 +255,7 @@ const SKILLS: SkillDef[] = [
   },
   {
     slug: 'frontend-design',
+    display_name: 'Frontend Design',
     owner: 'anthropics',
     repo: 'skills',
     skill_path: 'skills/frontend-design',
@@ -268,6 +278,7 @@ const SKILLS: SkillDef[] = [
   // ── Vercel Skills ─────────────────────────────────────────────
   {
     slug: 'react-best-practices',
+    display_name: 'React Best Practices',
     owner: 'vercel-labs',
     repo: 'agent-skills',
     skill_path: 'skills/react-best-practices',
@@ -290,6 +301,7 @@ const SKILLS: SkillDef[] = [
   // ── Cloudflare Skills ─────────────────────────────────────────
   {
     slug: 'cloudflare-wrangler',
+    display_name: 'Cloudflare Wrangler',
     owner: 'cloudflare',
     repo: 'skills',
     skill_path: 'skills/wrangler',
@@ -312,6 +324,7 @@ const SKILLS: SkillDef[] = [
   // ── Stripe Skills ─────────────────────────────────────────────
   {
     slug: 'stripe-best-practices',
+    display_name: 'Stripe Best Practices',
     owner: 'stripe',
     repo: 'ai',
     skill_path: 'skills/stripe-best-practices',
@@ -334,6 +347,7 @@ const SKILLS: SkillDef[] = [
   // ── Hugging Face Skills ───────────────────────────────────────
   {
     slug: 'huggingface-cli',
+    display_name: 'Hugging Face CLI',
     owner: 'huggingface',
     repo: 'skills',
     skill_path: 'skills/hugging-face-cli',
@@ -374,7 +388,7 @@ async function seedSkill(def: SkillDef): Promise<boolean> {
   console.log(`  ${readmeContent ? `✓ README: ${readmeContent.length} bytes` : '⚠ No README found'}`);
 
   const { name, description, body } = parseFrontmatter(rawContent);
-  const displayName = name || def.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const displayName = def.display_name;
   const desc = description || `Skill from ${def.owner}/${def.repo}`;
 
   console.log(`  Name: ${displayName}`);

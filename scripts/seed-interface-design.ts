@@ -89,7 +89,7 @@ async function main() {
 
   const skill = {
     slug: 'interface-design',
-    name: name || 'Interface Design',
+    name: 'Interface Design',
     description: description || 'Build interface design with craft and consistency. For dashboards, admin panels, apps, tools, and interactive products.',
     owner: 'Dammyjay93',
     repo: 'interface-design',
