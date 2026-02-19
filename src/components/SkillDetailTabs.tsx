@@ -2,14 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { FileText, Code, Download, ImageIcon, GitFork, MessageCircle } from 'lucide-react'
+import { FileText, Code, Download, GitFork, MessageCircle } from 'lucide-react'
 
-export type TabId = 'overview' | 'source' | 'installation' | 'examples' | 'forks' | 'comments'
+export type TabId = 'overview' | 'source' | 'installation' | 'forks' | 'comments'
 
 interface SkillDetailTabsProps {
   activeTab: TabId
   hasPlugin?: boolean
-  hasExamples?: boolean
   forksCount?: number
   commentsCount?: number
 }
@@ -18,18 +17,16 @@ const BASE_TABS: { id: TabId; label: string; icon: React.ElementType; pluginOnly
   { id: 'overview', label: 'Overview', icon: FileText },
   { id: 'source', label: 'Source Code', icon: Code },
   { id: 'installation', label: 'Installation', icon: Download },
-  { id: 'examples', label: 'Examples', icon: ImageIcon, pluginOnly: true },
   { id: 'forks', label: 'Forks', icon: GitFork },
   { id: 'comments', label: 'Comments', icon: MessageCircle },
 ]
 
-export function SkillDetailTabs({ activeTab, hasPlugin, hasExamples, forksCount = 0, commentsCount = 0 }: SkillDetailTabsProps) {
+export function SkillDetailTabs({ activeTab, hasPlugin, forksCount = 0, commentsCount = 0 }: SkillDetailTabsProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const tabs = BASE_TABS.filter((tab) => {
     if (tab.pluginOnly && tab.id === 'installation') return !!hasPlugin
-    if (tab.pluginOnly && tab.id === 'examples') return !!hasExamples
     return true
   })
 

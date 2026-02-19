@@ -18,17 +18,18 @@
     "seed:skills": "tsx scripts/seed-skills.ts"
   },
   "dependencies": {
+    "@octokit/rest": "^20.0.2",
+    "@supabase/ssr": "^0.5.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "dotenv": "^16.0.0",
+    "lucide-react": "^0.454.0",
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "@supabase/supabase-js": "^2.45.0",
-    "@supabase/ssr": "^0.5.0",
-    "lucide-react": "^0.454.0",
-    "@octokit/rest": "^20.0.2",
-    "dotenv": "^16.0.0"
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
-    "tsx": "^4.7.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
@@ -37,6 +38,7 @@
     "eslint-config-next": "^14.2.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.0.0"
   },
   "bin": {
@@ -50,7 +52,16 @@
     "url": "https://github.com/rgourley/mdskills/issues"
   },
   "homepage": "https://mdskills.ai",
-  "keywords": ["ai", "skills", "agents", "markdown", "cli", "mcp", "claude", "md"],
+  "keywords": [
+    "ai",
+    "skills",
+    "agents",
+    "markdown",
+    "cli",
+    "mcp",
+    "claude",
+    "md"
+  ],
   "author": "Rob Gourley",
   "license": "MIT"
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
 import { CopyButton } from '@/components/CopyButton'
 import { Tag, Monitor, Terminal } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
@@ -13,91 +14,27 @@ function stripFrontmatter(content: string): string {
   return content.replace(/^---\n[\s\S]*?\n---\n?/, '').trim()
 }
 
-/** Render markdown-ish content as styled HTML (headings, code blocks, lists, paragraphs) */
+/** Strip HTML tags from content (e.g. <p align="center">) and convert to plain text */
+function stripHtml(content: string): string {
+  return content
+    .replace(/<p[^>]*>/gi, '')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+    .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+    .replace(/<a\s+href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+    .replace(/<[^>]+>/g, '')
+}
+
+/** Render markdown content with react-markdown */
 function SkillContent({ content }: { content: string }) {
-  const lines = stripFrontmatter(content).split('\n')
-  const elements: React.ReactNode[] = []
-  let i = 0
+  const cleaned = stripHtml(stripFrontmatter(content))
 
-  while (i < lines.length) {
-    const line = lines[i]
-
-    // Code blocks
-    if (line.startsWith('```')) {
-      const codeLines: string[] = []
-      i++
-      while (i < lines.length && !lines[i].startsWith('```')) {
-        codeLines.push(lines[i])
-        i++
-      }
-      i++ // skip closing ```
-      elements.push(
-        <pre key={`code-${i}`} className="p-4 rounded-lg bg-neutral-900 text-white text-sm font-mono overflow-x-auto my-4">
-          <code>{codeLines.join('\n')}</code>
-        </pre>
-      )
-      continue
-    }
-
-    // Headings
-    if (line.startsWith('### ')) {
-      elements.push(<h4 key={`h4-${i}`} className="text-base font-semibold text-neutral-900 mt-6 mb-2">{line.slice(4)}</h4>)
-      i++
-      continue
-    }
-    if (line.startsWith('## ')) {
-      elements.push(<h3 key={`h3-${i}`} className="text-lg font-semibold text-neutral-900 mt-8 mb-3">{line.slice(3)}</h3>)
-      i++
-      continue
-    }
-    if (line.startsWith('# ')) {
-      // Skip the top-level heading (it's already the page title)
-      i++
-      continue
-    }
-
-    // List items
-    if (line.match(/^[-*] /)) {
-      const listItems: string[] = []
-      while (i < lines.length && lines[i].match(/^[-*] /)) {
-        listItems.push(lines[i].replace(/^[-*] /, ''))
-        i++
-      }
-      elements.push(
-        <ul key={`ul-${i}`} className="list-disc list-inside space-y-1 text-neutral-600 my-2">
-          {listItems.map((item, j) => <li key={j}>{item}</li>)}
-        </ul>
-      )
-      continue
-    }
-
-    // Numbered list items
-    if (line.match(/^\d+\. /)) {
-      const listItems: string[] = []
-      while (i < lines.length && lines[i].match(/^\d+\. /)) {
-        listItems.push(lines[i].replace(/^\d+\. /, ''))
-        i++
-      }
-      elements.push(
-        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-1 text-neutral-600 my-2">
-          {listItems.map((item, j) => <li key={j}>{item}</li>)}
-        </ol>
-      )
-      continue
-    }
-
-    // Empty lines
-    if (line.trim() === '') {
-      i++
-      continue
-    }
-
-    // Regular paragraphs
-    elements.push(<p key={`p-${i}`} className="text-neutral-600 leading-relaxed my-2">{line}</p>)
-    i++
-  }
-
-  return <div>{elements}</div>
+  return (
+    <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-800 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-neutral-900 prose-pre:text-white prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
+      <ReactMarkdown>{cleaned}</ReactMarkdown>
+    </div>
+  )
 }
 
 export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProps) {

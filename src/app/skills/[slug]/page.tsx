@@ -8,7 +8,6 @@ import { SkillDetailTabs, type TabId } from '@/components/SkillDetailTabs'
 import { SkillOverviewTab } from '@/components/SkillOverviewTab'
 import { SkillSourceCode } from '@/components/SkillSourceCode'
 import { SkillInstallationTab } from '@/components/SkillInstallationTab'
-import { SkillExamplesTab } from '@/components/SkillExamplesTab'
 import { SkillForksTab } from '@/components/SkillForksTab'
 import { SkillCommentsTab } from '@/components/SkillCommentsTab'
 import { SkillActions } from '@/components/SkillActions'
@@ -70,7 +69,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
     `npx mdskills install ${skill.owner}/${skill.slug}`,
     await getSkillClients(skill.id),
   ]
-  const validTabs = ['overview', 'source', 'installation', 'examples', 'forks', 'comments'] as const
+  const validTabs = ['overview', 'source', 'installation', 'forks', 'comments'] as const
   const activeTab: TabId = tab && (validTabs as readonly string[]).includes(tab) ? (tab as TabId) : 'overview'
 
   return (
@@ -134,7 +133,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           <SkillDetailTabs
             activeTab={activeTab}
             hasPlugin={skill.hasPlugin}
-            hasExamples={skill.hasExamples}
+
             forksCount={skill.forksCount ?? 0}
             commentsCount={skill.commentsCount ?? 0}
           />
@@ -157,7 +156,6 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             {activeTab === 'installation' && (
               <SkillInstallationTab skill={skill} installCommand={installCommand} clients={skillClients} />
             )}
-            {activeTab === 'examples' && <SkillExamplesTab skill={skill} />}
             {activeTab === 'forks' && <SkillForksTab forksCount={skill.forksCount} />}
             {activeTab === 'comments' && <SkillCommentsTab commentsCount={skill.commentsCount} />}
           </div>
