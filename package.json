@@ -22,7 +22,8 @@
     "seed:interface-design": "tsx scripts/seed-interface-design.ts",
     "seed:clients": "tsx scripts/seed-listing-clients.ts",
     "seed:examples": "tsx scripts/seed-examples.ts",
-    "seed:skills": "tsx scripts/seed-skills.ts"
+    "seed:skills": "tsx scripts/seed-skills.ts",
+    "backfill:categories": "tsx scripts/backfill-categories.ts"
   },
   "dependencies": {
     "@octokit/rest": "^20.0.2",
