@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
-import { Download, Terminal, GitFork, ThumbsUp, Share2 } from 'lucide-react'
+import { Download, Terminal, GitFork, ThumbsUp, Share2, ExternalLink } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 
 interface SkillActionsProps {
@@ -43,13 +43,25 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
       <div>
         <p className="text-sm font-medium text-neutral-700 mb-3">Add this skill</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            onClick={handleDownload}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
-          >
-            <Download className="w-4 h-4 shrink-0" />
-            Download
-          </button>
+          {skill.hasPlugin && skill.githubUrl ? (
+            <a
+              href={skill.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
+            >
+              <ExternalLink className="w-4 h-4 shrink-0" />
+              View on GitHub
+            </a>
+          ) : (
+            <button
+              onClick={handleDownload}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
+            >
+              <Download className="w-4 h-4 shrink-0" />
+              Download
+            </button>
+          )}
           <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#f6f8fa] border border-neutral-200 text-neutral-800">
             <Terminal className="w-4 h-4 shrink-0" />
             <code className="text-sm font-mono truncate flex-1 min-w-0">{installCommand}</code>
