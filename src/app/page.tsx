@@ -4,6 +4,7 @@ import { SkillCard } from '@/components/SkillCard'
 import { CopyButton } from '@/components/CopyButton'
 import { AgentStrip } from '@/components/AgentStrip'
 import { getFeaturedSkills, getPluginSkills } from '@/lib/skills'
+import { getCategories } from '@/lib/categories'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -21,7 +22,11 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 export default async function HomePage() {
-  const [skills, pluginSkills] = await Promise.all([getFeaturedSkills(), getPluginSkills(6)])
+  const [skills, pluginSkills, categories] = await Promise.all([
+    getFeaturedSkills(),
+    getPluginSkills(6),
+    getCategories(),
+  ])
 
   return (
     <div>
@@ -124,6 +129,85 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Browse by Category */}
+      {categories.length > 0 && (
+        <section className="py-16 sm:py-20 border-t border-neutral-200">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <h2 className="text-2xl font-semibold text-neutral-900">Browse by Category</h2>
+                <p className="mt-1 text-neutral-600">Find skills for your specific use case</p>
+              </div>
+              <Link href="/use-cases" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                All categories →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categories.filter(c => (c.skillCount ?? 0) > 0).map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/skills?category=${category.slug}`}
+                  className="group flex items-start gap-4 p-5 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md transition-all"
+                >
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-neutral-100 group-hover:bg-neutral-200 flex items-center justify-center text-lg transition-colors">
+                    {category.icon || '📦'}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-neutral-900 group-hover:text-blue-600 transition-colors">
+                      {category.name}
+                    </h3>
+                    {category.description && (
+                      <p className="mt-0.5 text-sm text-neutral-500 line-clamp-1">{category.description}</p>
+                    )}
+                    <p className="mt-1 text-xs text-neutral-400">
+                      {category.skillCount} {category.skillCount === 1 ? 'skill' : 'skills'}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* What are AI Agent Skills? — SEO explainer */}
+      <section className="py-16 sm:py-20 border-t border-neutral-200 bg-neutral-50/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="max-w-3xl">
+            <h2 className="text-2xl font-semibold text-neutral-900">What are AI Agent Skills?</h2>
+            <div className="mt-6 space-y-4 text-neutral-600">
+              <p>
+                AI agent skills are reusable instruction sets that extend what tools like Claude Code, Cursor, Codex, and other AI coding agents can do. Defined in a standard <code className="px-1.5 py-0.5 bg-neutral-100 rounded text-sm text-neutral-700">SKILL.md</code> file, each skill teaches an AI agent how to handle a specific task — from generating PDFs and building MCP servers to writing Stripe integrations and designing interfaces.
+              </p>
+              <p>
+                Think of skills like plugins for your AI assistant. Instead of repeatedly prompting an agent with the same instructions, you install a skill once and it activates automatically when relevant. A PDF skill knows how to read, merge, split, and create PDF files. A testing skill knows Playwright patterns and browser automation. A design skill enforces consistent spacing, typography, and component architecture.
+              </p>
+              <p>
+                Skills are open source, free to use, and community-driven. Anyone can create a skill, publish it to GitHub, and share it here. The <code className="px-1.5 py-0.5 bg-neutral-100 rounded text-sm text-neutral-700">SKILL.md</code> format is an open standard — it works across AI agents, not just one platform.
+              </p>
+            </div>
+
+            <h3 className="mt-10 text-lg font-semibold text-neutral-900">How to install a skill</h3>
+            <div className="mt-4 space-y-4 text-neutral-600">
+              <p>
+                Most skills can be installed in one command. Browse the marketplace, find a skill you need, and run the install command in your terminal. The skill files are added to your project and your AI agent picks them up automatically.
+              </p>
+              <div className="p-4 rounded-xl bg-[#f6f8fa] border border-neutral-200">
+                <code className="font-mono text-sm text-neutral-800">npx mdskills install owner/skill-name</code>
+              </div>
+              <p>
+                Skills work with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, Gemini CLI, and many other AI coding tools. Each skill listing shows which platforms are supported and includes platform-specific installation instructions.
+              </p>
+            </div>
+
+            <h3 className="mt-10 text-lg font-semibold text-neutral-900">Create your own skill</h3>
+            <p className="mt-4 text-neutral-600">
+              Building a skill is as simple as writing a markdown file. Define when the skill should activate, what instructions the AI should follow, and any examples or constraints. Publish it to GitHub and <Link href="/submit" className="text-blue-600 hover:text-blue-700 underline">submit it to the marketplace</Link> so others can find and use it.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* CTA */}
       <section className="py-16 border-t border-neutral-200 bg-neutral-50">
