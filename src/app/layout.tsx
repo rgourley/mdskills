@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: 'mdskills.ai — AI Agent Skills Marketplace',
-    template: '%s — mdskills.ai',
+    template: '%s | mdskills.ai',
   },
   description: DEFAULT_DESCRIPTION,
   keywords: ['AI skills', 'agent skills', 'SKILL.md', 'MCP servers', 'Claude Code', 'Cursor', 'Codex', 'AI agents', 'AI tools', 'skills marketplace', 'AGENTS.md', 'AI automation'],
