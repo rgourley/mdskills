@@ -3,10 +3,10 @@ import Image from 'next/image'
 import { SkillCard } from '@/components/SkillCard'
 import { CopyButton } from '@/components/CopyButton'
 import { AgentStrip } from '@/components/AgentStrip'
-import { getFeaturedSkills } from '@/lib/skills'
+import { getFeaturedSkills, getPluginSkills } from '@/lib/skills'
 
 export default async function HomePage() {
-  const skills = await getFeaturedSkills()
+  const [skills, pluginSkills] = await Promise.all([getFeaturedSkills(), getPluginSkills(6)])
 
   return (
     <div>
@@ -38,13 +38,13 @@ export default async function HomePage() {
                   href="/skills"
                   className="inline-flex items-center px-6 py-3 bg-neutral-900 text-white font-medium rounded-lg hover:bg-neutral-800 transition-colors"
                 >
-                  Browse Skills
+                  Explore
                 </Link>
                 <Link
-                  href="/create"
+                  href="/submit"
                   className="inline-flex items-center px-6 py-3 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors"
                 >
-                  Create Skill
+                  Submit
                 </Link>
               </div>
               <AgentStrip />
@@ -88,18 +88,40 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Claude Code Plugins */}
+      {pluginSkills.length > 0 && (
+        <section className="py-16 sm:py-20 border-t border-neutral-200 bg-neutral-50/50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <h2 className="text-2xl font-semibold text-neutral-900">Claude Code Plugins</h2>
+                <p className="mt-1 text-neutral-600">Skills with plugin support for full features in Claude Code</p>
+              </div>
+              <Link href="/skills?plugin=1" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                View all plugins →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pluginSkills.map((skill) => (
+                <SkillCard key={skill.id} skill={skill} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* CTA */}
       <section className="py-16 border-t border-neutral-200 bg-neutral-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-2xl font-semibold text-neutral-900">Ready to create?</h2>
+          <h2 className="text-2xl font-semibold text-neutral-900">Ready to contribute?</h2>
           <p className="mt-4 text-neutral-600 max-w-xl mx-auto">
-            Create skills in your browser — no Git or GitHub required. Publish to the ecosystem when you&apos;re ready.
+            Share your skills, MCP servers, workflows, and rulesets with the ecosystem.
           </p>
           <Link
-            href="/create"
+            href="/submit"
             className="mt-8 inline-flex items-center px-6 py-3 bg-neutral-900 text-white font-medium rounded-lg hover:bg-neutral-800 transition-colors"
           >
-            Create Your First Skill
+            Submit a Listing
           </Link>
         </div>
       </section>

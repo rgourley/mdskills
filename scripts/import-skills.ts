@@ -64,6 +64,21 @@ function parseGithubUrl(url: string): { owner: string; repo: string } {
   return { owner: match[1], repo: match[2] };
 }
 
+/** Extract a short description from README: first paragraph or block before ##, strip markdown. */
+function descriptionFromReadme(readme: string | null, maxLen: number = 400): string {
+  if (!readme) return '';
+  const withoutTitle = readme.replace(/^#\s+.+?\n+/m, '').trim();
+  const firstBlock = withoutTitle.split(/\n##\s|\n\n\n/)[0];
+  if (!firstBlock) return '';
+  const plain = firstBlock
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+    .replace(/[*_`#]/g, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+  return plain.slice(0, maxLen);
+}
+
 /** Unique slug per (owner, repo, path) to avoid duplicates. */
 function buildSlug(owner: string, repo: string, skillPath: string): string {
   const pathPart = (skillPath || 'root').replace(/\//g, '-').replace(/^-|-$/g, '');
@@ -111,24 +126,6 @@ async function getCategoryId(slug: string): Promise<string | null> {
   return data?.id ?? null;
 }
 
-function createDefaultSkillMd(displayName: string, description: string): string {
-  return `# ${displayName}
-
-## Description
-${description || 'AI skill for enhanced productivity'}
-
-## Instructions
-1. Analyze the input
-2. Process according to requirements
-3. Return formatted results
-
-## Output Format
-- Clear, structured response
-- Actionable insights
-- Relevant examples
-`;
-}
-
 async function importSkill(
   config: (typeof SKILLS_TO_IMPORT)[0],
   index: number
@@ -145,22 +142,27 @@ async function importSkill(
   }
   console.log(`  ✓ Fetched metadata (${metadata.stars} stars)`);
 
-  const possiblePaths = [
+  // Only accept real SKILL.md / skill.md — do not use README as skill content
+  const skillOnlyPaths = [
     skillPath ? `${skillPath}/SKILL.md` : 'SKILL.md',
     skillPath ? `${skillPath}/skill.md` : 'skill.md',
-    skillPath ? `${skillPath}/README.md` : 'README.md',
   ];
   let skillContent: string | null = null;
-  for (const path of possiblePaths) {
+  for (const path of skillOnlyPaths) {
     skillContent = await fetchFileContent(owner, repo, path);
     if (skillContent) {
-      console.log(`  ✓ Fetched content from ${path} (${skillContent.length} chars)`);
+      console.log(`  ✓ Fetched SKILL content from ${path} (${skillContent.length} chars)`);
       break;
     }
   }
 
+  if (!skillContent) {
+    console.log(`  ✗ Skipping - no SKILL.md or skill.md found (not a skill)`);
+    return false;
+  }
+
   const readmePath = skillPath ? `${skillPath}/README.md` : 'README.md';
-  const readme = skillContent || (await fetchFileContent(owner, repo, readmePath));
+  const readme = await fetchFileContent(owner, repo, readmePath);
   const readmeHeading = readme?.match(/^#\s+(.+)/m)?.[1];
 
   const slug = buildSlug(owner, repo, skillPath);
@@ -173,13 +175,14 @@ async function importSkill(
     return false;
   }
 
-  const descMatch = skillContent?.match(/##\s+Description\s+([\s\S]+?)(?=\n##|$)/);
-  const description = (descMatch?.[1].trim() || metadata.description || displayName).slice(0, 500);
-
-  if (!skillContent) {
-    console.log(`  ⚠ No SKILL.md found, using default template`);
-    skillContent = createDefaultSkillMd(displayName, description);
-  }
+  const descFromSkill = skillContent.match(/##\s+Description\s+([\s\S]+?)(?=\n##|$)/)?.[1].trim();
+  const descFromReadme = descriptionFromReadme(readme);
+  const description = (
+    descFromSkill ||
+    descFromReadme ||
+    metadata.description ||
+    displayName
+  ).replace(/\n+/g, ' ').trim().slice(0, 500);
 
   const githubUrlFull =
     skillPath
@@ -207,6 +210,12 @@ async function importSkill(
     weekly_installs: 0,
     mdskills_upvotes: 0,
     mdskills_forks: 0,
+    artifact_type: 'skill_pack',
+    perm_filesystem_read: false,
+    perm_filesystem_write: false,
+    perm_shell_exec: false,
+    perm_network_access: false,
+    perm_git_write: false,
   });
 
   if (error) {
@@ -218,6 +227,25 @@ async function importSkill(
     return false;
   }
   console.log(`  ✓ Saved to database`);
+
+  // Populate listing_clients for default clients
+  const { data: skillRow } = await supabase.from('skills').select('id').eq('slug', slug).single();
+  if (skillRow) {
+    const defaultClients = ['claude-code', 'cursor', 'codex'];
+    for (const clientSlug of defaultClients) {
+      const { data: client } = await supabase.from('clients').select('id').eq('slug', clientSlug).single();
+      if (client) {
+        await supabase.from('listing_clients').upsert({
+          skill_id: skillRow.id,
+          client_id: client.id,
+          install_instructions: `npx mdskills install ${owner}/${slug}`,
+          is_primary: clientSlug === 'claude-code',
+        }, { onConflict: 'skill_id,client_id' });
+      }
+    }
+    console.log(`  ✓ Linked to ${defaultClients.length} clients`);
+  }
+
   return true;
 }
 

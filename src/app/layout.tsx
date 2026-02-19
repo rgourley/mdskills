@@ -7,8 +7,8 @@ import { Footer } from '@/components/Footer'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'mdskills.ai — AI Skills Marketplace',
-  description: 'Discover, create, fork, and share reusable AI agent skills for Claude, Codex, Cursor, and 18+ AI agents.',
+  title: 'mdskills.ai — AI Capability Marketplace',
+  description: 'Discover and install AI skills, MCP servers, workflows, and rulesets for Claude Code, Cursor, ChatGPT, and 20+ AI agents.',
 }
 
 export default function RootLayout({

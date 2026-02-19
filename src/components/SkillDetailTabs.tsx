@@ -2,28 +2,38 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { FileText, Code, GitFork, MessageCircle } from 'lucide-react'
+import { FileText, Code, Download, ImageIcon, GitFork, MessageCircle } from 'lucide-react'
 
-export type TabId = 'overview' | 'source' | 'forks' | 'comments'
+export type TabId = 'overview' | 'source' | 'installation' | 'examples' | 'forks' | 'comments'
 
 interface SkillDetailTabsProps {
   activeTab: TabId
+  hasPlugin?: boolean
+  hasExamples?: boolean
   forksCount?: number
   commentsCount?: number
 }
 
-const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
+const BASE_TABS: { id: TabId; label: string; icon: React.ElementType; pluginOnly?: boolean }[] = [
   { id: 'overview', label: 'Overview', icon: FileText },
   { id: 'source', label: 'Source Code', icon: Code },
+  { id: 'installation', label: 'Installation', icon: Download },
+  { id: 'examples', label: 'Examples', icon: ImageIcon, pluginOnly: true },
   { id: 'forks', label: 'Forks', icon: GitFork },
   { id: 'comments', label: 'Comments', icon: MessageCircle },
 ]
 
-export function SkillDetailTabs({ activeTab, forksCount = 0, commentsCount = 0 }: SkillDetailTabsProps) {
+export function SkillDetailTabs({ activeTab, hasPlugin, hasExamples, forksCount = 0, commentsCount = 0 }: SkillDetailTabsProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const getTabLabel = (tab: (typeof TABS)[0]) => {
+  const tabs = BASE_TABS.filter((tab) => {
+    if (tab.pluginOnly && tab.id === 'installation') return !!hasPlugin
+    if (tab.pluginOnly && tab.id === 'examples') return !!hasExamples
+    return true
+  })
+
+  const getTabLabel = (tab: (typeof BASE_TABS)[0]) => {
     if (tab.id === 'forks') return `Forks (${forksCount})`
     if (tab.id === 'comments') return `Comments (${commentsCount})`
     return tab.label
@@ -31,8 +41,8 @@ export function SkillDetailTabs({ activeTab, forksCount = 0, commentsCount = 0 }
 
   return (
     <div className="border-b border-neutral-200">
-      <nav className="flex gap-1 -mb-px" aria-label="Skill detail tabs">
-        {TABS.map((tab) => {
+      <nav className="flex gap-1 -mb-px overflow-x-auto" aria-label="Skill detail tabs">
+        {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
           const href = tab.id === 'overview' ? pathname : `${pathname}?tab=${tab.id}`

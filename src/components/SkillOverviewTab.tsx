@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
-import { Tag, Monitor } from 'lucide-react'
+import { Tag, Monitor, Terminal } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 
 interface SkillOverviewTabProps {
@@ -9,11 +9,26 @@ interface SkillOverviewTabProps {
 }
 
 export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProps) {
+  const pluginCommand = skill.hasPlugin ? `/plugin marketplace add ${skill.owner}/${skill.slug}` : null
+
   return (
     <div className="space-y-10">
       {/* Quick Start */}
       <section>
         <h3 className="text-sm font-semibold text-neutral-900 mb-3">Quick Start</h3>
+        {skill.hasPlugin && pluginCommand && (
+          <>
+            <p className="text-sm font-medium text-neutral-700 mb-2">Best experience: Claude Code</p>
+            <div className="p-4 rounded-xl bg-neutral-900 text-white mb-4">
+              <div className="flex items-center gap-3">
+                <code className="flex-1 font-mono text-sm break-all">{pluginCommand}</code>
+                <CopyButton text={pluginCommand} />
+              </div>
+              <p className="text-xs text-neutral-400 mt-2">Then /plugin menu → select skill → restart. Use /skill-name:init for first-time setup.</p>
+            </div>
+            <p className="text-sm font-medium text-neutral-700 mb-2">Other platforms</p>
+          </>
+        )}
         <div className="p-6 rounded-xl bg-neutral-900 text-white">
           <p className="text-sm font-medium text-neutral-300 mb-3">Install via CLI</p>
           <div className="flex items-center gap-3">

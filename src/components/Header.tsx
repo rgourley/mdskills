@@ -10,16 +10,22 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-6">
           <Link href="/skills" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
-            Browse
+            Explore
           </Link>
-          <Link href="/skills" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
-            Search
+          <Link href="/use-cases" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+            Use Cases
+          </Link>
+          <Link href="/docs" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+            Docs
+          </Link>
+          <Link href="/clients" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+            Clients
           </Link>
           <Link
-            href="/create"
+            href="/submit"
             className="text-sm font-medium px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors"
           >
-            Create Skill
+            Submit
           </Link>
         </nav>
       </div>

@@ -4,12 +4,17 @@
   "description": "AI skills marketplace - find, branch, vote, upload and download AI agent skills",
   "private": true,
   "scripts": {
-    "dev": "npx next dev",
+    "dev": "npx next dev -p 3002",
     "build": "npx next build",
     "start": "npx next start",
     "lint": "npx next lint",
     "cli": "node bin/mdskills.js",
-    "import": "tsx scripts/import-skills.ts"
+    "import": "tsx scripts/import-skills.ts",
+    "clear:skills": "tsx scripts/clear-skills.ts",
+    "seed:fake": "tsx scripts/seed-fake-skill.ts",
+    "seed:interface-design": "tsx scripts/seed-interface-design.ts",
+    "seed:clients": "tsx scripts/seed-listing-clients.ts",
+    "seed:examples": "tsx scripts/seed-examples.ts"
   },
   "dependencies": {
     "next": "^14.2.0",

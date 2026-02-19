@@ -1,0 +1,161 @@
+import Link from 'next/link'
+import { BookOpen, Puzzle, Server, FileText, ExternalLink } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Docs — mdskills.ai',
+  description: 'Understanding the AI agent ecosystem: rules, skills, and tools.',
+}
+
+const LAYERS = [
+  {
+    title: 'Rules',
+    icon: FileText,
+    color: 'bg-amber-50 text-amber-700',
+    description: 'Project-wide constraints that apply to every task. Rules tell agents what to always (or never) do — coding conventions, safety constraints, testing requirements.',
+    formats: ['CLAUDE.md', '.cursorrules', 'AGENTS.md', 'GEMINI.md', '.clinerules', 'copilot-instructions.md'],
+    note: 'AGENTS.md is now an open standard under the Linux Foundation, used by 60,000+ repositories.',
+    links: [
+      { label: 'AGENTS.md', href: 'https://agents.md' },
+    ],
+  },
+  {
+    title: 'Skills',
+    icon: Puzzle,
+    color: 'bg-blue-50 text-blue-700',
+    description: 'Modular capabilities that agents load on demand. Skills package procedural knowledge — how to generate release notes, process PDFs, design interfaces — into reusable SKILL.md files.',
+    formats: ['SKILL.md'],
+    note: 'The Agent Skills format (agentskills.io) is supported by 27+ AI agents including Claude Code, Cursor, Codex, Gemini CLI, and VS Code.',
+    links: [
+      { label: 'agentskills.io', href: 'https://agentskills.io' },
+      { label: 'What are Skills?', href: '/docs/what-are-skills', internal: true },
+    ],
+  },
+  {
+    title: 'Tools & Servers',
+    icon: Server,
+    color: 'bg-green-50 text-green-700',
+    description: 'External capabilities that let agents take action — call APIs, query databases, search the web. MCP (Model Context Protocol) is the emerging standard for connecting agents to tools.',
+    formats: ['MCP Servers', 'OpenAPI Actions', 'IDE Extensions'],
+    note: 'MCP provides a standardized way for agents to discover and use tools, similar to how USB standardized hardware peripherals.',
+    links: [
+      { label: 'MCP Protocol', href: 'https://modelcontextprotocol.io' },
+    ],
+  },
+]
+
+export default function DocsPage() {
+  return (
+    <div className="py-12 sm:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-neutral-900">
+            Understanding the AI Agent Ecosystem
+          </h1>
+          <p className="mt-3 text-lg text-neutral-600">
+            AI agents are configured through three distinct layers. Understanding them helps you find the right tool — and build the right thing.
+          </p>
+        </div>
+
+        {/* The 3 Layers */}
+        <div className="space-y-6">
+          {LAYERS.map((layer) => {
+            const Icon = layer.icon
+            return (
+              <div key={layer.title} className="p-6 rounded-xl border border-neutral-200 bg-white">
+                <div className="flex items-start gap-4">
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${layer.color} flex items-center justify-center`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-lg font-semibold text-neutral-900">{layer.title}</h2>
+                    <p className="mt-2 text-neutral-600">{layer.description}</p>
+
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {layer.formats.map((f) => (
+                        <span key={f} className="px-2 py-0.5 rounded-md bg-neutral-100 text-xs font-mono text-neutral-700">
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+
+                    <p className="mt-3 text-sm text-neutral-500">{layer.note}</p>
+
+                    <div className="mt-3 flex flex-wrap gap-4">
+                      {layer.links.map((link) =>
+                        'internal' in link ? (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                          >
+                            {link.label} &rarr;
+                          </Link>
+                        ) : (
+                          <a
+                            key={link.href}
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                          >
+                            {link.label}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* How they work together */}
+        <div className="mt-12 p-6 rounded-xl bg-neutral-50 border border-neutral-200">
+          <h2 className="text-lg font-semibold text-neutral-900">How they work together</h2>
+          <p className="mt-2 text-neutral-600">
+            Rules are universal constraints (&ldquo;never commit .env files&rdquo;). Skills are optional expertise loaded when needed
+            (&ldquo;how to generate release notes in our format&rdquo;). Tools are external capabilities (&ldquo;search the web&rdquo; or &ldquo;query the database&rdquo;).
+          </p>
+          <p className="mt-2 text-neutral-600">
+            A well-configured agent uses all three: rules set boundaries, skills provide domain knowledge, and tools let it take action.
+          </p>
+        </div>
+
+        {/* Navigation cards */}
+        <div className="mt-12 grid sm:grid-cols-2 gap-6">
+          <Link
+            href="/docs/what-are-skills"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                What are Agent Skills?
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              Learn about the SKILL.md format, progressive disclosure, and how agents discover and use skills.
+            </p>
+          </Link>
+          <Link
+            href="/docs/create-a-skill"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <FileText className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                Create an Agent Skill
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              Step-by-step guide to writing, validating, and publishing your first SKILL.md.
+            </p>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}

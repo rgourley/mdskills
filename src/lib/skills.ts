@@ -8,6 +8,7 @@ export interface Skill {
   owner: string
   repo: string
   skillPath: string
+  githubUrl?: string
   weeklyInstalls: number
   tags: string[]
   platforms: string[]
@@ -16,6 +17,25 @@ export interface Skill {
   commentsCount?: number
   updatedAt?: string
   skillContent?: string
+  /** 'skill' | 'plugin' | 'hybrid' */
+  skillType?: string
+  hasPlugin?: boolean
+  hasExamples?: boolean
+  difficulty?: string
+  categorySlug?: string
+  categoryName?: string
+  githubStars?: number
+  githubForks?: number
+  license?: string
+  /** 'skill_pack' | 'mcp_server' | 'workflow_pack' | 'ruleset' | 'openapi_action' | 'extension' | 'template_bundle' */
+  artifactType?: string
+  permFilesystemRead?: boolean
+  permFilesystemWrite?: boolean
+  permShellExec?: boolean
+  permNetworkAccess?: boolean
+  permGitWrite?: boolean
+  /** 'skill_md' | 'agents_md' | 'claude_md' | 'cursorrules' | 'copilot_instructions' | 'gemini_md' | 'clinerules' | 'windsurf_rules' | 'mdc' | 'generic' */
+  formatStandard?: string
 }
 
 /** DB row shape (snake_case) */
@@ -36,9 +56,30 @@ interface SkillRow {
   content: string | null
   mdskills_upvotes: number | null
   mdskills_forks: number | null
+  skill_type?: string | null
+  has_plugin?: boolean | null
+  has_examples?: boolean | null
+  difficulty?: string | null
+  category_id?: string | null
+  github_stars?: number | null
+  github_forks?: number | null
+  license?: string | null
+  categories?: { slug: string; name: string } | { slug: string; name: string }[] | null
+  artifact_type?: string | null
+  perm_filesystem_read?: boolean | null
+  perm_filesystem_write?: boolean | null
+  perm_shell_exec?: boolean | null
+  perm_network_access?: boolean | null
+  perm_git_write?: boolean | null
+  format_standard?: string | null
 }
 
+/** Select columns used in all skill queries */
+const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, categories(slug, name)'
+
 function mapRow(row: SkillRow, commentsCount?: number): Skill {
+  // categories comes back as an array from Supabase joins — normalize to single object
+  const cat = Array.isArray(row.categories) ? row.categories[0] : row.categories
   return {
     id: row.id,
     slug: row.slug,
@@ -47,6 +88,7 @@ function mapRow(row: SkillRow, commentsCount?: number): Skill {
     owner: row.owner,
     repo: row.repo,
     skillPath: row.skill_path,
+    githubUrl: row.github_url ?? undefined,
     weeklyInstalls: row.weekly_installs ?? 0,
     tags: row.tags ?? [],
     platforms: row.platforms ?? [],
@@ -55,6 +97,22 @@ function mapRow(row: SkillRow, commentsCount?: number): Skill {
     commentsCount,
     updatedAt: row.updated_at ? formatRelativeTime(row.updated_at) : undefined,
     skillContent: row.content ?? undefined,
+    skillType: row.skill_type ?? undefined,
+    hasPlugin: row.has_plugin ?? undefined,
+    hasExamples: row.has_examples ?? undefined,
+    difficulty: row.difficulty ?? undefined,
+    categorySlug: cat?.slug ?? undefined,
+    categoryName: cat?.name ?? undefined,
+    githubStars: row.github_stars ?? undefined,
+    githubForks: row.github_forks ?? undefined,
+    license: row.license ?? undefined,
+    artifactType: row.artifact_type ?? undefined,
+    permFilesystemRead: row.perm_filesystem_read ?? undefined,
+    permFilesystemWrite: row.perm_filesystem_write ?? undefined,
+    permShellExec: row.perm_shell_exec ?? undefined,
+    permNetworkAccess: row.perm_network_access ?? undefined,
+    permGitWrite: row.perm_git_write ?? undefined,
+    formatStandard: row.format_standard ?? undefined,
   }
 }
 
@@ -76,39 +134,89 @@ export async function getFeaturedSkills(): Promise<Skill[]> {
 
   const { data, error } = await supabase
     .from('skills')
-    .select('id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks')
+    .select(SKILL_SELECT)
     .or('status.eq.published,status.is.null')
     .order('featured', { ascending: false })
     .order('weekly_installs', { ascending: false })
     .limit(6)
 
   if (error || !data?.length) return []
-  return data.map((row) => mapRow(row as SkillRow))
+  return data.map((row) => mapRow(row as unknown as SkillRow))
 }
 
-export async function getSkills(query?: string, tags?: string[]): Promise<Skill[]> {
+export interface GetSkillsOptions {
+  query?: string
+  tags?: string[]
+  categorySlug?: string
+  artifactType?: string
+  clientSlug?: string
+  sort?: 'trending' | 'popular' | 'recent'
+}
+
+export async function getSkills(opts?: GetSkillsOptions): Promise<Skill[]> {
   const supabase = await createClient()
   if (!supabase) return []
 
   let q = supabase
     .from('skills')
-    .select('id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks')
+    .select(SKILL_SELECT)
     .or('status.eq.published,status.is.null')
-    .order('weekly_installs', { ascending: false })
 
-  if (query?.trim()) {
-    const safe = query.trim().toLowerCase().replace(/,/g, ' ')
+  if (opts?.query?.trim()) {
+    const safe = opts.query.trim().toLowerCase().replace(/,/g, ' ')
     const term = `%${safe}%`
     q = q.or(`name.ilike.${term},description.ilike.${term}`)
   }
-  if (tags?.length) {
-    q = q.overlaps('tags', tags)
+  if (opts?.tags?.length) {
+    q = q.overlaps('tags', opts.tags)
+  }
+  if (opts?.artifactType?.trim()) {
+    q = q.eq('artifact_type', opts.artifactType.trim())
+  }
+
+  // Run sub-queries in parallel if needed (category lookup + client filter)
+  const [catId, clientSkillIds] = await Promise.all([
+    opts?.categorySlug?.trim()
+      ? supabase.from('categories').select('id').eq('slug', opts.categorySlug.trim()).single().then(({ data }) => data?.id ?? null)
+      : Promise.resolve(null),
+    opts?.clientSlug?.trim()
+      ? supabase.from('listing_clients').select('skill_id, clients!inner(slug)').eq('clients.slug', opts.clientSlug.trim()).then(({ data }) => data?.map((r: { skill_id: string }) => r.skill_id) ?? [])
+      : Promise.resolve(null),
+  ])
+
+  if (catId) q = q.eq('category_id', catId)
+  if (clientSkillIds !== null) {
+    if (clientSkillIds.length === 0) return []
+    q = q.in('id', clientSkillIds)
+  }
+
+  // Sort
+  if (opts?.sort === 'recent') {
+    q = q.order('created_at', { ascending: false })
+  } else {
+    q = q.order('weekly_installs', { ascending: false })
   }
 
   const { data, error } = await q
   if (error) return []
   if (!data?.length) return []
-  return data.map((row) => mapRow(row as SkillRow))
+  return data.map((row) => mapRow(row as unknown as SkillRow))
+}
+
+export async function getPluginSkills(limit = 6): Promise<Skill[]> {
+  const supabase = await createClient()
+  if (!supabase) return []
+
+  const { data, error } = await supabase
+    .from('skills')
+    .select(SKILL_SELECT)
+    .or('status.eq.published,status.is.null')
+    .eq('has_plugin', true)
+    .order('weekly_installs', { ascending: false })
+    .limit(limit)
+
+  if (error || !data?.length) return []
+  return data.map((row) => mapRow(row as unknown as SkillRow))
 }
 
 export async function getSkillBySlug(slug: string): Promise<Skill | null> {
@@ -117,7 +225,7 @@ export async function getSkillBySlug(slug: string): Promise<Skill | null> {
 
   const { data: row, error } = await supabase
     .from('skills')
-    .select('id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks')
+    .select(SKILL_SELECT)
     .eq('slug', slug)
     .or('status.eq.published,status.is.null')
     .single()
@@ -131,7 +239,7 @@ export async function getSkillBySlug(slug: string): Promise<Skill | null> {
     .eq('skill_id', row.id)
   commentsCount = count ?? 0
 
-  const skill = mapRow(row as SkillRow, commentsCount)
+  const skill = mapRow(row as unknown as SkillRow, commentsCount)
   if (!skill.skillContent) {
     skill.skillContent = `# ${skill.name}\n\n## Description\n${skill.description}\n\n## When to Use This Skill\n\nUse this skill when the user needs help with tasks related to this domain.\n\n## Instructions\n\nAdd your instructions here.`
   }
