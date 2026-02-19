@@ -130,10 +130,10 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
         </div>
       </section>
 
-      {/* Skill content / README */}
-      {skill.skillContent && (
+      {/* README (project overview, installation, how it works) */}
+      {(skill.readme || skill.skillContent) && (
         <section>
-          <SkillContent content={skill.skillContent} />
+          <SkillContent content={skill.readme || skill.skillContent!} />
         </section>
       )}
 

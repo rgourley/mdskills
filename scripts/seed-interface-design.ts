@@ -16,20 +16,27 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-async function fetchSkillMd(): Promise<string | null> {
-  // The SKILL.md lives at .claude/skills/interface-design/SKILL.md
-  const url = 'https://raw.githubusercontent.com/Dammyjay93/interface-design/main/.claude/skills/interface-design/SKILL.md';
+async function fetchGitHubFile(path: string): Promise<string | null> {
+  const url = `https://raw.githubusercontent.com/Dammyjay93/interface-design/main/${path}`;
   try {
     const res = await fetch(url);
     if (!res.ok) {
-      console.log(`  ⚠ HTTP ${res.status} fetching SKILL.md`);
+      console.log(`  ⚠ HTTP ${res.status} fetching ${path}`);
       return null;
     }
     return await res.text();
-  } catch (e) {
-    console.log(`  ⚠ Failed to fetch SKILL.md`);
+  } catch {
+    console.log(`  ⚠ Failed to fetch ${path}`);
     return null;
   }
+}
+
+async function fetchSkillMd(): Promise<string | null> {
+  return fetchGitHubFile('.claude/skills/interface-design/SKILL.md');
+}
+
+async function fetchReadme(): Promise<string | null> {
+  return fetchGitHubFile('README.md');
 }
 
 /** Parse YAML frontmatter */
@@ -46,14 +53,18 @@ function parseFrontmatter(content: string): { name: string; description: string 
 }
 
 async function main() {
-  console.log('Fetching real SKILL.md from Dammyjay93/interface-design...');
+  console.log('Fetching real SKILL.md and README from Dammyjay93/interface-design...');
 
-  const content = await fetchSkillMd();
+  const [content, readmeContent] = await Promise.all([
+    fetchSkillMd(),
+    fetchReadme(),
+  ]);
   if (!content) {
     console.error('Failed to fetch SKILL.md');
     process.exit(1);
   }
-  console.log(`✓ Fetched ${content.length} bytes`);
+  console.log(`✓ SKILL.md: ${content.length} bytes`);
+  console.log(`${readmeContent ? `✓ README: ${readmeContent.length} bytes` : '⚠ No README found'}`);
 
   const { name, description } = parseFrontmatter(content);
   console.log(`  Name: ${name}`);
@@ -108,6 +119,7 @@ async function main() {
     tags: ['design-systems', 'ui-design', 'frontend', 'professional-design', 'consistency', 'dashboards'],
     platforms: ['claude-code', 'claude-desktop', 'cursor', 'windsurf', 'codex'],
     content,
+    readme: readmeContent,
   };
 
   const { data, error } = await supabase

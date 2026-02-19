@@ -34,20 +34,30 @@ interface SkillDef {
   client_instructions: { slug: string; instructions: string; primary: boolean }[];
 }
 
-/** Fetch raw SKILL.md from GitHub */
-async function fetchSkillMd(owner: string, repo: string, skillPath: string): Promise<string | null> {
-  const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/${skillPath}/SKILL.md`;
+/** Fetch a raw file from GitHub */
+async function fetchGitHubFile(owner: string, repo: string, path: string): Promise<string | null> {
+  const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/${path}`;
   try {
     const res = await fetch(url);
-    if (!res.ok) {
-      console.log(`    ⚠ HTTP ${res.status} fetching ${url}`);
-      return null;
-    }
+    if (!res.ok) return null;
     return await res.text();
-  } catch (e) {
-    console.log(`    ⚠ Failed to fetch: ${url}`);
+  } catch {
     return null;
   }
+}
+
+/** Fetch SKILL.md from GitHub (tries multiple paths) */
+async function fetchSkillMd(owner: string, repo: string, skillPath: string): Promise<string | null> {
+  return await fetchGitHubFile(owner, repo, `${skillPath}/SKILL.md`);
+}
+
+/** Fetch README.md from GitHub (tries skill path first, then repo root) */
+async function fetchReadme(owner: string, repo: string, skillPath: string): Promise<string | null> {
+  // Try skill-level README first
+  const skillReadme = await fetchGitHubFile(owner, repo, `${skillPath}/README.md`);
+  if (skillReadme) return skillReadme;
+  // Fall back to repo root README
+  return await fetchGitHubFile(owner, repo, 'README.md');
 }
 
 /** Parse YAML frontmatter from SKILL.md content */
@@ -352,12 +362,16 @@ async function getCategoryId(slug: string): Promise<string | null> {
 async function seedSkill(def: SkillDef): Promise<boolean> {
   console.log(`\nFetching: ${def.owner}/${def.repo} → ${def.skill_path}`);
 
-  const rawContent = await fetchSkillMd(def.owner, def.repo, def.skill_path);
+  const [rawContent, readmeContent] = await Promise.all([
+    fetchSkillMd(def.owner, def.repo, def.skill_path),
+    fetchReadme(def.owner, def.repo, def.skill_path),
+  ]);
   if (!rawContent) {
     console.log(`  ✗ Could not fetch SKILL.md`);
     return false;
   }
-  console.log(`  ✓ Fetched ${rawContent.length} bytes`);
+  console.log(`  ✓ SKILL.md: ${rawContent.length} bytes`);
+  console.log(`  ${readmeContent ? `✓ README: ${readmeContent.length} bytes` : '⚠ No README found'}`);
 
   const { name, description, body } = parseFrontmatter(rawContent);
   const displayName = name || def.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -379,6 +393,7 @@ async function seedSkill(def: SkillDef): Promise<boolean> {
       skill_path: def.skill_path,
       github_url: `https://github.com/${def.owner}/${def.repo}/tree/main/${def.skill_path}`,
       content: rawContent,
+      readme: readmeContent,
       status: 'published',
       featured: true,
       skill_type: 'skill',

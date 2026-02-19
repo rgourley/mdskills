@@ -36,6 +36,8 @@ export interface Skill {
   permGitWrite?: boolean
   /** 'skill_md' | 'agents_md' | 'claude_md' | 'cursorrules' | 'copilot_instructions' | 'gemini_md' | 'clinerules' | 'windsurf_rules' | 'mdc' | 'generic' */
   formatStandard?: string
+  /** Project README (overview, installation, how it works) */
+  readme?: string
 }
 
 /** DB row shape (snake_case) */
@@ -72,10 +74,11 @@ interface SkillRow {
   perm_network_access?: boolean | null
   perm_git_write?: boolean | null
   format_standard?: string | null
+  readme?: string | null
 }
 
 /** Select columns used in all skill queries */
-const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, categories(slug, name)'
+const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, categories(slug, name)'
 
 function mapRow(row: SkillRow, commentsCount?: number): Skill {
   // categories comes back as an array from Supabase joins — normalize to single object
@@ -113,6 +116,7 @@ function mapRow(row: SkillRow, commentsCount?: number): Skill {
     permNetworkAccess: row.perm_network_access ?? undefined,
     permGitWrite: row.perm_git_write ?? undefined,
     formatStandard: row.format_standard ?? undefined,
+    readme: row.readme ?? undefined,
   }
 }
 
