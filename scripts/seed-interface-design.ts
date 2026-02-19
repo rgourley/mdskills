@@ -15,6 +15,28 @@ if (!supabaseUrl || !serviceRoleKey) {
 }
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
+const githubToken = process.env.GITHUB_TOKEN;
+
+/** Fetch stars/forks from GitHub API */
+async function fetchRepoStats(owner: string, repo: string): Promise<{ stars: number; forks: number }> {
+  try {
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'mdskills-seeder',
+    };
+    if (githubToken) headers['Authorization'] = `Bearer ${githubToken}`;
+
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+    if (!res.ok) return { stars: 0, forks: 0 };
+    const data = await res.json();
+    return {
+      stars: data.stargazers_count ?? 0,
+      forks: data.forks_count ?? 0,
+    };
+  } catch {
+    return { stars: 0, forks: 0 };
+  }
+}
 
 async function fetchGitHubFile(path: string): Promise<string | null> {
   const url = `https://raw.githubusercontent.com/Dammyjay93/interface-design/main/${path}`;
@@ -55,10 +77,12 @@ function parseFrontmatter(content: string): { name: string; description: string 
 async function main() {
   console.log('Fetching real SKILL.md and README from Dammyjay93/interface-design...');
 
-  const [content, readmeContent] = await Promise.all([
+  const [content, readmeContent, repoStats] = await Promise.all([
     fetchSkillMd(),
     fetchReadme(),
+    fetchRepoStats('Dammyjay93', 'interface-design'),
   ]);
+  console.log(`✓ GitHub: ${repoStats.stars} stars, ${repoStats.forks} forks`);
   if (!content) {
     console.error('Failed to fetch SKILL.md');
     process.exit(1);
@@ -106,8 +130,8 @@ async function main() {
     weekly_installs: 0,
     mdskills_upvotes: 0,
     mdskills_forks: 0,
-    github_stars: 0,
-    github_forks: 0,
+    github_stars: repoStats.stars,
+    github_forks: repoStats.forks,
     license: 'MIT',
     artifact_type: 'skill_pack',
     format_standard: 'skill_md',

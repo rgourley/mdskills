@@ -35,6 +35,8 @@ interface SkillDef {
   client_instructions: { slug: string; instructions: string; primary: boolean }[];
 }
 
+const githubToken = process.env.GITHUB_TOKEN;
+
 /** Fetch a raw file from GitHub */
 async function fetchGitHubFile(owner: string, repo: string, path: string): Promise<string | null> {
   const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/${path}`;
@@ -44,6 +46,43 @@ async function fetchGitHubFile(owner: string, repo: string, path: string): Promi
     return await res.text();
   } catch {
     return null;
+  }
+}
+
+/** Cache for repo stats (avoids repeated API calls for same repo) */
+const repoStatsCache = new Map<string, { stars: number; forks: number }>();
+
+/** Fetch stars/forks from GitHub API (cached per owner/repo) */
+async function fetchRepoStats(owner: string, repo: string): Promise<{ stars: number; forks: number }> {
+  const key = `${owner}/${repo}`;
+  if (repoStatsCache.has(key)) return repoStatsCache.get(key)!;
+
+  try {
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'mdskills-seeder',
+    };
+    if (githubToken) headers['Authorization'] = `Bearer ${githubToken}`;
+
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+    if (!res.ok) {
+      console.log(`  ⚠ GitHub API ${res.status} for ${key}, using 0 stars/forks`);
+      const fallback = { stars: 0, forks: 0 };
+      repoStatsCache.set(key, fallback);
+      return fallback;
+    }
+    const data = await res.json();
+    const stats = {
+      stars: data.stargazers_count ?? 0,
+      forks: data.forks_count ?? 0,
+    };
+    repoStatsCache.set(key, stats);
+    console.log(`  ✓ GitHub: ${stats.stars} stars, ${stats.forks} forks`);
+    return stats;
+  } catch {
+    const fallback = { stars: 0, forks: 0 };
+    repoStatsCache.set(key, fallback);
+    return fallback;
   }
 }
 
@@ -394,7 +433,10 @@ async function seedSkill(def: SkillDef): Promise<boolean> {
   console.log(`  Name: ${displayName}`);
   console.log(`  Description: ${desc.slice(0, 80)}...`);
 
-  const categoryId = await getCategoryId(def.category_slug);
+  const [categoryId, repoStats] = await Promise.all([
+    getCategoryId(def.category_slug),
+    fetchRepoStats(def.owner, def.repo),
+  ]);
 
   const { data, error } = await supabase
     .from('skills')
@@ -416,8 +458,8 @@ async function seedSkill(def: SkillDef): Promise<boolean> {
       difficulty: def.difficulty,
       category_id: categoryId,
       author_username: def.owner,
-      github_stars: 0,
-      github_forks: 0,
+      github_stars: repoStats.stars,
+      github_forks: repoStats.forks,
       license: def.license,
       weekly_installs: 0,
       mdskills_upvotes: 0,
