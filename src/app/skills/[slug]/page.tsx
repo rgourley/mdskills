@@ -35,9 +35,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const primaryPlatform = platformNames[0] || 'AI Agents'
 
   // Search-optimized title that matches user intent:
-  // People search: "claude code pdf skill", "interface design claude code", "stripe skill for cursor"
-  // Title answers: "PDF Processing — Skill for Claude Code"
-  const title = `${skill.name} — Skill for ${primaryPlatform}`
+  // "Interface Design for Claude Code & Cursor"
+  // Keep under ~55 chars so Google doesn't truncate (template adds " | mdskills.ai")
+  const platformShort = platformNames.slice(0, 2)
+  const platformStr = platformShort.join(' & ')
+  let title = `${skill.name} for ${platformStr}`
+  // If title is getting long, fall back to just primary platform
+  if (title.length > 50) {
+    title = `${skill.name} for ${primaryPlatform}`
+  }
 
   // Description: answer "what does this do and how do I get it?"
   // Clean up internal phrasing for search snippets
@@ -63,14 +69,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: fullDescription,
     alternates: { canonical: `/skills/${slug}` },
     openGraph: {
-      title: `${skill.name} — Free Skill for ${primaryPlatform} | mdskills.ai`,
+      title: `${skill.name} for ${platformStr} | mdskills.ai`,
       description: fullDescription,
       url: `/skills/${slug}`,
       type: 'article',
     },
     twitter: {
       card: 'summary',
-      title: `${skill.name} — Free Skill for ${primaryPlatform}`,
+      title: `${skill.name} for ${platformStr}`,
       description: fullDescription,
     },
     keywords: [
