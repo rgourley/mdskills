@@ -44,7 +44,7 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
     <div className="space-y-10">
       {/* Quick Start */}
       <section>
-        <h3 className="text-sm font-semibold text-neutral-900 mb-3">Quick Start</h3>
+        <h2 className="text-sm font-semibold text-neutral-900 mb-3">Quick Start</h2>
         {skill.hasPlugin && pluginCommand && (
           <>
             <p className="text-sm font-medium text-neutral-700 mb-2">Best experience: Claude Code</p>
@@ -78,9 +78,9 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
       <section className="flex flex-wrap gap-8">
         {skill.tags.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-neutral-500 flex items-center gap-2 mb-2">
+            <h2 className="text-sm font-medium text-neutral-500 flex items-center gap-2 mb-2">
               <Tag className="w-4 h-4" /> Tags
-            </h3>
+            </h2>
             <div className="flex flex-wrap gap-2">
               {skill.tags.map((tag) => (
                 <Link
@@ -96,9 +96,9 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
         )}
         {skill.platforms.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-neutral-500 flex items-center gap-2 mb-2">
+            <h2 className="text-sm font-medium text-neutral-500 flex items-center gap-2 mb-2">
               <Monitor className="w-4 h-4" /> Platforms
-            </h3>
+            </h2>
             <div className="flex flex-wrap gap-2">
               {skill.platforms.map((platform) => (
                 <span

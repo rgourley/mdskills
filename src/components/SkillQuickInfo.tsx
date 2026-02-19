@@ -35,7 +35,7 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
 
   return (
     <aside className="rounded-xl border border-neutral-200 bg-neutral-50 p-5 space-y-4">
-      <h3 className="text-sm font-semibold text-neutral-900">Quick Info</h3>
+      <h2 className="text-sm font-semibold text-neutral-900">Quick Info</h2>
       <dl className="space-y-3 text-sm">
         {/* Artifact type */}
         {skill.artifactType && (
@@ -111,7 +111,7 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
       {/* Permissions */}
       {hasAnyPermission && (
         <div className="pt-3 border-t border-neutral-200">
-          <h4 className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">Permissions</h4>
+          <h3 className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">Permissions</h3>
           <ul className="space-y-1.5">
             {skill.permFilesystemRead && (
               <li className="flex items-center gap-2 text-sm text-neutral-700">

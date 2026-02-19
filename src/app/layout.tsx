@@ -7,7 +7,7 @@ import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/JsonLd'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
-const SITE_URL = 'https://mdskills.ai'
+const SITE_URL = 'https://www.mdskills.ai'
 const SITE_NAME = 'mdskills.ai'
 const DEFAULT_DESCRIPTION = 'Discover and install AI agent skills, MCP servers, workflows, and rulesets for Claude Code, Cursor, Codex, Gemini CLI, and 27+ AI agents. The open skills marketplace.'
 

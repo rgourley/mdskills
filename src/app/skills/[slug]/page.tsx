@@ -37,11 +37,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `${skill.name} — Skill for ${primaryPlatform}`
 
   // Description: answer "what does this do and how do I get it?"
-  // Strip internal phrasing like "This skill is for..." or "Use this skill when..."
+  // Clean up internal phrasing for search snippets
   const rawDesc = skill.description
-  const cleanDesc = rawDesc
+  let cleanDesc = rawDesc
+    // Strip opening "This skill is for X." or "Use this skill when X."
     .replace(/^(This skill|Use this skill)[^.]*?\.\s*/i, '')
+    // Strip "NOT for X." / "Do not use for X." type exclusions at start
+    .replace(/^(NOT|Do not|Don't|Never)[^.]*?\.\s*/i, '')
     .replace(/^./, c => c.toUpperCase())
+  // If after cleaning it's too short or still starts with a negative, use raw desc
+  if (cleanDesc.length < 30 || /^(NOT|Do not|Don't|Never)\b/i.test(cleanDesc)) {
+    cleanDesc = rawDesc.replace(/^./, c => c.toUpperCase())
+  }
   const descTrunc = cleanDesc.length > 120 ? cleanDesc.slice(0, 117) + '...' : cleanDesc
   const platformList = platformNames.length > 1
     ? platformNames.slice(0, 3).join(', ')
