@@ -5,6 +5,8 @@ import { getSkills } from '@/lib/skills'
 import { SkillCard } from '@/components/SkillCard'
 import type { Metadata } from 'next'
 
+export const revalidate = 60
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }

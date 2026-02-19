@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   },
 }
 
+export const revalidate = 60
+
 export default async function UseCasesPage() {
   const categories = await getCategories()
 

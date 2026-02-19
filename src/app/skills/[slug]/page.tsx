@@ -15,6 +15,9 @@ import { SkillBadges } from '@/components/SkillBadges'
 import { SkillQuickInfo } from '@/components/SkillQuickInfo'
 import type { Metadata } from 'next'
 
+// Cache pages for 60 seconds, revalidate in background after that
+export const revalidate = 60
+
 interface PageProps {
   params: Promise<{ slug: string }>
   searchParams: Promise<{ tab?: string }>

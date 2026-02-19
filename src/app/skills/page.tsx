@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   },
 }
 
+// Cache for 60s, revalidate in background
+export const revalidate = 60
+
 interface PageProps {
   searchParams: Promise<{
     q?: string

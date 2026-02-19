@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   },
 }
 
+// Cache for 60s, revalidate in background
+export const revalidate = 60
+
 export default async function HomePage() {
   const [skills, pluginSkills] = await Promise.all([getFeaturedSkills(), getPluginSkills(6)])
 
