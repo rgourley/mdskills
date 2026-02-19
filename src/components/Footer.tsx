@@ -40,16 +40,22 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-neutral-900 mb-3">Specs</h4>
             <ul className="space-y-2 text-sm text-neutral-600">
               <li>
-                <a href="https://agentskills.io" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 transition-colors">agentskills.io</a>
+                <Link href="/specs/skill-md" className="hover:text-neutral-900 transition-colors">SKILL.md</Link>
               </li>
               <li>
-                <a href="https://agentskills.io/specification" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 transition-colors">SKILL.md Spec</a>
+                <Link href="/specs/agents-md" className="hover:text-neutral-900 transition-colors">AGENTS.md</Link>
               </li>
               <li>
-                <a href="https://agents.md" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 transition-colors">AGENTS.md</a>
+                <Link href="/specs/mcp" className="hover:text-neutral-900 transition-colors">MCP Protocol</Link>
               </li>
               <li>
-                <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 transition-colors">MCP Protocol</a>
+                <Link href="/specs/claude-md" className="hover:text-neutral-900 transition-colors">CLAUDE.md</Link>
+              </li>
+              <li>
+                <Link href="/specs/llms-txt" className="hover:text-neutral-900 transition-colors">llms.txt</Link>
+              </li>
+              <li>
+                <Link href="/specs" className="hover:text-neutral-900 transition-colors">All specs &rarr;</Link>
               </li>
             </ul>
           </div>

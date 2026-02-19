@@ -18,6 +18,9 @@ export function Header() {
           <Link href="/docs" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
             Docs
           </Link>
+          <Link href="/specs" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+            Specs
+          </Link>
           <Link href="/clients" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
             Clients
           </Link>
