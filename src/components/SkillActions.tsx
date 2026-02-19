@@ -48,7 +48,7 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
             className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
           >
             <Download className="w-4 h-4 shrink-0" />
-            Download SKILL.md
+            Download
           </button>
           <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#f6f8fa] border border-neutral-200 text-neutral-800">
             <Terminal className="w-4 h-4 shrink-0" />
