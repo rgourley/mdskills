@@ -51,7 +51,7 @@ export function WebSiteJsonLd() {
   )
 }
 
-/** SoftwareApplication schema for individual skills */
+/** SoftwareApplication + SoftwareSourceCode schema for individual skills */
 export function SkillJsonLd({
   name,
   description,
@@ -59,6 +59,10 @@ export function SkillJsonLd({
   author,
   license,
   category,
+  platforms,
+  githubUrl,
+  dateModified,
+  tags,
 }: {
   name: string
   description: string
@@ -66,25 +70,56 @@ export function SkillJsonLd({
   author: string
   license?: string
   category?: string
+  platforms?: string[]
+  githubUrl?: string
+  dateModified?: string
+  tags?: string[]
 }) {
   return (
-    <JsonLd
-      data={{
-        '@context': 'https://schema.org',
-        '@type': 'SoftwareSourceCode',
-        name,
-        description,
-        url: `https://mdskills.ai${url}`,
-        author: {
-          '@type': 'Person',
-          name: author,
-        },
-        ...(license && { license }),
-        ...(category && { applicationCategory: category }),
-        codeRepository: `https://mdskills.ai${url}`,
-        programmingLanguage: 'Markdown',
-      }}
-    />
+    <>
+      {/* SoftwareApplication — Google rich results for software */}
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: `${name} — AI Agent Skill`,
+          description,
+          url: `https://mdskills.ai${url}`,
+          applicationCategory: category || 'DeveloperApplication',
+          operatingSystem: platforms?.join(', ') || 'Any',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+          },
+          author: {
+            '@type': 'Organization',
+            name: author,
+          },
+          ...(license && { license }),
+          ...(dateModified && { dateModified }),
+          ...(tags && tags.length > 0 && { keywords: tags.join(', ') }),
+        }}
+      />
+      {/* SoftwareSourceCode — rich code metadata */}
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareSourceCode',
+          name,
+          description,
+          url: `https://mdskills.ai${url}`,
+          codeRepository: githubUrl || `https://mdskills.ai${url}`,
+          programmingLanguage: 'Markdown',
+          author: {
+            '@type': 'Person',
+            name: author,
+          },
+          ...(license && { license }),
+          ...(dateModified && { dateModified }),
+        }}
+      />
+    </>
   )
 }
 

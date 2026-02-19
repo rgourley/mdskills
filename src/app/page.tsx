@@ -7,12 +7,12 @@ import { getFeaturedSkills, getPluginSkills } from '@/lib/skills'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'mdskills.ai — AI Agent Skills Marketplace',
-  description: 'The open skills marketplace for AI agents. Discover, create, fork, and share SKILL.md files for Claude Code, Cursor, Codex, Gemini CLI, and 27+ AI tools.',
+  title: 'mdskills.ai — Free AI Skills for Claude Code, Cursor & More',
+  description: 'Download free skills for Claude Code, Cursor, Codex, and 27+ AI agents. PDF processing, design systems, Stripe integrations, testing tools and more. Install any skill in one command.',
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'mdskills.ai — AI Agent Skills Marketplace',
-    description: 'The open skills marketplace for AI agents. Discover, create, fork, and share SKILL.md files for Claude Code, Cursor, Codex, Gemini CLI, and 27+ AI tools.',
+    title: 'mdskills.ai — Free AI Agent Skills Marketplace',
+    description: 'Download free skills for Claude Code, Cursor, Codex, and 27+ AI agents. Install any skill in one command.',
     url: '/',
   },
 }

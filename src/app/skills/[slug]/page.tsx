@@ -25,36 +25,56 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const skill = await getSkillBySlug(slug)
   if (!skill) return { title: 'Skill Not Found' }
 
-  const title = `${skill.name} — AI Agent Skill`
-  const description = skill.description.length > 160
-    ? skill.description.slice(0, 157) + '...'
-    : skill.description
-  const platforms = skill.platforms.length > 0
-    ? ` Works with ${skill.platforms.slice(0, 3).join(', ')}${skill.platforms.length > 3 ? ' and more' : ''}.`
-    : ''
+  // Platform names for search: "Claude Code", "Cursor", etc.
+  const platformNames = skill.platforms.map(p =>
+    p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  )
+  const primaryPlatform = platformNames[0] || 'AI Agents'
+
+  // Search-optimized title that matches user intent:
+  // People search: "claude code pdf skill", "interface design claude code", "stripe skill for cursor"
+  // Title answers: "PDF Processing — Skill for Claude Code"
+  const title = `${skill.name} — Skill for ${primaryPlatform}`
+
+  // Description: answer "what does this do and how do I get it?"
+  // Strip internal phrasing like "This skill is for..." or "Use this skill when..."
+  const rawDesc = skill.description
+  const cleanDesc = rawDesc
+    .replace(/^(This skill|Use this skill)[^.]*?\.\s*/i, '')
+    .replace(/^./, c => c.toUpperCase())
+  const descTrunc = cleanDesc.length > 120 ? cleanDesc.slice(0, 117) + '...' : cleanDesc
+  const platformList = platformNames.length > 1
+    ? platformNames.slice(0, 3).join(', ')
+    : primaryPlatform
+  const fullDescription = `${descTrunc} Free and open source. Install in one command for ${platformList}.`
 
   return {
     title,
-    description: `${description}${platforms}`,
+    description: fullDescription,
     alternates: { canonical: `/skills/${slug}` },
     openGraph: {
-      title: `${skill.name} — mdskills.ai`,
-      description: `${description}${platforms}`,
+      title: `${skill.name} — Free Skill for ${primaryPlatform} | mdskills.ai`,
+      description: fullDescription,
       url: `/skills/${slug}`,
       type: 'article',
     },
     twitter: {
       card: 'summary',
-      title: `${skill.name} — AI Agent Skill`,
-      description,
+      title: `${skill.name} — Free Skill for ${primaryPlatform}`,
+      description: fullDescription,
     },
     keywords: [
       skill.name,
+      `${skill.name} skill`,
+      `${skill.name} ${primaryPlatform.toLowerCase()}`,
+      `${skill.name} SKILL.md`,
+      `${primaryPlatform.toLowerCase()} ${skill.name.toLowerCase()}`,
       'AI skill',
       'SKILL.md',
       'agent skill',
+      'claude code skill',
       ...(skill.tags ?? []),
-      ...(skill.platforms ?? []),
+      ...platformNames.map(p => p.toLowerCase()),
     ],
   }
 }
@@ -88,6 +108,10 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         author={skill.owner}
         license={skill.license}
         category={skill.categoryName}
+        platforms={skill.platforms}
+        githubUrl={skill.githubUrl}
+        dateModified={skill.updatedAt}
+        tags={skill.tags}
       />
     <div className="py-6 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">

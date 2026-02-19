@@ -7,12 +7,12 @@ import { getCategoriesLight } from '@/lib/categories'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Explore AI Agent Skills',
-  description: 'Browse and search AI agent skills, MCP servers, workflows, and rulesets. Filter by agent compatibility, category, and type. Install with one command.',
+  title: 'Browse Free AI Skills for Claude Code, Cursor & Codex',
+  description: 'Search and download free AI agent skills. PDF processing, design systems, Stripe, Cloudflare, testing tools and more. Filter by platform, category, or type. One-command install.',
   alternates: { canonical: '/skills' },
   openGraph: {
-    title: 'Explore AI Agent Skills — mdskills.ai',
-    description: 'Browse and search AI agent skills, MCP servers, workflows, and rulesets. Filter by agent compatibility, category, and type.',
+    title: 'Browse Free AI Agent Skills — mdskills.ai',
+    description: 'Search and download free AI agent skills. Filter by platform, category, or type. One-command install for Claude Code, Cursor, Codex and more.',
     url: '/skills',
   },
 }
