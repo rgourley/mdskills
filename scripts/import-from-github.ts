@@ -368,9 +368,13 @@ function inferDisplayName(
   // Try README heading, but only if it's not a generic repo name
   const readmeHeading = readme?.match(/^#\s+(.+)/m)?.[1]?.trim()
   if (readmeHeading && readmeHeading.length < 80) {
-    const clean = readmeHeading.replace(/[*_`]/g, '').trim()
+    // Strip emoji and markdown formatting
+    const clean = readmeHeading
+      .replace(/[*_`]/g, '')
+      .replace(/^\W+/, '')
+      .trim()
     // Skip if it matches the repo name (mono-repo root README)
-    if (clean.toLowerCase() !== repoName.toLowerCase()) {
+    if (clean && clean.toLowerCase() !== repoName.toLowerCase()) {
       return clean
     }
   }
@@ -466,6 +470,15 @@ function detectSkillType(
 
 /** Generate a clean slug from the skill path and repo name */
 function generateSlug(owner: string, repo: string, skillPath: string): string {
+  // For README-only imports, use the repo name
+  if (skillPath === 'README.md' || skillPath === 'AGENTS.md') {
+    return repo
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
   // For skills nested in a directory, use the parent directory name
   // e.g., skills/pdf/SKILL.md → "pdf"
   // e.g., .claude/skills/interface-design/SKILL.md → "interface-design"
@@ -538,45 +551,64 @@ async function main() {
   // 2. Discover SKILL.md
   console.log('\n📄 Searching for SKILL.md...')
   const skill = await discoverSkillMd(owner, repo, subpath)
-  if (!skill) {
-    console.error('✗ No SKILL.md found in any common location.')
-    console.error('  Searched: SKILL.md, .claude/skills/*/SKILL.md, skills/*/SKILL.md')
-    console.error('')
-    console.error('  Tip: Use --list to see all SKILL.md files in the repo:')
-    console.error(`    npx tsx scripts/import-from-github.ts ${args.url} --list`)
-    console.error('')
-    console.error('  If this repo uses a different format, you can still import by')
-    console.error('  creating a SKILL.md manually or using the seed scripts.')
-    process.exit(1)
+  let skillDir: string | undefined
+  let fm: Frontmatter
+  let readme: string | null
+  let usingReadmeFallback = false
+
+  if (skill) {
+    console.log(`  ✓ Found: ${skill.path} (${skill.content.length} bytes)`)
+
+    // Extract the directory containing SKILL.md
+    skillDir = skill.path.includes('/')
+      ? skill.path.split('/').slice(0, -1).join('/')
+      : undefined
+
+    // 3. Parse frontmatter
+    fm = parseFrontmatter(skill.content)
+    console.log(`  ✓ Frontmatter: name="${fm.name}", desc="${fm.description.slice(0, 60)}..."`)
+
+    // 4. Fetch README
+    console.log('\n📖 Fetching README...')
+    readme = await fetchReadme(owner, repo, skillDir)
+    console.log(readme ? `  ✓ README: ${readme.length} bytes` : '  ⚠ No README found')
+  } else {
+    // No SKILL.md found — fall back to README-based import
+    console.log('  ⚠ No SKILL.md found — falling back to README-based import')
+
+    // Also check for AGENTS.md
+    const agentsMd = await fetchGitHubRaw(owner, repo, 'AGENTS.md')
+    if (agentsMd) {
+      console.log('  ✓ Found AGENTS.md — using as skill content')
+    }
+
+    console.log('\n📖 Fetching README...')
+    readme = await fetchReadme(owner, repo, subpath)
+    if (!readme) {
+      console.error('✗ No SKILL.md or README.md found. Cannot import.')
+      process.exit(1)
+    }
+    console.log(`  ✓ README: ${readme.length} bytes`)
+
+    // Parse frontmatter from README (some READMEs have it) or build minimal
+    fm = parseFrontmatter(agentsMd || readme)
+    usingReadmeFallback = true
   }
-  console.log(`  ✓ Found: ${skill.path} (${skill.content.length} bytes)`)
-
-  // Extract the directory containing SKILL.md
-  const skillDir = skill.path.includes('/')
-    ? skill.path.split('/').slice(0, -1).join('/')
-    : undefined
-
-  // 3. Parse frontmatter
-  const fm = parseFrontmatter(skill.content)
-  console.log(`  ✓ Frontmatter: name="${fm.name}", desc="${fm.description.slice(0, 60)}..."`)
-
-  // 4. Fetch README
-  console.log('\n📖 Fetching README...')
-  const readme = await fetchReadme(owner, repo, skillDir)
-  console.log(readme ? `  ✓ README: ${readme.length} bytes` : '  ⚠ No README found')
 
   // 5. Build the skill record
-  const slug = args.slug || generateSlug(owner, repo, skill.path)
+  const skillPath = skill?.path || 'README.md'
+  const skillContent = skill?.content || readme || ''
+  const slug = args.slug || generateSlug(owner, repo, skillPath)
   const displayName = args.name || inferDisplayName(repo, fm.name, readme, skillDir)
   const description =
     fm.description ||
     descriptionFromReadme(readme) ||
     meta.description ||
     `${displayName} - AI agent skill`
-  const platforms = args.platforms || detectPlatforms(fm, skill.content, readme)
-  const permissions = detectPermissions(skill.content)
+  const platforms = args.platforms || detectPlatforms(fm, skillContent, readme)
+  const permissions = detectPermissions(skillContent)
   const artifactType = args.artifactType || detectArtifactType(fm.raw, repo)
-  const { skillType, hasPlugin } = detectSkillType(owner, repo, skill.path)
+  const { skillType, hasPlugin } = detectSkillType(owner, repo, skillPath)
   const tags = Array.from(new Set([
     ...(fm.tags || []),
     ...meta.topics.slice(0, 10),
@@ -607,9 +639,9 @@ async function main() {
     description: description.slice(0, 500),
     owner,
     repo,
-    skill_path: skillDir || skill.path.replace('/SKILL.md', ''),
+    skill_path: skillDir || skillPath.replace('/SKILL.md', '').replace('/README.md', ''),
     github_url: githubUrl,
-    content: skill.content,
+    content: skillContent,
     readme,
     status: 'published' as const,
     featured: false,
@@ -628,7 +660,7 @@ async function main() {
     platforms,
     tags,
     artifact_type: artifactType,
-    format_standard: 'skill_md',
+    format_standard: usingReadmeFallback ? 'generic' : 'skill_md',
     ...permissions,
   }
 
@@ -688,11 +720,27 @@ async function main() {
         .single()
 
       if (client) {
+        // Generate appropriate install instructions based on artifact type and client
+        let instructions: string
+        if (artifactType === 'mcp_server') {
+          // MCP servers use platform-specific install commands
+          const npmPackage = repo // Usually the npm package matches the repo name
+          if (clientSlug === 'claude-code') {
+            instructions = `claude mcp add ${slug} -- npx -y ${npmPackage}`
+          } else if (clientSlug === 'cursor') {
+            instructions = `Add to .cursor/mcp.json:\n{"mcpServers":{"${slug}":{"command":"npx","args":["-y","${npmPackage}"]}}}`
+          } else {
+            instructions = `npx -y ${npmPackage}`
+          }
+        } else {
+          instructions = `npx mdskills install ${owner}/${slug}`
+        }
+
         await supabase.from('listing_clients').upsert(
           {
             skill_id: data.id,
             client_id: client.id,
-            install_instructions: `npx mdskills install ${owner}/${slug}`,
+            install_instructions: instructions,
             is_primary: clientSlug === 'claude-code',
           },
           { onConflict: 'skill_id,client_id' }

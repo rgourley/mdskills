@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/create'],
+        disallow: ['/api/', '/admin', '/create'],
       },
     ],
     sitemap: 'https://mdskills.ai/sitemap.xml',
