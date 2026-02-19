@@ -45,12 +45,12 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             onClick={handleDownload}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
           >
             <Download className="w-4 h-4 shrink-0" />
             Download SKILL.md
           </button>
-          <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#1e1e2e] text-neutral-300">
+          <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#f6f8fa] border border-neutral-200 text-neutral-800">
             <Terminal className="w-4 h-4 shrink-0" />
             <code className="text-sm font-mono truncate flex-1 min-w-0">{installCommand}</code>
             <CopyButton text={installCommand} />
