@@ -312,18 +312,25 @@ function parseFrontmatter(content: string): Frontmatter {
 /** Extract description from README when SKILL.md doesn't have one */
 function descriptionFromReadme(readme: string | null, maxLen = 400): string {
   if (!readme) return ''
-  // Remove title line
-  const withoutTitle = readme.replace(/^#\s+.+?\n+/m, '').trim()
-  // Take first block before any ## heading or triple newline
-  const firstBlock = withoutTitle.split(/\n##\s|\n\n\n/)[0]
-  if (!firstBlock) return ''
-  // Strip markdown/HTML
-  return firstBlock
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+  let text = readme
+    // Strip HTML tags (including <p>, <h1>, <img>, <a>, badges, etc.)
+    .replace(/<[^>]+>/g, ' ')
+    // Strip the first markdown heading
+    .replace(/^#\s+.+?\n+/m, '')
+    // Strip blockquotes (often contain notices, not descriptions)
+    .replace(/^>\s*.*$/gm, '')
+    // Strip badge/image markdown
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
-    .replace(/<[^>]+>/g, '')
+    // Convert link markdown to text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Strip remaining markdown formatting
     .replace(/[*_`#]/g, '')
+    .trim()
+  const firstBlock = text.split(/\n##\s|\n\n\n/)[0]
+  if (!firstBlock) return ''
+  return firstBlock
     .replace(/\n+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
     .trim()
     .slice(0, maxLen)
 }
@@ -367,17 +374,20 @@ function inferDisplayName(
 
   const dirName = skillDir?.split('/').pop()
 
-  // Try README heading, but only if it's not a generic repo name
-  const readmeHeading = readme?.match(/^#\s+(.+)/m)?.[1]?.trim()
-  if (readmeHeading && readmeHeading.length < 80) {
-    // Strip emoji and markdown formatting
-    const clean = readmeHeading
-      .replace(/[*_`]/g, '')
-      .replace(/^\W+/, '')
-      .trim()
-    // Skip if it matches the repo name (mono-repo root README)
-    if (clean && clean.toLowerCase() !== repoName.toLowerCase()) {
-      return clean
+  if (readme) {
+    // Check HTML headings first: <h1>Title</h1> or <h1 align="center">Title</h1>
+    // (many repos use HTML h1 at the very top, with markdown # appearing later for code examples)
+    const htmlHeading = readme.match(/<h1[^>]*>([^<]+)<\/h1>/i)?.[1]?.trim()
+    // Check markdown headings: # Title (first occurrence)
+    const mdHeading = readme.match(/^#\s+(.+)/m)?.[1]?.trim()
+    const readmeHeading = htmlHeading || mdHeading
+    if (readmeHeading && readmeHeading.length < 80) {
+      const clean = readmeHeading
+        .replace(/[*_`]/g, '')
+        .replace(/^\W+/, '')
+        .trim()
+      // Use the heading — it's the properly-cased display name
+      if (clean) return clean
     }
   }
 

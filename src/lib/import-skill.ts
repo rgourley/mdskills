@@ -175,15 +175,25 @@ function parseFrontmatter(content: string): Frontmatter {
 
 function descriptionFromReadme(readme: string | null, maxLen = 400): string {
   if (!readme) return ''
-  const withoutTitle = readme.replace(/^#\s+.+?\n+/m, '').trim()
-  const firstBlock = withoutTitle.split(/\n##\s|\n\n\n/)[0]
+  let text = readme
+    // Strip HTML tags (including <p>, <h1>, <img>, <a>, badges, etc.)
+    .replace(/<[^>]+>/g, ' ')
+    // Strip the first markdown heading
+    .replace(/^#\s+.+?\n+/m, '')
+    // Strip blockquotes (often contain notices, not descriptions)
+    .replace(/^>\s*.*$/gm, '')
+    // Strip badge/image markdown
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+    // Convert link markdown to text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Strip remaining markdown formatting
+    .replace(/[*_`#]/g, '')
+    .trim()
+  const firstBlock = text.split(/\n##\s|\n\n\n/)[0]
   if (!firstBlock) return ''
   return firstBlock
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/[*_`#]/g, '')
     .replace(/\n+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
     .trim()
     .slice(0, maxLen)
 }
@@ -219,13 +229,21 @@ function inferDisplayName(repoName: string, fmName: string, readme: string | nul
 
   const dirName = skillDir?.split('/').pop()
 
-  const readmeHeading = readme?.match(/^#\s+(.+)/m)?.[1]?.trim()
-  if (readmeHeading && readmeHeading.length < 80) {
-    const clean = readmeHeading
-      .replace(/[*_`]/g, '')
-      .replace(/^\W+/, '')
-      .trim()
-    if (clean && clean.toLowerCase() !== repoName.toLowerCase()) return clean
+  if (readme) {
+    // Check HTML headings first: <h1>Title</h1> or <h1 align="center">Title</h1>
+    // (many repos use HTML h1 at the very top, with markdown # appearing later for code examples)
+    const htmlHeading = readme.match(/<h1[^>]*>([^<]+)<\/h1>/i)?.[1]?.trim()
+    // Check markdown headings: # Title (first occurrence)
+    const mdHeading = readme.match(/^#\s+(.+)/m)?.[1]?.trim()
+    const readmeHeading = htmlHeading || mdHeading
+    if (readmeHeading && readmeHeading.length < 80) {
+      const clean = readmeHeading
+        .replace(/[*_`]/g, '')
+        .replace(/^\W+/, '')
+        .trim()
+      // Use the heading — it's the properly-cased display name
+      if (clean) return clean
+    }
   }
 
   const bestName = fmName || dirName || repoName
