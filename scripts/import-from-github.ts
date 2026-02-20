@@ -315,21 +315,41 @@ function descriptionFromReadme(readme: string | null, maxLen = 400): string {
   let text = readme
     // Strip HTML tags (including <p>, <h1>, <img>, <a>, badges, etc.)
     .replace(/<[^>]+>/g, ' ')
-    // Strip the first markdown heading
-    .replace(/^#\s+.+?\n+/m, '')
+    // Strip all markdown headings
+    .replace(/^#{1,6}\s+.+$/gm, '')
     // Strip blockquotes (often contain notices, not descriptions)
     .replace(/^>\s*.*$/gm, '')
-    // Strip badge/image markdown
+    // Strip badge/image markdown ![alt](url)
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
-    // Convert link markdown to text
+    // Strip empty-text links [](url)
+    .replace(/\[\s*\]\([^)]+\)/g, '')
+    // Strip badge-style links [![...](img)](url)
+    .replace(/\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)/g, '')
+    // Convert remaining link markdown [text](url) to just text
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Strip horizontal rules
+    .replace(/^-{3,}$/gm, '')
+    // Strip lines that are only URLs
+    .replace(/^https?:\/\/\S+$/gm, '')
     // Strip remaining markdown formatting
     .replace(/[*_`#]/g, '')
     .trim()
-  const firstBlock = text.split(/\n##\s|\n\n\n/)[0]
-  if (!firstBlock) return ''
-  return firstBlock
-    .replace(/\n+/g, ' ')
+
+  // Split into lines, skip empty/whitespace-only lines, find first real paragraph
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 10)
+  if (lines.length === 0) return ''
+
+  // Take lines until we hit a section break or have enough text
+  const paragraphs: string[] = []
+  for (const line of lines) {
+    if (paragraphs.length > 0 && line === '') break
+    paragraphs.push(line)
+    const joined = paragraphs.join(' ')
+    if (joined.length > maxLen) break
+  }
+
+  return paragraphs
+    .join(' ')
     .replace(/\s{2,}/g, ' ')
     .trim()
     .slice(0, maxLen)
