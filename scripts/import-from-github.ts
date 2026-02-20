@@ -68,6 +68,7 @@ function parseArgs(args: string[]): {
   artifactType?: string
   dryRun: boolean
   list: boolean
+  all: boolean
   name?: string
 } {
   const url = args.find((a) => !a.startsWith('--'))
@@ -82,12 +83,14 @@ function parseArgs(args: string[]): {
     console.error('  --type <type>           Artifact type: skill_pack, mcp_server, ruleset, etc.')
     console.error('  --dry-run               Show what would be imported without writing to DB')
     console.error('  --list                  List all SKILL.md files found in the repo')
+    console.error('  --all                   Import ALL discovered SKILL.md files from the repo')
     console.error('')
     console.error('Examples:')
     console.error('  npx tsx scripts/import-from-github.ts https://github.com/owner/repo')
     console.error('  npx tsx scripts/import-from-github.ts https://github.com/owner/repo/tree/main/skills/pdf')
     console.error('  npx tsx scripts/import-from-github.ts owner/repo --category code-generation --dry-run')
     console.error('  npx tsx scripts/import-from-github.ts owner/mono-repo --list')
+    console.error('  npx tsx scripts/import-from-github.ts owner/skill-collection --all')
     process.exit(1)
   }
 
@@ -105,6 +108,7 @@ function parseArgs(args: string[]): {
     artifactType: getArg('--type'),
     dryRun: args.includes('--dry-run'),
     list: args.includes('--list'),
+    all: args.includes('--all'),
   }
 }
 
@@ -211,8 +215,38 @@ async function discoverSkillMd(
   return null
 }
 
-/** List ALL skills found in a repo (for mono-repos) */
+/** List ALL SKILL.md files in a repo using Git Trees API (efficient for large repos).
+ *  Single API call handles up to 100k files. Falls back to Contents API if Trees fails. */
 async function listAllSkills(owner: string, repo: string): Promise<string[]> {
+  // Try Git Trees API first — 1 API call instead of N+1
+  try {
+    const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`
+    const res = await fetch(url, { headers: githubHeaders })
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data.tree)) {
+        const skillFiles = data.tree
+          .filter((item: { path: string; type: string }) =>
+            item.type === 'blob' && /\/(SKILL|skill)\.md$/.test(item.path)
+          )
+          .map((item: { path: string }) => item.path)
+          .sort()
+        if (skillFiles.length > 0) {
+          // Also check for root SKILL.md
+          const rootSkill = data.tree.find(
+            (item: { path: string; type: string }) =>
+              item.type === 'blob' && /^(SKILL|skill)\.md$/.test(item.path)
+          )
+          if (rootSkill && !skillFiles.includes(rootSkill.path)) {
+            skillFiles.unshift(rootSkill.path)
+          }
+          return skillFiles
+        }
+      }
+    }
+  } catch { /* fall through to legacy approach */ }
+
+  // Fallback: Contents API (original approach, limited to ~1000 entries per directory)
   const found: string[] = []
   const skillsDirs = ['.claude/skills', 'skills']
 
@@ -680,6 +714,183 @@ async function main() {
         console.log('')
       }
     }
+    return
+  }
+
+  // Handle --all flag: batch import every discovered SKILL.md
+  if (args.all) {
+    console.log('\n📦 Batch importing all skills...')
+    const allSkillPaths = await listAllSkills(owner, repo)
+
+    if (allSkillPaths.length === 0) {
+      console.log('  No SKILL.md files found.')
+      return
+    }
+
+    console.log(`  Found ${allSkillPaths.length} skill(s) to import\n`)
+
+    if (args.dryRun) {
+      console.log('  DRY RUN — listing what would be imported:\n')
+      for (const path of allSkillPaths) {
+        const slug = generateSlug(owner, repo, path)
+        console.log(`  ${slug.padEnd(40)} ← ${path}`)
+      }
+      console.log(`\n🏁 Would import ${allSkillPaths.length} skill(s). Remove --dry-run to proceed.`)
+      return
+    }
+
+    let succeeded = 0
+    let failed = 0
+    const errors: Array<{ path: string; error: string }> = []
+
+    for (let i = 0; i < allSkillPaths.length; i++) {
+      const skillPath = allSkillPaths[i]
+      const dirPath = skillPath.replace(/\/(SKILL|skill)\.md$/i, '')
+      const slug = generateSlug(owner, repo, skillPath)
+
+      process.stdout.write(`  [${String(i + 1).padStart(String(allSkillPaths.length).length)}/${allSkillPaths.length}] ${slug}... `)
+
+      try {
+        // Fetch SKILL.md content
+        const skillContent = await fetchGitHubRaw(owner, repo, skillPath)
+        if (!skillContent) {
+          console.log('⚠ not found, skipping')
+          failed++
+          errors.push({ path: skillPath, error: 'SKILL.md not found' })
+          continue
+        }
+
+        const fm = parseFrontmatter(skillContent)
+        const skillDir = skillPath.includes('/') ? skillPath.split('/').slice(0, -1).join('/') : undefined
+
+        // Fetch README from skill's subdirectory (falls back to repo root)
+        const readme = await fetchReadme(owner, repo, skillDir)
+
+        const displayName = inferDisplayName(repo, fm.name, readme, skillDir)
+        const description = (
+          fm.description ||
+          descriptionFromReadme(readme) ||
+          meta.description ||
+          `${displayName} - AI agent skill`
+        ).slice(0, 500)
+        const permissions = detectPermissions(skillContent)
+        const artifactType = args.artifactType || detectArtifactType(fm.raw, repo)
+        const formatStd = 'skill_md'
+        const platforms = args.platforms || detectPlatforms(fm, skillContent, readme, artifactType, formatStd)
+        const { skillType, hasPlugin } = detectSkillType(owner, repo, skillPath, meta.topics, readme)
+        const tags = Array.from(new Set([...(fm.tags || []), ...meta.topics.slice(0, 5)])).slice(0, 15)
+
+        // Category detection
+        let categorySlug = args.category || null
+        if (!categorySlug) {
+          if (hasPlugin) {
+            categorySlug = 'claude-code-plugins'
+          } else {
+            categorySlug = detectCategory(meta.topics, description, repo, readme)
+          }
+        }
+        let categoryId: string | null = null
+        if (categorySlug) {
+          categoryId = await getCategoryId(categorySlug)
+        }
+
+        const githubUrl = `https://github.com/${owner}/${repo}/tree/${meta.defaultBranch}/${dirPath}`
+
+        const record = {
+          slug,
+          name: displayName,
+          description,
+          owner,
+          repo,
+          skill_path: skillDir || dirPath,
+          github_url: githubUrl,
+          content: skillContent,
+          readme,
+          status: 'published' as const,
+          featured: false,
+          skill_type: skillType,
+          has_plugin: hasPlugin,
+          has_examples: false,
+          difficulty: 'intermediate' as const,
+          category_id: categoryId,
+          author_username: owner,
+          github_stars: meta.stars,
+          github_forks: meta.forks,
+          license: meta.license || fm.license,
+          weekly_installs: 0,
+          mdskills_upvotes: 0,
+          mdskills_forks: 0,
+          platforms,
+          tags,
+          artifact_type: artifactType,
+          format_standard: formatStd,
+          ...permissions,
+        }
+
+        // Upsert
+        const { data, error } = await supabase
+          .from('skills')
+          .upsert(record, { onConflict: 'slug' })
+          .select('id, slug, name')
+          .single()
+
+        if (error) {
+          console.log(`✗ ${error.message}`)
+          failed++
+          errors.push({ path: skillPath, error: error.message })
+          continue
+        }
+
+        // Link to clients
+        if (data.id) {
+          const clientSlugs = [...record.platforms]
+          if (!clientSlugs.includes('claude-code')) clientSlugs.unshift('claude-code')
+          for (const clientSlug of clientSlugs) {
+            const { data: client } = await supabase.from('clients').select('id').eq('slug', clientSlug).single()
+            if (client) {
+              const instructions = artifactType === 'mcp_server'
+                ? (clientSlug === 'claude-code' ? `claude mcp add ${slug} -- npx -y ${repo}` : `npx -y ${repo}`)
+                : `npx mdskills install ${owner}/${slug}`
+              await supabase.from('listing_clients').upsert(
+                { skill_id: data.id, client_id: client.id, install_instructions: instructions, is_primary: clientSlug === 'claude-code' },
+                { onConflict: 'skill_id,client_id' }
+              )
+            }
+          }
+        }
+
+        console.log(`✓ ${data.name}`)
+        succeeded++
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.log(`✗ ${msg}`)
+        failed++
+        errors.push({ path: skillPath, error: msg })
+      }
+
+      // Small delay between imports
+      if (i < allSkillPaths.length - 1) {
+        await new Promise(r => setTimeout(r, 200))
+      }
+    }
+
+    // Summary
+    console.log('\n' + '─'.repeat(60))
+    console.log(`✅ Batch import complete!`)
+    console.log(`  Succeeded: ${succeeded}`)
+    console.log(`  Failed:    ${failed}`)
+    console.log(`  Total:     ${allSkillPaths.length}`)
+
+    if (errors.length > 0) {
+      console.log(`\n⚠ Errors:`)
+      for (const e of errors.slice(0, 20)) {
+        console.log(`  ${e.path}: ${e.error}`)
+      }
+      if (errors.length > 20) {
+        console.log(`  ... and ${errors.length - 20} more`)
+      }
+    }
+
     return
   }
 
