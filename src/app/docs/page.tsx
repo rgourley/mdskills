@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpen, Lightbulb, Puzzle, Server, FileText, ExternalLink } from 'lucide-react'
+import { BookOpen, Code, Download, GitCompare, Lightbulb, Puzzle, Server, FileText, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -37,6 +37,7 @@ const LAYERS = [
       { label: 'agentskills.io', href: 'https://agentskills.io' },
       { label: 'What are Skills?', href: '/docs/what-are-skills', internal: true },
       { label: 'Best Practices', href: '/docs/skill-best-practices', internal: true },
+      { label: 'Skills vs MCP', href: '/docs/skills-vs-mcp', internal: true },
     ],
   },
   {
@@ -174,6 +175,48 @@ export default function DocsPage() {
             </div>
             <p className="mt-2 text-sm text-neutral-600">
               Practical tips for writing skills that agents use well. Descriptions, structure, testing, and common mistakes.
+            </p>
+          </Link>
+          <Link
+            href="/docs/skills-vs-mcp"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <GitCompare className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                Skills vs MCP Servers
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              When to write a skill and when to build an MCP server. A practical decision guide.
+            </p>
+          </Link>
+          <Link
+            href="/docs/install-skills"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <Download className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                How to Install Skills
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              Where to put SKILL.md files for Claude Code, Cursor, VS Code, Codex, and Gemini CLI.
+            </p>
+          </Link>
+          <Link
+            href="/docs/skill-examples"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <Code className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                SKILL.md Examples
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              Annotated walkthroughs of four skill patterns that work. Steal these structures.
             </p>
           </Link>
         </div>

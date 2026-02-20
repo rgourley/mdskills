@@ -37,6 +37,12 @@ export function Footer() {
               <li>
                 <Link href="/docs/skill-best-practices" className="hover:text-neutral-900 transition-colors">Best Practices</Link>
               </li>
+              <li>
+                <Link href="/docs/skills-vs-mcp" className="hover:text-neutral-900 transition-colors">Skills vs MCP</Link>
+              </li>
+              <li>
+                <Link href="/docs/install-skills" className="hover:text-neutral-900 transition-colors">Install Skills</Link>
+              </li>
             </ul>
           </div>
           <div>
