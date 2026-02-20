@@ -23,6 +23,7 @@ export function SkillCard({ skill }: SkillCardProps) {
   return (
     <Link
       href={`/skills/${skill.slug}`}
+      prefetch={false}
       className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
     >
       <div className="flex items-center gap-2 flex-wrap">

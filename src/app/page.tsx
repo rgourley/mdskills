@@ -112,7 +112,7 @@ export default async function HomePage() {
             <div className="flex-shrink-0 lg:w-[40%] lg:self-start lg:-mt-24 lg:flex lg:justify-end">
               <div className="relative w-[450px] h-[450px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] flex items-center justify-center">
                 <Image
-                  src="/images/lobster.png"
+                  src="/images/lobster.webp"
                   alt=""
                   width={600}
                   height={600}

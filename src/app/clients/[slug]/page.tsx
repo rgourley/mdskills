@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { createApiClient } from '@/lib/supabase/api'
 import { getClientBySlug } from '@/lib/clients'
 import { getSkills } from '@/lib/skills'
 import { SkillCard } from '@/components/SkillCard'
@@ -7,6 +8,15 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const revalidate = 60
+
+export async function generateStaticParams() {
+  const supabase = createApiClient()
+  if (!supabase) return []
+  const { data } = await supabase
+    .from('clients')
+    .select('slug')
+  return (data ?? []).map(({ slug }) => ({ slug }))
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>

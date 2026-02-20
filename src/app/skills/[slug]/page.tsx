@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { createApiClient } from '@/lib/supabase/api'
 import { getSkillBySlug } from '@/lib/skills'
 import { getSkillClients } from '@/lib/clients'
 import { Star } from 'lucide-react'
@@ -17,6 +18,16 @@ import type { Metadata } from 'next'
 
 // Cache pages for 60 seconds, revalidate in background after that
 export const revalidate = 60
+
+export async function generateStaticParams() {
+  const supabase = createApiClient()
+  if (!supabase) return []
+  const { data } = await supabase
+    .from('skills')
+    .select('slug')
+    .or('status.eq.published,status.is.null')
+  return (data ?? []).map(({ slug }) => ({ slug }))
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>

@@ -43,20 +43,19 @@ export async function getCategories(): Promise<Category[]> {
 
   if (error || !data?.length) return []
 
-  // Get skill counts per category
+  // Get skill counts per category — parallel queries instead of sequential N+1
   const categories = data as CategoryRow[]
-  const result: Category[] = []
+  const counts = await Promise.all(
+    categories.map((cat) =>
+      supabase
+        .from('skills')
+        .select('id', { count: 'exact', head: true })
+        .eq('category_id', cat.id)
+        .or('status.eq.published,status.is.null')
+    )
+  )
 
-  for (const cat of categories) {
-    const { count } = await supabase
-      .from('skills')
-      .select('id', { count: 'exact', head: true })
-      .eq('category_id', cat.id)
-      .or('status.eq.published,status.is.null')
-    result.push(mapCategoryRow(cat, count ?? 0))
-  }
-
-  return result
+  return categories.map((cat, i) => mapCategoryRow(cat, counts[i].count ?? 0))
 }
 
 /** Lightweight: just slugs and names in a single query. Use for filter sidebar. */
