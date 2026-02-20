@@ -210,7 +210,12 @@ function titleCase(slug: string): string {
 }
 
 function inferDisplayName(repoName: string, fmName: string, readme: string | null, skillDir?: string): string {
+  // If frontmatter has a proper display name (with spaces), use it directly
   if (fmName && fmName.includes(' ')) return fmName
+
+  // If frontmatter has a slug-style name (e.g. "angular-architect"), titleCase it
+  // This is a stronger signal than README headings, especially in multi-skill repos
+  if (fmName && (fmName.includes('-') || fmName.includes('_'))) return titleCase(fmName)
 
   const dirName = skillDir?.split('/').pop()
 

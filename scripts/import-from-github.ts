@@ -361,8 +361,10 @@ function inferDisplayName(
   // Use frontmatter name if it looks like a proper name (has spaces, capitalization)
   if (fmName && fmName.includes(' ')) return fmName
 
-  // If we have a frontmatter name, title-case it (e.g., "pdf" → "Pdf")
-  // But prefer a skill-directory-derived name for better results
+  // If frontmatter has a slug-style name (e.g. "angular-architect"), titleCase it
+  // This is a stronger signal than README headings, especially in multi-skill repos
+  if (fmName && (fmName.includes('-') || fmName.includes('_'))) return titleCase(fmName)
+
   const dirName = skillDir?.split('/').pop()
 
   // Try README heading, but only if it's not a generic repo name
