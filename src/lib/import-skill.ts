@@ -176,12 +176,16 @@ function parseFrontmatter(content: string): Frontmatter {
 function descriptionFromReadme(readme: string | null, maxLen = 400): string {
   if (!readme) return ''
   let text = readme
+    // Strip fenced code blocks (``` ... ```) including mermaid, ascii art, etc.
+    .replace(/```[\s\S]*?```/g, '')
     // Strip HTML tags (including <p>, <h1>, <img>, <a>, badges, etc.)
     .replace(/<[^>]+>/g, ' ')
     // Strip all markdown headings
     .replace(/^#{1,6}\s+.+$/gm, '')
     // Strip blockquotes (often contain notices, not descriptions)
     .replace(/^>\s*.*$/gm, '')
+    // Strip markdown tables (lines starting with |)
+    .replace(/^\|.*$/gm, '')
     // Strip badge/image markdown ![alt](url)
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
     // Strip empty-text links [](url)
