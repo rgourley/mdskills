@@ -336,9 +336,22 @@ function detectArtifactType(fmRaw: Record<string, string>, repoName: string): st
   return 'skill_pack'
 }
 
-function detectSkillType(skillPath: string): { skillType: string; hasPlugin: boolean } {
+function detectSkillType(skillPath: string, topics?: string[], readme?: string | null): { skillType: string; hasPlugin: boolean } {
+  // Check skill path for plugin indicators
   if (skillPath.includes('.claude/') || skillPath.includes('plugin')) {
     return { skillType: 'hybrid', hasPlugin: true }
+  }
+  // Check repo topics for plugin signals
+  const topicStr = (topics || []).join(' ').toLowerCase()
+  if (/\bplugins?\b/.test(topicStr) && /\bclaude\b/.test(topicStr)) {
+    return { skillType: 'hybrid', hasPlugin: true }
+  }
+  // Check README for plugin mentions
+  if (readme) {
+    const head = readme.slice(0, 2000).toLowerCase()
+    if (/claude\s*code\s*plugin/i.test(head) || /\.claude\/.*plugin/i.test(head)) {
+      return { skillType: 'hybrid', hasPlugin: true }
+    }
   }
   return { skillType: 'skill', hasPlugin: false }
 }
@@ -361,6 +374,7 @@ function generateSlug(repo: string, skillPath: string): string {
 
 /** Map of category slugs to keywords that signal that category */
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  'claude-code-plugins': ['claude code plugin', 'claude plugin', 'claude-code plugin', 'slash-commands', 'claude code skills', 'claude code hooks'],
   'code-review': ['code review', 'lint', 'linting', 'eslint', 'prettier', 'code quality', 'static analysis', 'code style'],
   'documentation': ['documentation', 'docs', 'readme', 'jsdoc', 'typedoc', 'api docs', 'docstring'],
   'testing': ['testing', 'test', 'jest', 'mocha', 'pytest', 'unit test', 'e2e', 'qa', 'quality assurance', 'playwright', 'cypress', 'vitest'],
@@ -487,14 +501,20 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   const artifactType = opts.artifactType || detectArtifactType(fm.raw, repo)
   const formatStandard = opts.formatStandard || (usingReadmeFallback ? 'generic' : 'skill_md')
   const platforms = opts.platforms || detectPlatforms(fm, skillContent, readme, artifactType, formatStandard)
-  const { skillType, hasPlugin } = detectSkillType(skillPath)
+  const { skillType, hasPlugin } = detectSkillType(skillPath, meta.topics, readme)
   const tags = Array.from(new Set([...(fm.tags || []), ...meta.topics.slice(0, 10)])).slice(0, 15)
 
   let categorySlug = opts.category || null
   if (!categorySlug) {
-    categorySlug = detectCategory(meta.topics, meta.description, repo, readme)
-    if (categorySlug) {
-      log(`Auto-detected category: ${categorySlug}`)
+    // If detected as a plugin, prefer claude-code-plugins category
+    if (hasPlugin) {
+      categorySlug = 'claude-code-plugins'
+      log(`Auto-detected category: ${categorySlug} (plugin detected)`)
+    } else {
+      categorySlug = detectCategory(meta.topics, meta.description, repo, readme)
+      if (categorySlug) {
+        log(`Auto-detected category: ${categorySlug}`)
+      }
     }
   }
 
