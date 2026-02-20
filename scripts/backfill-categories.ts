@@ -92,9 +92,8 @@ async function main() {
     console.log('Clearing category_id for all batch-imported skills (owner = sickn33)...')
     const { count, error: resetError } = await supabase
       .from('skills')
-      .update({ category_id: null })
+      .update({ category_id: null }, { count: 'exact' })
       .eq('owner', 'sickn33')
-      .select('id', { count: 'exact', head: true })
     if (resetError) {
       console.error('Failed to reset categories:', resetError.message)
       process.exit(1)

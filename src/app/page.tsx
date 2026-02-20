@@ -256,10 +256,29 @@ export default async function HomePage() {
             <h3 className="mt-10 text-lg font-semibold text-neutral-900">How to install a skill</h3>
             <div className="mt-4 space-y-4 text-neutral-600">
               <p>
-                Most skills can be installed in one command. Browse the marketplace, find a skill you need, and run the install command in your terminal. The skill files are added to your project and your AI agent picks them up automatically.
+                Discover and install skills from your terminal or browse the marketplace.
               </p>
-              <div className="p-4 rounded-xl bg-code-bg border border-neutral-200">
-                <code className="font-mono text-sm text-neutral-800">npx mdskills install owner/skill-name</code>
+              <div className="p-4 rounded-xl bg-code-bg border border-neutral-200 space-y-1">
+                <div className="font-mono text-sm">
+                  <span className="text-neutral-800">npx mdskills</span>
+                  <span className="text-neutral-400 ml-6"># interactive mode</span>
+                </div>
+                <div className="font-mono text-sm">
+                  <span className="text-neutral-800">npx mdskills search &quot;pdf&quot;</span>
+                  <span className="text-neutral-400 ml-6"># search by keyword</span>
+                </div>
+                <div className="font-mono text-sm">
+                  <span className="text-neutral-800">npx mdskills install anthropics/pdf</span>
+                  <span className="text-neutral-400 ml-6"># install a specific skill</span>
+                </div>
+              </div>
+              <div>
+                <Link
+                  href="/skills"
+                  className="inline-flex items-center px-5 py-2.5 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors"
+                >
+                  Browse Skills →
+                </Link>
               </div>
               <p>
                 Skills work with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, Gemini CLI, and many other AI coding tools. Each skill listing shows which platforms are supported and includes platform-specific installation instructions.
