@@ -145,8 +145,7 @@ export async function getFeaturedSkills(): Promise<Skill[]> {
     .from('skills')
     .select(SKILL_SELECT)
     .or('status.eq.published,status.is.null')
-    .order('featured', { ascending: false })
-    .order('weekly_installs', { ascending: false })
+    .order('github_stars', { ascending: false, nullsFirst: false })
     .limit(6)
 
   if (error || !data?.length) return []
