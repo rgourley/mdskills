@@ -72,7 +72,7 @@ export function Footer() {
           </div>
         </div>
         <p className="mt-8 pt-6 border-t border-neutral-200 text-sm text-neutral-500 text-center sm:text-left">
-          The community layer for AI agent skills. Find, create, fork, and share.
+          The community layer for AI agent skills. Find, create, fork, and share. Created by <a href="https://www.robertcreative.com/" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 transition-colors">Rob Gourley</a>.
         </p>
       </div>
     </footer>
