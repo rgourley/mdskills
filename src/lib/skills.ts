@@ -153,6 +153,22 @@ export async function getFeaturedSkills(): Promise<Skill[]> {
   return data.map((row) => mapRow(row as unknown as SkillRow))
 }
 
+/** Most recently added skills */
+export async function getLatestSkills(limit = 6): Promise<Skill[]> {
+  const supabase = await createClient()
+  if (!supabase) return []
+
+  const { data, error } = await supabase
+    .from('skills')
+    .select(SKILL_SELECT)
+    .or('status.eq.published,status.is.null')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error || !data?.length) return []
+  return data.map((row) => mapRow(row as unknown as SkillRow))
+}
+
 export interface GetSkillsOptions {
   query?: string
   tags?: string[]
