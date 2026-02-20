@@ -31,7 +31,7 @@ function SkillContent({ content }: { content: string }) {
   const cleaned = stripHtml(stripFrontmatter(content))
 
   return (
-    <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-700 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[13px] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none prose-pre:bg-[#f6f8fa] prose-pre:text-neutral-800 prose-pre:rounded-lg prose-pre:border prose-pre:border-neutral-200 prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
+    <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-700 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[13px] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none prose-pre:bg-code-bg prose-pre:text-neutral-800 prose-pre:rounded-lg prose-pre:border prose-pre:border-neutral-200 prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
       <ReactMarkdown>{cleaned}</ReactMarkdown>
     </div>
   )
@@ -48,7 +48,7 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
         {skill.hasPlugin && pluginCommand && (
           <>
             <p className="text-sm font-medium text-neutral-700 mb-2">Best experience: Claude Code</p>
-            <div className="p-4 rounded-xl bg-[#f6f8fa] border border-neutral-200 mb-4">
+            <div className="p-4 rounded-xl bg-code-bg border border-neutral-200 mb-4">
               <div className="flex items-center gap-3">
                 <code className="flex-1 font-mono text-sm text-neutral-800 break-all">{pluginCommand}</code>
                 <CopyButton text={pluginCommand} />
@@ -58,7 +58,7 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
             <p className="text-sm font-medium text-neutral-700 mb-2">Other platforms</p>
           </>
         )}
-        <div className="p-6 rounded-xl bg-[#f6f8fa] border border-neutral-200">
+        <div className="p-6 rounded-xl bg-code-bg border border-neutral-200">
           <p className="text-sm font-medium text-neutral-500 mb-3">Install via CLI</p>
           <div className="flex items-center gap-3">
             <code className="flex-1 font-mono text-sm text-neutral-800 break-all">{installCommand}</code>

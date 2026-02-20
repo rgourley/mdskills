@@ -86,8 +86,8 @@ export default async function HomePage() {
               </p>
               <div className="mt-10">
                 <p className="text-sm font-medium text-neutral-900 mb-3">Try it now</p>
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900 text-white max-w-md">
-                  <code className="flex-1 font-mono text-sm">$ npx mdskills</code>
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-code-bg border border-neutral-200 max-w-md">
+                  <code className="flex-1 font-mono text-sm text-neutral-800">$ npx mdskills</code>
                   <CopyButton text="npx mdskills" />
                 </div>
                 <p className="mt-2 text-sm text-neutral-500">Search, browse, and install skills from your CLI</p>
@@ -235,7 +235,7 @@ export default async function HomePage() {
               <p>
                 Most skills can be installed in one command. Browse the marketplace, find a skill you need, and run the install command in your terminal. The skill files are added to your project and your AI agent picks them up automatically.
               </p>
-              <div className="p-4 rounded-xl bg-[#f6f8fa] border border-neutral-200">
+              <div className="p-4 rounded-xl bg-code-bg border border-neutral-200">
                 <code className="font-mono text-sm text-neutral-800">npx mdskills install owner/skill-name</code>
               </div>
               <p>

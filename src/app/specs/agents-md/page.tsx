@@ -52,24 +52,24 @@ export default function AgentsMdPage() {
             at your repository root. AI agents read it on every interaction, treating it as always-on project context.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
-            <div className="text-green-400"># AGENTS.md</div>
-            <div className="mt-3 text-green-400">## Build</div>
-            <div className="text-neutral-300">- Run `npm install` to install dependencies</div>
-            <div className="text-neutral-300">- Run `npm run build` to compile TypeScript</div>
-            <div className="text-neutral-300">- Run `npm run dev` for development server on port 3000</div>
-            <div className="mt-3 text-green-400">## Test</div>
-            <div className="text-neutral-300">- Run `npm test` for unit tests (Jest)</div>
-            <div className="text-neutral-300">- Run `npm run test:e2e` for end-to-end tests (Playwright)</div>
-            <div className="text-neutral-300">- Always run tests before committing</div>
-            <div className="mt-3 text-green-400">## Code Style</div>
-            <div className="text-neutral-300">- TypeScript strict mode, no `any` types</div>
-            <div className="text-neutral-300">- Use named exports, not default exports</div>
-            <div className="text-neutral-300">- Follow existing patterns in the codebase</div>
-            <div className="mt-3 text-green-400">## Architecture</div>
-            <div className="text-neutral-300">- Next.js App Router with server components</div>
-            <div className="text-neutral-300">- Supabase for database and auth</div>
-            <div className="text-neutral-300">- Tailwind CSS for styling</div>
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
+            <div className="text-green-700"># AGENTS.md</div>
+            <div className="mt-3 text-green-700">## Build</div>
+            <div className="text-neutral-700">- Run `npm install` to install dependencies</div>
+            <div className="text-neutral-700">- Run `npm run build` to compile TypeScript</div>
+            <div className="text-neutral-700">- Run `npm run dev` for development server on port 3000</div>
+            <div className="mt-3 text-green-700">## Test</div>
+            <div className="text-neutral-700">- Run `npm test` for unit tests (Jest)</div>
+            <div className="text-neutral-700">- Run `npm run test:e2e` for end-to-end tests (Playwright)</div>
+            <div className="text-neutral-700">- Always run tests before committing</div>
+            <div className="mt-3 text-green-700">## Code Style</div>
+            <div className="text-neutral-700">- TypeScript strict mode, no `any` types</div>
+            <div className="text-neutral-700">- Use named exports, not default exports</div>
+            <div className="text-neutral-700">- Follow existing patterns in the codebase</div>
+            <div className="mt-3 text-green-700">## Architecture</div>
+            <div className="text-neutral-700">- Next.js App Router with server components</div>
+            <div className="text-neutral-700">- Supabase for database and auth</div>
+            <div className="text-neutral-700">- Tailwind CSS for styling</div>
           </div>
 
           <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">What to include</h2>

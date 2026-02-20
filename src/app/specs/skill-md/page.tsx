@@ -51,10 +51,10 @@ export default function SkillMdPage() {
             with YAML frontmatter and markdown instructions. At minimum, a skill needs a name and description.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
             <div className="text-neutral-400">---</div>
-            <div><span className="text-blue-400">name</span>: pdf-processing</div>
-            <div><span className="text-blue-400">description</span>: Extract text and tables from PDF files,</div>
+            <div><span className="text-blue-600">name</span>: pdf-processing</div>
+            <div><span className="text-blue-600">description</span>: Extract text and tables from PDF files,</div>
             <div>  merge documents, fill forms, and convert to images.</div>
             <div><span className="text-neutral-500">license</span>: MIT</div>
             <div><span className="text-neutral-500">compatibility</span>:</div>
@@ -62,9 +62,9 @@ export default function SkillMdPage() {
             <div>  - Cursor</div>
             <div><span className="text-neutral-500">allowed-tools</span>: Bash(python:*) Read Write</div>
             <div className="text-neutral-400">---</div>
-            <div className="mt-3 text-green-400"># PDF Processing</div>
-            <div className="mt-1 text-neutral-300">When the user asks you to work with PDF files, follow</div>
-            <div className="text-neutral-300">these instructions...</div>
+            <div className="mt-3 text-green-700"># PDF Processing</div>
+            <div className="mt-1 text-neutral-700">When the user asks you to work with PDF files, follow</div>
+            <div className="text-neutral-700">these instructions...</div>
           </div>
 
           <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">Frontmatter fields</h2>

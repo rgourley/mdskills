@@ -49,10 +49,10 @@ export default function WhatAreSkillsPage() {
           </p>
 
           {/* Directory structure */}
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6">
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6">
             <div className="text-neutral-400 mb-2"># Skill folder structure</div>
             <div>my-skill/</div>
-            <div className="text-green-400">{'\u251C\u2500\u2500'} SKILL.md          # Required: instructions + metadata</div>
+            <div className="text-green-700">{'\u251C\u2500\u2500'} SKILL.md          # Required: instructions + metadata</div>
             <div className="text-neutral-400">{'\u251C\u2500\u2500'} scripts/          # Optional: executable code</div>
             <div className="text-neutral-400">{'\u251C\u2500\u2500'} references/       # Optional: documentation</div>
             <div className="text-neutral-400">{'\u2514\u2500\u2500'} assets/           # Optional: templates, resources</div>
@@ -64,10 +64,10 @@ export default function WhatAreSkillsPage() {
             Every SKILL.md file starts with YAML frontmatter. Two fields are required; the rest are optional.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
             <div className="text-neutral-400">---</div>
-            <div><span className="text-blue-400">name</span>: pdf-processing</div>
-            <div><span className="text-blue-400">description</span>: Extract text and tables from PDF files,</div>
+            <div><span className="text-blue-600">name</span>: pdf-processing</div>
+            <div><span className="text-blue-600">description</span>: Extract text and tables from PDF files,</div>
             <div>  fill forms, merge documents.</div>
             <div><span className="text-neutral-500">license</span>: Apache-2.0</div>
             <div><span className="text-neutral-500">compatibility</span>: Requires pdfplumber, network access</div>

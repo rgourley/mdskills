@@ -14,6 +14,7 @@ const config: Config = {
         border: 'hsl(var(--border))',
         muted: 'hsl(var(--muted))',
         accent: 'hsl(var(--accent))',
+        'code-bg': '#f6f8fa',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

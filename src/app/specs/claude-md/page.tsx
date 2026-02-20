@@ -55,24 +55,24 @@ export default function ClaudeMdPage() {
             global preferences that apply across all projects.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
-            <div className="text-green-400"># CLAUDE.md</div>
-            <div className="mt-3 text-green-400">## Project</div>
-            <div className="text-neutral-300">Next.js 14 App Router + Supabase + Tailwind CSS.</div>
-            <div className="text-neutral-300">TypeScript strict mode. No `any` types.</div>
-            <div className="mt-3 text-green-400">## Commands</div>
-            <div className="text-neutral-300">- `npm run dev` — development server (port 3002)</div>
-            <div className="text-neutral-300">- `npm run build` — production build</div>
-            <div className="text-neutral-300">- `npm test` — run tests</div>
-            <div className="mt-3 text-green-400">## Code Style</div>
-            <div className="text-neutral-300">- Prefer server components; mark &apos;use client&apos; explicitly</div>
-            <div className="text-neutral-300">- Use Lucide for icons, not emoji</div>
-            <div className="text-neutral-300">- Keep components small and focused</div>
-            <div className="text-neutral-300">- Use `@/` path alias for imports</div>
-            <div className="mt-3 text-green-400">## Don&apos;t</div>
-            <div className="text-neutral-300">- Don&apos;t add README files unless asked</div>
-            <div className="text-neutral-300">- Don&apos;t commit .env files</div>
-            <div className="text-neutral-300">- Don&apos;t use default exports</div>
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
+            <div className="text-green-700"># CLAUDE.md</div>
+            <div className="mt-3 text-green-700">## Project</div>
+            <div className="text-neutral-700">Next.js 14 App Router + Supabase + Tailwind CSS.</div>
+            <div className="text-neutral-700">TypeScript strict mode. No `any` types.</div>
+            <div className="mt-3 text-green-700">## Commands</div>
+            <div className="text-neutral-700">- `npm run dev` — development server (port 3002)</div>
+            <div className="text-neutral-700">- `npm run build` — production build</div>
+            <div className="text-neutral-700">- `npm test` — run tests</div>
+            <div className="mt-3 text-green-700">## Code Style</div>
+            <div className="text-neutral-700">- Prefer server components; mark &apos;use client&apos; explicitly</div>
+            <div className="text-neutral-700">- Use Lucide for icons, not emoji</div>
+            <div className="text-neutral-700">- Keep components small and focused</div>
+            <div className="text-neutral-700">- Use `@/` path alias for imports</div>
+            <div className="mt-3 text-green-700">## Don&apos;t</div>
+            <div className="text-neutral-700">- Don&apos;t add README files unless asked</div>
+            <div className="text-neutral-700">- Don&apos;t commit .env files</div>
+            <div className="text-neutral-700">- Don&apos;t use default exports</div>
           </div>
 
           <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">CLAUDE.md locations</h2>

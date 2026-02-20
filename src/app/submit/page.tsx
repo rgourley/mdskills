@@ -89,7 +89,7 @@ export default function SubmitPage() {
                     <h3 className="font-semibold text-neutral-900">{artifact.name}</h3>
                     <p className="mt-1 text-sm text-neutral-600">{artifact.description}</p>
                     {artifact.command ? (
-                      <div className="mt-3 p-3 rounded-lg bg-neutral-900 text-white">
+                      <div className="mt-3 p-3 rounded-lg bg-code-bg border border-neutral-200 text-neutral-800">
                         <code className="font-mono text-sm">{artifact.command}</code>
                       </div>
                     ) : (

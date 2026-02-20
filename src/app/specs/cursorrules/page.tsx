@@ -53,21 +53,21 @@ export default function CursorrulesPage() {
             The file is plain text with natural language instructions.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
             <div className="text-neutral-400"># .cursorrules</div>
-            <div className="mt-2 text-neutral-300">You are an expert in TypeScript, React, Next.js</div>
-            <div className="text-neutral-300">App Router, and Tailwind CSS.</div>
-            <div className="mt-3 text-neutral-300">Key conventions:</div>
-            <div className="text-neutral-300">- Use functional components with TypeScript interfaces</div>
-            <div className="text-neutral-300">- Prefer server components; use &apos;use client&apos; only when needed</div>
-            <div className="text-neutral-300">- Use Tailwind for all styling, no CSS modules</div>
-            <div className="text-neutral-300">- Name components in PascalCase, utilities in camelCase</div>
-            <div className="text-neutral-300">- Always handle loading and error states</div>
-            <div className="text-neutral-300">- Write concise, readable code — no over-engineering</div>
-            <div className="mt-3 text-neutral-300">Project structure:</div>
-            <div className="text-neutral-300">- src/app/ for routes (Next.js App Router)</div>
-            <div className="text-neutral-300">- src/components/ for shared UI components</div>
-            <div className="text-neutral-300">- src/lib/ for utilities and data fetching</div>
+            <div className="mt-2 text-neutral-700">You are an expert in TypeScript, React, Next.js</div>
+            <div className="text-neutral-700">App Router, and Tailwind CSS.</div>
+            <div className="mt-3 text-neutral-700">Key conventions:</div>
+            <div className="text-neutral-700">- Use functional components with TypeScript interfaces</div>
+            <div className="text-neutral-700">- Prefer server components; use &apos;use client&apos; only when needed</div>
+            <div className="text-neutral-700">- Use Tailwind for all styling, no CSS modules</div>
+            <div className="text-neutral-700">- Name components in PascalCase, utilities in camelCase</div>
+            <div className="text-neutral-700">- Always handle loading and error states</div>
+            <div className="text-neutral-700">- Write concise, readable code — no over-engineering</div>
+            <div className="mt-3 text-neutral-700">Project structure:</div>
+            <div className="text-neutral-700">- src/app/ for routes (Next.js App Router)</div>
+            <div className="text-neutral-700">- src/components/ for shared UI components</div>
+            <div className="text-neutral-700">- src/lib/ for utilities and data fetching</div>
           </div>
 
           <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">Cursor also supports .mdc rules</h2>
@@ -78,16 +78,16 @@ export default function CursorrulesPage() {
             and includes frontmatter for metadata.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
             <div className="text-neutral-400"># .cursor/rules/react-components.mdc</div>
             <div className="text-neutral-400">---</div>
-            <div><span className="text-blue-400">description</span>: Rules for React components</div>
-            <div><span className="text-blue-400">globs</span>: src/components/**/*.tsx</div>
+            <div><span className="text-blue-600">description</span>: Rules for React components</div>
+            <div><span className="text-blue-600">globs</span>: src/components/**/*.tsx</div>
             <div className="text-neutral-400">---</div>
-            <div className="mt-2 text-neutral-300">All components must:</div>
-            <div className="text-neutral-300">- Export a named function (not default)</div>
-            <div className="text-neutral-300">- Accept props via a TypeScript interface</div>
-            <div className="text-neutral-300">- Include JSDoc with a one-line description</div>
+            <div className="mt-2 text-neutral-700">All components must:</div>
+            <div className="text-neutral-700">- Export a named function (not default)</div>
+            <div className="text-neutral-700">- Accept props via a TypeScript interface</div>
+            <div className="text-neutral-700">- Include JSDoc with a one-line description</div>
           </div>
 
           <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">Tips for effective rules</h2>

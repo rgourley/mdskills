@@ -24,7 +24,7 @@ const STEPS = [
           A skill is just a folder with a <code className="px-1.5 py-0.5 rounded bg-neutral-100 text-sm font-mono">SKILL.md</code> file inside it.
           The folder name must match the skill name in your frontmatter.
         </p>
-        <div className="rounded-xl bg-neutral-900 text-white p-4 font-mono text-sm">
+        <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-4 font-mono text-sm">
           <div className="text-neutral-400"># Quick start</div>
           <div>mkdir my-skill && touch my-skill/SKILL.md</div>
           <div className="mt-2 text-neutral-400"># Or use the CLI</div>
@@ -43,10 +43,10 @@ const STEPS = [
           <code className="px-1.5 py-0.5 rounded bg-neutral-100 text-sm font-mono">name</code> and{' '}
           <code className="px-1.5 py-0.5 rounded bg-neutral-100 text-sm font-mono">description</code>.
         </p>
-        <div className="rounded-xl bg-neutral-900 text-white p-4 font-mono text-sm overflow-x-auto">
+        <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-4 font-mono text-sm overflow-x-auto">
           <div className="text-neutral-400">---</div>
-          <div><span className="text-blue-400">name</span>: my-skill</div>
-          <div><span className="text-blue-400">description</span>: Generates changelog entries from</div>
+          <div><span className="text-blue-600">name</span>: my-skill</div>
+          <div><span className="text-blue-600">description</span>: Generates changelog entries from</div>
           <div>  git commit history. Use when the user asks to</div>
           <div>  create release notes or update a CHANGELOG.</div>
           <div><span className="text-neutral-500">license</span>: MIT</div>
@@ -68,20 +68,20 @@ const STEPS = [
         <p className="text-neutral-600 mb-3">
           After the frontmatter, write markdown instructions. There are no format restrictions — use whatever structure helps the agent succeed.
         </p>
-        <div className="rounded-xl bg-neutral-900 text-white p-4 font-mono text-sm overflow-x-auto">
-          <div className="text-green-400"># Changelog Generator</div>
+        <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-4 font-mono text-sm overflow-x-auto">
+          <div className="text-green-700"># Changelog Generator</div>
           <div></div>
-          <div className="text-green-400">## When to use this skill</div>
+          <div className="text-green-700">## When to use this skill</div>
           <div>Use when the user asks to create release notes,</div>
           <div>update a CHANGELOG, or summarize recent changes.</div>
           <div></div>
-          <div className="text-green-400">## Steps</div>
+          <div className="text-green-700">## Steps</div>
           <div>1. Run `git log --oneline` to get recent commits</div>
           <div>2. Group commits by type (feat, fix, docs, etc.)</div>
           <div>3. Generate a markdown changelog entry</div>
           <div>4. Prepend to CHANGELOG.md</div>
           <div></div>
-          <div className="text-green-400">## Output format</div>
+          <div className="text-green-700">## Output format</div>
           <div>Use Keep a Changelog format (keepachangelog.com).</div>
         </div>
         <div className="mt-3 text-sm text-neutral-500">
@@ -127,7 +127,7 @@ const STEPS = [
           </a>
           {' '}reference library to check your skill follows the spec:
         </p>
-        <div className="rounded-xl bg-neutral-900 text-white p-4 font-mono text-sm">
+        <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-4 font-mono text-sm">
           <div>skills-ref validate ./my-skill</div>
         </div>
         <p className="mt-3 text-sm text-neutral-600">
@@ -144,7 +144,7 @@ const STEPS = [
         <p className="text-neutral-600 mb-3">
           Push your skill to a GitHub repository, then submit it to the marketplace:
         </p>
-        <div className="rounded-xl bg-neutral-900 text-white p-4 font-mono text-sm">
+        <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-4 font-mono text-sm">
           <div className="text-neutral-400"># Push to GitHub first, then:</div>
           <div>npx mdskills publish</div>
         </div>

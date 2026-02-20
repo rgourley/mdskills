@@ -53,20 +53,20 @@ export default function LlmsTxtPage() {
             It starts with a title and description, then lists key sections with links.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
-            <div className="text-green-400"># mdskills.ai</div>
-            <div className="mt-2 text-neutral-300">&gt; AI skills marketplace for Claude Code, Cursor,</div>
-            <div className="text-neutral-300">&gt; Codex, and 27+ AI coding agents.</div>
-            <div className="mt-3 text-green-400">## Docs</div>
-            <div className="text-neutral-300">- [What are Skills](/docs/what-are-skills): Learn about</div>
-            <div className="text-neutral-300">  the SKILL.md format and how agents use skills</div>
-            <div className="text-neutral-300">- [Create a Skill](/docs/create-a-skill): Step-by-step</div>
-            <div className="text-neutral-300">  guide to authoring your first skill</div>
-            <div className="mt-3 text-green-400">## Specs</div>
-            <div className="text-neutral-300">- [SKILL.md](/specs/skill-md): The agent skills format</div>
-            <div className="text-neutral-300">- [MCP](/specs/mcp): Model Context Protocol</div>
-            <div className="mt-3 text-green-400">## API</div>
-            <div className="text-neutral-300">- [Skills API](/api/skills): Search and browse skills</div>
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
+            <div className="text-green-700"># mdskills.ai</div>
+            <div className="mt-2 text-neutral-700">&gt; AI skills marketplace for Claude Code, Cursor,</div>
+            <div className="text-neutral-700">&gt; Codex, and 27+ AI coding agents.</div>
+            <div className="mt-3 text-green-700">## Docs</div>
+            <div className="text-neutral-700">- [What are Skills](/docs/what-are-skills): Learn about</div>
+            <div className="text-neutral-700">  the SKILL.md format and how agents use skills</div>
+            <div className="text-neutral-700">- [Create a Skill](/docs/create-a-skill): Step-by-step</div>
+            <div className="text-neutral-700">  guide to authoring your first skill</div>
+            <div className="mt-3 text-green-700">## Specs</div>
+            <div className="text-neutral-700">- [SKILL.md](/specs/skill-md): The agent skills format</div>
+            <div className="text-neutral-700">- [MCP](/specs/mcp): Model Context Protocol</div>
+            <div className="mt-3 text-green-700">## API</div>
+            <div className="text-neutral-700">- [Skills API](/api/skills): Search and browse skills</div>
           </div>
 
           <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">Format rules</h2>

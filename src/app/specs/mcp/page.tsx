@@ -52,15 +52,15 @@ export default function McpPage() {
             The AI client discovers available capabilities at startup and invokes them as needed.
           </p>
 
-          <div className="rounded-xl bg-neutral-900 text-white p-6 font-mono text-sm my-6 overflow-x-auto">
+          <div className="rounded-xl bg-code-bg border border-neutral-200 text-neutral-800 p-6 font-mono text-sm my-6 overflow-x-auto">
             <div className="text-neutral-400"># Add an MCP server to Claude Code</div>
             <div className="mt-1">claude mcp add my-server -- npx -y my-mcp-server</div>
             <div className="mt-4 text-neutral-400"># Or configure in .cursor/mcp.json</div>
             <div className="mt-1">{'{'}</div>
-            <div>  <span className="text-blue-400">&quot;mcpServers&quot;</span>: {'{'}</div>
-            <div>    <span className="text-blue-400">&quot;my-server&quot;</span>: {'{'}</div>
-            <div>      <span className="text-blue-400">&quot;command&quot;</span>: <span className="text-green-400">&quot;npx&quot;</span>,</div>
-            <div>      <span className="text-blue-400">&quot;args&quot;</span>: [<span className="text-green-400">&quot;-y&quot;</span>, <span className="text-green-400">&quot;my-mcp-server&quot;</span>]</div>
+            <div>  <span className="text-blue-600">&quot;mcpServers&quot;</span>: {'{'}</div>
+            <div>    <span className="text-blue-600">&quot;my-server&quot;</span>: {'{'}</div>
+            <div>      <span className="text-blue-600">&quot;command&quot;</span>: <span className="text-green-700">&quot;npx&quot;</span>,</div>
+            <div>      <span className="text-blue-600">&quot;args&quot;</span>: [<span className="text-green-700">&quot;-y&quot;</span>, <span className="text-green-700">&quot;my-mcp-server&quot;</span>]</div>
             <div>    {'}'}</div>
             <div>  {'}'}</div>
             <div>{'}'}</div>

@@ -12,7 +12,7 @@ const AGENTS = [
   { name: 'Replit', src: '/images/replit-logo_svgstack_com_51341770938490.svg' },
 ]
 
-const LOGO_SIZE = 24
+const LOGO_SIZE = 36
 
 export function AgentStrip() {
   return (
@@ -20,7 +20,7 @@ export function AgentStrip() {
       <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">
         Works with
       </p>
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-5">
         {AGENTS.map((agent) => (
           <Image
             key={agent.name}
@@ -28,7 +28,7 @@ export function AgentStrip() {
             alt={agent.name}
             width={LOGO_SIZE}
             height={LOGO_SIZE}
-            className="h-6 w-6 shrink-0 object-contain"
+            className="h-9 w-9 shrink-0 object-contain"
             title={agent.name}
           />
         ))}
