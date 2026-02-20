@@ -31,11 +31,20 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: 'mdskills.ai — AI Agent Skills Marketplace',
     description: DEFAULT_DESCRIPTION,
+    images: [
+      {
+        url: '/images/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'mdskills.ai — Free AI Skills for Claude Code, Cursor & More',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'mdskills.ai — AI Agent Skills Marketplace',
     description: DEFAULT_DESCRIPTION,
+    images: ['/images/og.png'],
   },
   robots: {
     index: true,

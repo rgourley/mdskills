@@ -34,6 +34,9 @@ export function Footer() {
               <li>
                 <Link href="/docs/create-a-skill" className="hover:text-neutral-900 transition-colors">Create a Skill</Link>
               </li>
+              <li>
+                <Link href="/docs/skill-best-practices" className="hover:text-neutral-900 transition-colors">Best Practices</Link>
+              </li>
             </ul>
           </div>
           <div>

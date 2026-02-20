@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpen, Puzzle, Server, FileText, ExternalLink } from 'lucide-react'
+import { BookOpen, Lightbulb, Puzzle, Server, FileText, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -36,6 +36,7 @@ const LAYERS = [
     links: [
       { label: 'agentskills.io', href: 'https://agentskills.io' },
       { label: 'What are Skills?', href: '/docs/what-are-skills', internal: true },
+      { label: 'Best Practices', href: '/docs/skill-best-practices', internal: true },
     ],
   },
   {
@@ -159,6 +160,20 @@ export default function DocsPage() {
             </div>
             <p className="mt-2 text-sm text-neutral-600">
               Step-by-step guide to writing, validating, and publishing your first SKILL.md.
+            </p>
+          </Link>
+          <Link
+            href="/docs/skill-best-practices"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <Lightbulb className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                SKILL.md Best Practices
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              Practical tips for writing skills that agents use well. Descriptions, structure, testing, and common mistakes.
             </p>
           </Link>
         </div>

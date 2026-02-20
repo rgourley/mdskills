@@ -220,6 +220,11 @@ export default function CreateASkillPage() {
               <span><strong>Handle errors gracefully.</strong> Include fallback instructions for when scripts fail or dependencies are missing.</span>
             </li>
           </ul>
+          <p className="mt-4 text-sm">
+            <Link href="/docs/skill-best-practices" className="text-blue-600 hover:underline font-medium">
+              Read the full best practices guide &rarr;
+            </Link>
+          </p>
         </div>
 
         {/* External links */}
