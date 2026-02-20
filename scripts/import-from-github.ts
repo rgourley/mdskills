@@ -386,34 +386,70 @@ function inferDisplayName(
   return titleCase(bestName)
 }
 
-/** Auto-detect platforms from content, frontmatter, and repo structure */
+// Clients that can consume generic markdown instructions (SKILL.md, AGENTS.md, etc.)
+const MARKDOWN_CLIENTS = [
+  'claude-code', 'claude-desktop', 'cursor', 'vscode-copilot', 'windsurf',
+  'continue-dev', 'codex', 'gemini-cli', 'amp', 'roo-code', 'goose',
+  'opencode', 'trae', 'qodo', 'command-code',
+]
+
+// Clients that support MCP protocol
+const MCP_CLIENTS = [
+  'claude-code', 'claude-desktop', 'cursor', 'vscode-copilot', 'windsurf',
+  'continue-dev', 'gemini-cli', 'amp', 'roo-code', 'goose',
+]
+
+// Format-specific client mappings
+const FORMAT_SPECIFIC_CLIENTS: Record<string, string[]> = {
+  cursorrules: ['cursor'],
+  mdc: ['cursor'],
+  claude_md: ['claude-code', 'claude-desktop'],
+  copilot_instructions: ['vscode-copilot', 'github'],
+  gemini_md: ['gemini', 'gemini-cli'],
+  windsurf_rules: ['windsurf'],
+  clinerules: ['roo-code'],
+}
+
+/** Auto-detect platforms from content, frontmatter, artifact type, and format */
 function detectPlatforms(
   fm: Frontmatter,
   skillContent: string,
-  readme: string | null
+  readme: string | null,
+  artifactType?: string,
+  formatStandard?: string,
 ): string[] {
-  // Start with frontmatter compatibility list
+  // If frontmatter explicitly declares compatibility, respect that
   if (fm.compatibility && fm.compatibility.length > 0) {
-    // Normalize to our slug format
     const mapped = fm.compatibility.map((c) =>
       c.toLowerCase().replace(/\s+/g, '-')
     )
     return Array.from(new Set(mapped))
   }
 
-  // Auto-detect from content mentions
+  // Format-specific rules files only work with their target client
+  if (formatStandard && FORMAT_SPECIFIC_CLIENTS[formatStandard]) {
+    return FORMAT_SPECIFIC_CLIENTS[formatStandard]
+  }
+
+  // MCP servers work with all MCP-capable clients
+  if (artifactType === 'mcp_server') {
+    return [...MCP_CLIENTS]
+  }
+
+  // Generic markdown skills work with all markdown-consuming clients
+  const platforms = new Set<string>(MARKDOWN_CLIENTS)
+
   const allContent = `${skillContent}\n${readme || ''}`
-  const platforms = new Set<string>()
 
-  if (/claude.code|claude-code|\.claude/i.test(allContent)) platforms.add('claude-code')
-  if (/cursor/i.test(allContent)) platforms.add('cursor')
-  if (/codex/i.test(allContent)) platforms.add('codex')
-  if (/windsurf/i.test(allContent)) platforms.add('windsurf')
-  if (/copilot/i.test(allContent)) platforms.add('github-copilot')
-  if (/gemini/i.test(allContent)) platforms.add('gemini-cli')
-
-  // Default to claude-code if nothing detected (SKILL.md format is from Claude)
-  if (platforms.size === 0) platforms.add('claude-code')
+  // Add extra clients if explicitly mentioned
+  if (/chatgpt/i.test(allContent)) platforms.add('chatgpt')
+  if (/grok/i.test(allContent)) platforms.add('grok')
+  if (/replit/i.test(allContent)) platforms.add('replit')
+  if (/firebender/i.test(allContent)) platforms.add('firebender')
+  if (/spring.ai/i.test(allContent)) platforms.add('spring-ai')
+  if (/databricks/i.test(allContent)) platforms.add('databricks')
+  if (/letta/i.test(allContent)) platforms.add('letta')
+  if (/factory/i.test(allContent)) platforms.add('factory')
 
   return Array.from(platforms)
 }
@@ -655,9 +691,10 @@ async function main() {
     descriptionFromReadme(readme) ||
     meta.description ||
     `${displayName} - AI agent skill`
-  const platforms = args.platforms || detectPlatforms(fm, skillContent, readme)
   const permissions = detectPermissions(skillContent)
   const artifactType = args.artifactType || detectArtifactType(fm.raw, repo)
+  const formatStd = usingReadmeFallback ? 'generic' : 'skill_md'
+  const platforms = args.platforms || detectPlatforms(fm, skillContent, readme, artifactType, formatStd)
   const { skillType, hasPlugin } = detectSkillType(owner, repo, skillPath)
   const tags = Array.from(new Set([
     ...(fm.tags || []),
