@@ -3,8 +3,10 @@
  * Uses the same keyword-scoring logic as the import script.
  *
  * Usage:
- *   npx tsx scripts/backfill-categories.ts          # dry run
- *   npx tsx scripts/backfill-categories.ts --apply   # actually write to DB
+ *   npx tsx scripts/backfill-categories.ts              # dry run (null categories only)
+ *   npx tsx scripts/backfill-categories.ts --apply       # write to DB (null categories only)
+ *   npx tsx scripts/backfill-categories.ts --reset-all   # dry run (clear + re-detect for all batch-imported)
+ *   npx tsx scripts/backfill-categories.ts --reset-all --apply  # write to DB
  */
 import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
@@ -19,6 +21,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey)
 const apply = process.argv.includes('--apply')
+const resetAll = process.argv.includes('--reset-all')
 
 // ── Category keyword map (same as import-skill.ts) ──────────────
 
@@ -26,7 +29,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   'code-review': ['code review', 'lint', 'linting', 'eslint', 'prettier', 'code quality', 'static analysis', 'code style'],
   'documentation': ['documentation', 'docs', 'readme', 'jsdoc', 'typedoc', 'api docs', 'docstring'],
   'testing': ['testing', 'test', 'jest', 'mocha', 'pytest', 'unit test', 'e2e', 'qa', 'quality assurance', 'playwright', 'cypress', 'vitest'],
-  'security': ['security', 'vulnerability', 'audit', 'cve', 'owasp', 'pentest', 'encryption', 'auth', 'authentication'],
+  'security': ['security', 'vulnerability', 'cve', 'owasp', 'pentest', 'penetration test', 'encryption', 'exploit', 'malware', 'firewall'],
   'api-development': ['api', 'rest', 'graphql', 'openapi', 'swagger', 'endpoint', 'webhook', 'grpc'],
   'data-analysis': ['data analysis', 'data science', 'analytics', 'visualization', 'pandas', 'jupyter', 'notebook', 'csv', 'dataset'],
   'productivity': ['productivity', 'automation', 'workflow', 'task', 'todo', 'scheduling', 'time tracking', 'cli tool', 'memory', 'note'],
@@ -73,6 +76,7 @@ function detectCategory(name: string, description: string, tags: string[], readm
 
 async function main() {
   console.log(apply ? '🔧 APPLY MODE — will update database' : '👀 DRY RUN — pass --apply to write changes')
+  if (resetAll) console.log('🔄 RESET-ALL MODE — will clear and re-detect categories for ALL skills')
   console.log('')
 
   // Fetch all categories
@@ -83,12 +87,36 @@ async function main() {
   }
   const catMap = new Map(cats.map(c => [c.slug, c.id]))
 
-  // Fetch skills with no category
-  const { data: skills, error } = await supabase
+  // If --reset-all, clear category_id for all batch-imported skills first
+  if (resetAll && apply) {
+    console.log('Clearing category_id for all batch-imported skills (owner = sickn33)...')
+    const { count, error: resetError } = await supabase
+      .from('skills')
+      .update({ category_id: null })
+      .eq('owner', 'sickn33')
+      .select('id', { count: 'exact', head: true })
+    if (resetError) {
+      console.error('Failed to reset categories:', resetError.message)
+      process.exit(1)
+    }
+    console.log(`  Cleared ${count} skills\n`)
+  }
+
+  // Fetch skills to process
+  let query = supabase
     .from('skills')
     .select('id, slug, name, description, tags, readme, category_id')
-    .is('category_id', null)
     .or('status.eq.published,status.is.null')
+
+  if (resetAll) {
+    // Re-detect for ALL skills from this owner (after clearing)
+    query = query.eq('owner', 'sickn33')
+  } else {
+    // Default: only skills with no category
+    query = query.is('category_id', null)
+  }
+
+  const { data: skills, error } = await query
 
   if (error) {
     console.error('Failed to fetch skills:', error.message)

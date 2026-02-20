@@ -623,7 +623,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   'code-review': ['code review', 'lint', 'linting', 'eslint', 'prettier', 'code quality', 'static analysis', 'code style'],
   'documentation': ['documentation', 'docs', 'readme', 'jsdoc', 'typedoc', 'api docs', 'docstring'],
   'testing': ['testing', 'test', 'jest', 'mocha', 'pytest', 'unit test', 'e2e', 'qa', 'quality assurance', 'playwright', 'cypress', 'vitest'],
-  'security': ['security', 'vulnerability', 'audit', 'cve', 'owasp', 'pentest', 'encryption', 'auth', 'authentication'],
+  'security': ['security', 'vulnerability', 'cve', 'owasp', 'pentest', 'penetration test', 'encryption', 'exploit', 'malware', 'firewall'],
   'api-development': ['api', 'rest', 'graphql', 'openapi', 'swagger', 'endpoint', 'webhook', 'grpc'],
   'data-analysis': ['data analysis', 'data science', 'analytics', 'visualization', 'pandas', 'jupyter', 'notebook', 'csv', 'dataset'],
   'productivity': ['productivity', 'automation', 'workflow', 'task', 'todo', 'scheduling', 'time tracking', 'cli tool'],
@@ -763,8 +763,15 @@ async function main() {
         const fm = parseFrontmatter(skillContent)
         const skillDir = skillPath.includes('/') ? skillPath.split('/').slice(0, -1).join('/') : undefined
 
-        // Fetch README from skill's subdirectory (falls back to repo root)
-        const readme = await fetchReadme(owner, repo, skillDir)
+        // Try to fetch a README from the skill's own directory only
+        // Don't fall back to root README — for collection repos it's a shared overview, not relevant
+        let readme: string | null = null
+        if (skillDir) {
+          readme = await fetchGitHubRaw(owner, repo, `${skillDir}/README.md`)
+        }
+        if (!readme) {
+          readme = skillContent  // Use SKILL.md as the display content
+        }
 
         const displayName = inferDisplayName(repo, fm.name, readme, skillDir)
         const description = (
@@ -778,7 +785,8 @@ async function main() {
         const formatStd = 'skill_md'
         const platforms = args.platforms || detectPlatforms(fm, skillContent, readme, artifactType, formatStd)
         const { skillType, hasPlugin } = detectSkillType(owner, repo, skillPath, meta.topics, readme)
-        const tags = Array.from(new Set([...(fm.tags || []), ...meta.topics.slice(0, 5)])).slice(0, 15)
+        // For batch imports, only use per-skill frontmatter tags (not repo-level topics)
+        const tags = Array.from(new Set(fm.tags || [])).slice(0, 15)
 
         // Category detection
         let categorySlug = args.category || null

@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/admin', '/create'],
       },
     ],
-    sitemap: 'https://mdskills.ai/sitemap.xml',
+    sitemap: 'https://www.mdskills.ai/sitemap.xml',
   }
 }
