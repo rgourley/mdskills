@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { getSkillBySlug } from '@/lib/skills'
 import { getSkillClients } from '@/lib/clients'
 import { Star } from 'lucide-react'
-import { SkillJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
+import { SkillJsonLd, SkillFaqJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
 import { SkillDetailTabs, type TabId } from '@/components/SkillDetailTabs'
 import { SkillOverviewTab } from '@/components/SkillOverviewTab'
 import { SkillSourceCode } from '@/components/SkillSourceCode'
@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'article',
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title: `${skill.name} for ${platformStr}`,
       description: fullDescription,
     },
@@ -126,8 +126,16 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         category={skill.categoryName}
         platforms={skill.platforms}
         githubUrl={skill.githubUrl}
-        dateModified={skill.updatedAt}
+        dateModified={skill.updatedAtIso}
+        datePublished={skill.createdAtIso}
         tags={skill.tags}
+      />
+      <SkillFaqJsonLd
+        name={skill.name}
+        description={skill.description}
+        owner={skill.owner}
+        slug={skill.slug}
+        platforms={skill.platforms}
       />
     <div className="py-6 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">

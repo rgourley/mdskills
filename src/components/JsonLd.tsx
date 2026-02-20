@@ -1,4 +1,6 @@
-/** JSON-LD structured data component for SEO */
+/** JSON-LD structured data components for SEO */
+
+const SITE_URL = 'https://www.mdskills.ai'
 
 interface JsonLdProps {
   data: Record<string, unknown>
@@ -21,7 +23,7 @@ export function OrganizationJsonLd() {
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: 'mdskills.ai',
-        url: 'https://mdskills.ai',
+        url: SITE_URL,
         description: 'The open skills marketplace for AI agents. Discover, create, fork, and share SKILL.md files.',
         sameAs: ['https://github.com/rgourley/mdskills'],
       }}
@@ -37,12 +39,12 @@ export function WebSiteJsonLd() {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'mdskills.ai',
-        url: 'https://mdskills.ai',
+        url: SITE_URL,
         potentialAction: {
           '@type': 'SearchAction',
           target: {
             '@type': 'EntryPoint',
-            urlTemplate: 'https://mdskills.ai/skills?q={search_term_string}',
+            urlTemplate: `${SITE_URL}/skills?q={search_term_string}`,
           },
           'query-input': 'required name=search_term_string',
         },
@@ -62,6 +64,7 @@ export function SkillJsonLd({
   platforms,
   githubUrl,
   dateModified,
+  datePublished,
   tags,
 }: {
   name: string
@@ -73,6 +76,7 @@ export function SkillJsonLd({
   platforms?: string[]
   githubUrl?: string
   dateModified?: string
+  datePublished?: string
   tags?: string[]
 }) {
   return (
@@ -84,7 +88,7 @@ export function SkillJsonLd({
           '@type': 'SoftwareApplication',
           name: `${name} — AI Agent Skill`,
           description,
-          url: `https://mdskills.ai${url}`,
+          url: `${SITE_URL}${url}`,
           applicationCategory: category || 'DeveloperApplication',
           operatingSystem: platforms?.join(', ') || 'Any',
           offers: {
@@ -93,11 +97,12 @@ export function SkillJsonLd({
             priceCurrency: 'USD',
           },
           author: {
-            '@type': 'Organization',
+            '@type': 'Person',
             name: author,
           },
           ...(license && { license }),
           ...(dateModified && { dateModified }),
+          ...(datePublished && { datePublished }),
           ...(tags && tags.length > 0 && { keywords: tags.join(', ') }),
         }}
       />
@@ -108,8 +113,8 @@ export function SkillJsonLd({
           '@type': 'SoftwareSourceCode',
           name,
           description,
-          url: `https://mdskills.ai${url}`,
-          codeRepository: githubUrl || `https://mdskills.ai${url}`,
+          url: `${SITE_URL}${url}`,
+          codeRepository: githubUrl || `${SITE_URL}${url}`,
           programmingLanguage: 'Markdown',
           author: {
             '@type': 'Person',
@@ -117,9 +122,65 @@ export function SkillJsonLd({
           },
           ...(license && { license }),
           ...(dateModified && { dateModified }),
+          ...(datePublished && { datePublished }),
         }}
       />
     </>
+  )
+}
+
+/** FAQPage schema for rich snippets in Google SERPs */
+export function SkillFaqJsonLd({
+  name,
+  description,
+  owner,
+  slug,
+  platforms,
+}: {
+  name: string
+  description: string
+  owner: string
+  slug: string
+  platforms?: string[]
+}) {
+  const platformNames = (platforms ?? []).map(p =>
+    p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  )
+  const platformList = platformNames.length > 0 ? platformNames.join(', ') : 'Claude Code and other AI agents'
+
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: `What is ${name}?`,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: `${name} is a free, open-source AI agent skill. ${description}`,
+            },
+          },
+          {
+            '@type': 'Question',
+            name: `How do I install ${name}?`,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: `Install ${name} with a single command: npx mdskills install ${owner}/${slug}. This downloads the skill files into your project and your AI agent picks them up automatically.`,
+            },
+          },
+          {
+            '@type': 'Question',
+            name: `What platforms support ${name}?`,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: `${name} works with ${platformList}. Skills use the open SKILL.md format which is compatible with any AI coding agent that reads markdown instructions.`,
+            },
+          },
+        ],
+      }}
+    />
   )
 }
 
@@ -138,7 +199,7 @@ export function BreadcrumbJsonLd({
           '@type': 'ListItem',
           position: index + 1,
           name: item.name,
-          item: `https://mdskills.ai${item.url}`,
+          item: `${SITE_URL}${item.url}`,
         })),
       }}
     />

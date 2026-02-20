@@ -16,6 +16,9 @@ export interface Skill {
   forksCount?: number
   commentsCount?: number
   updatedAt?: string
+  /** ISO 8601 timestamps for structured data / JSON-LD */
+  updatedAtIso?: string
+  createdAtIso?: string
   skillContent?: string
   /** 'skill' | 'plugin' | 'hybrid' */
   skillType?: string
@@ -99,6 +102,8 @@ function mapRow(row: SkillRow, commentsCount?: number): Skill {
     forksCount: row.mdskills_forks ?? undefined,
     commentsCount,
     updatedAt: row.updated_at ? formatRelativeTime(row.updated_at) : undefined,
+    updatedAtIso: row.updated_at || undefined,
+    createdAtIso: row.created_at || undefined,
     skillContent: row.content ?? undefined,
     skillType: row.skill_type ?? undefined,
     hasPlugin: row.has_plugin ?? undefined,

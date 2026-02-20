@@ -130,6 +130,43 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
           </>
         )}
       </section>
+
+      {/* FAQ — visible content matching FAQPage structured data for SEO */}
+      <section className="border-t border-neutral-200 pt-10">
+        <h2 className="text-lg font-semibold text-neutral-900 mb-6">Frequently Asked Questions</h2>
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-medium text-neutral-900">What is {skill.name}?</h3>
+            <p className="mt-1 text-neutral-600">
+              {skill.name} is a free, open-source AI agent skill. {skill.description}
+            </p>
+          </div>
+          <div>
+            <h3 className="font-medium text-neutral-900">How do I install {skill.name}?</h3>
+            <p className="mt-1 text-neutral-600">
+              Install {skill.name} with a single command:
+            </p>
+            <div className="mt-2 p-3 rounded-lg bg-code-bg border border-neutral-200">
+              <code className="font-mono text-sm text-neutral-800">{installCommand}</code>
+            </div>
+            <p className="mt-2 text-neutral-600">
+              This downloads the skill files into your project and your AI agent picks them up automatically.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-medium text-neutral-900">What platforms support {skill.name}?</h3>
+            <p className="mt-1 text-neutral-600">
+              {skill.name} works with{' '}
+              {skill.platforms.length > 0
+                ? skill.platforms
+                    .map(p => p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+                    .join(', ')
+                : 'Claude Code and other AI agents'}
+              . Skills use the open SKILL.md format which is compatible with any AI coding agent that reads markdown instructions.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
