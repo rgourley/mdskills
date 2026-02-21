@@ -9,7 +9,13 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-neutral-900 mb-3">Marketplace</h4>
             <ul className="space-y-2 text-sm text-neutral-600">
               <li>
-                <Link href="/skills" className="hover:text-neutral-900 transition-colors">Explore</Link>
+                <Link href="/skills" className="hover:text-neutral-900 transition-colors">Skills</Link>
+              </li>
+              <li>
+                <Link href="/mcp-servers" className="hover:text-neutral-900 transition-colors">MCP Servers</Link>
+              </li>
+              <li>
+                <Link href="/rules" className="hover:text-neutral-900 transition-colors">Rules</Link>
               </li>
               <li>
                 <Link href="/use-cases" className="hover:text-neutral-900 transition-colors">Use Cases</Link>

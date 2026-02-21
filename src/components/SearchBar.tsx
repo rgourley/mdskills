@@ -6,9 +6,11 @@ import { useCallback, useTransition } from 'react'
 
 interface SearchBarProps {
   defaultValue?: string
+  basePath?: string
+  placeholder?: string
 }
 
-export function SearchBar({ defaultValue = '' }: SearchBarProps) {
+export function SearchBar({ defaultValue = '', basePath = '/skills', placeholder = 'Search...' }: SearchBarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
@@ -21,11 +23,12 @@ export function SearchBar({ defaultValue = '' }: SearchBarProps) {
       const params = new URLSearchParams(searchParams.toString())
       if (q) params.set('q', q)
       else params.delete('q')
+      const qs = params.toString()
       startTransition(() => {
-        router.push(`/skills?${params.toString()}`)
+        router.push(qs ? `${basePath}?${qs}` : basePath)
       })
     },
-    [router, searchParams]
+    [router, searchParams, basePath]
   )
 
   return (
@@ -35,7 +38,7 @@ export function SearchBar({ defaultValue = '' }: SearchBarProps) {
         name="q"
         type="search"
         defaultValue={defaultValue}
-        placeholder="Search skills..."
+        placeholder={placeholder}
         className="w-full pl-12 pr-4 py-3 rounded-lg border border-neutral-200 bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
       />
       <button

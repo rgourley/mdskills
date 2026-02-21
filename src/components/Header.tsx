@@ -6,9 +6,9 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 
 const NAV_LINKS = [
-  { label: 'Skills', href: '/skills?type=skill_pack' },
-  { label: 'MCP Servers', href: '/skills?type=mcp_server' },
-  { label: 'Rules', href: '/skills?type=ruleset' },
+  { label: 'Skills', href: '/skills' },
+  { label: 'MCP Servers', href: '/mcp-servers' },
+  { label: 'Rules', href: '/rules' },
   { label: 'Use Cases', href: '/use-cases' },
   { label: 'Docs', href: '/docs' },
 ]
@@ -32,7 +32,7 @@ export function Header() {
               key={link.href}
               href={link.href}
               className={`text-sm transition-colors ${
-                pathname === link.href || (link.href.startsWith('/skills?') && pathname === '/skills')
+                pathname === link.href
                   ? 'text-neutral-900 font-medium'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
