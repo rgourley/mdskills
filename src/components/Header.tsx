@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useRef, useEffect } from 'react'
 import { Menu, X, Search } from 'lucide-react'
 
 const NAV_LINKS = [
@@ -16,15 +16,25 @@ const NAV_LINKS = [
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const pathname = usePathname()
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [searchOpen])
 
   const handleSearch = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
       const q = (e.currentTarget.elements.namedItem('q') as HTMLInputElement)?.value?.trim() ?? ''
       setMenuOpen(false)
+      setSearchOpen(false)
       if (q) {
         startTransition(() => router.push(`/skills?q=${encodeURIComponent(q)}`))
       }
@@ -36,12 +46,15 @@ export function Header() {
     <header className="border-b border-neutral-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-baseline group flex-shrink-0" onClick={() => setMenuOpen(false)}>
+        <Link href="/" className="flex items-baseline group flex-shrink-0" onClick={() => { setMenuOpen(false); setSearchOpen(false) }}>
           <span className="text-[17px] font-semibold tracking-tight text-neutral-900 group-hover:text-neutral-700 transition-colors">mdskills</span>
           <span className="text-[17px] font-light tracking-tight text-neutral-400">.ai</span>
         </Link>
 
-        {/* Desktop nav */}
+        {/* Spacer pushes nav to the right */}
+        <div className="flex-1" />
+
+        {/* Desktop nav — right-aligned */}
         <nav className="hidden lg:flex items-center gap-1 flex-shrink-0">
           {NAV_LINKS.map((link) => (
             <Link
@@ -58,31 +71,26 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Desktop search — fills remaining space */}
-        <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-xs ml-auto">
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input
-              name="q"
-              type="search"
-              placeholder="Search..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-neutral-200 bg-neutral-50 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent focus:bg-white transition-colors"
-            />
-          </div>
-        </form>
-
-        {/* Desktop submit button */}
-        <Link
-          href="/submit"
-          className="hidden lg:inline-flex text-sm font-medium px-3.5 py-1.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors flex-shrink-0"
+        {/* Desktop search icon */}
+        <button
+          onClick={() => setSearchOpen(!searchOpen)}
+          className="hidden lg:flex items-center justify-center w-8 h-8 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors flex-shrink-0"
+          aria-label="Search"
         >
-          Submit
-        </Link>
+          <Search className="w-4 h-4" />
+        </button>
 
         {/* Mobile: search icon + hamburger */}
-        <div className="flex items-center gap-1 lg:hidden ml-auto">
+        <div className="flex items-center gap-1 lg:hidden">
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false) }}
+            className="p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false) }}
             className="p-2 -mr-2 text-neutral-600 hover:text-neutral-900 transition-colors"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           >
@@ -91,22 +99,33 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <nav className="lg:hidden border-t border-neutral-100 bg-white px-4 pb-4 pt-3 space-y-1">
-          {/* Mobile search */}
-          <form onSubmit={handleSearch} className="mb-3">
+      {/* Search bar — slides down when search icon clicked */}
+      {searchOpen && (
+        <div className="border-t border-neutral-100 bg-white px-4 sm:px-6 py-3">
+          <form onSubmit={handleSearch} className="max-w-6xl mx-auto">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <input
+                ref={searchInputRef}
                 name="q"
                 type="search"
                 placeholder="Search skills, plugins, MCP servers..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-neutral-200 bg-neutral-50 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                className="w-full pl-9 pr-20 py-2 rounded-lg border border-neutral-200 bg-neutral-50 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent focus:bg-white transition-colors"
               />
+              <button
+                type="submit"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 bg-neutral-900 text-white text-sm font-medium rounded-md hover:bg-neutral-800 transition-colors"
+              >
+                Search
+              </button>
             </div>
           </form>
+        </div>
+      )}
 
+      {/* Mobile menu */}
+      {menuOpen && (
+        <nav className="lg:hidden border-t border-neutral-100 bg-white px-4 pb-4 pt-2 space-y-1">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -121,13 +140,6 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/submit"
-            onClick={() => setMenuOpen(false)}
-            className="block px-3 py-2.5 rounded-lg text-sm font-medium bg-neutral-900 text-white text-center hover:bg-neutral-800 transition-colors mt-2"
-          >
-            Submit
-          </Link>
         </nav>
       )}
     </header>
