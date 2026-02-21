@@ -48,6 +48,7 @@ const LAYERS = [
     formats: ['MCP Servers', 'OpenAPI Actions', 'IDE Extensions'],
     note: 'MCP provides a standardized way for agents to discover and use tools, similar to how USB standardized hardware peripherals.',
     links: [
+      { label: 'What is MCP?', href: '/docs/what-is-mcp', internal: true },
       { label: 'MCP Protocol', href: 'https://modelcontextprotocol.io' },
     ],
   },
@@ -217,6 +218,20 @@ export default function DocsPage() {
             </div>
             <p className="mt-2 text-sm text-neutral-600">
               Annotated walkthroughs of four skill patterns that work. Steal these structures.
+            </p>
+          </Link>
+          <Link
+            href="/docs/what-is-mcp"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <Server className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                What is MCP?
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              Understand the Model Context Protocol — the open standard connecting AI agents to external tools and data.
             </p>
           </Link>
           <Link
