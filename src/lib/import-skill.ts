@@ -243,6 +243,14 @@ function titleCase(slug: string): string {
     .join(' ')
 }
 
+/** Reject headings that are clearly not project names */
+function isValidHeading(heading: string): boolean {
+  if (!heading || heading.length < 3 || heading.length > 60) return false
+  if (/^(For|A|An|The|How|Getting|Introduction|Overview|About|README|Table of|Usage|Install)\b/i.test(heading)) return false
+  if (heading.includes('![') || heading.includes('](') || heading.includes('```')) return false
+  return true
+}
+
 function inferDisplayName(repoName: string, fmName: string, readme: string | null, skillDir?: string): string {
   // If frontmatter has a proper display name (with spaces), use it directly
   if (fmName && fmName.includes(' ')) return fmName
@@ -255,18 +263,16 @@ function inferDisplayName(repoName: string, fmName: string, readme: string | nul
 
   if (readme) {
     // Check HTML headings first: <h1>Title</h1> or <h1 align="center">Title</h1>
-    // (many repos use HTML h1 at the very top, with markdown # appearing later for code examples)
     const htmlHeading = readme.match(/<h1[^>]*>([^<]+)<\/h1>/i)?.[1]?.trim()
-    // Check markdown headings: # Title (first occurrence)
-    const mdHeading = readme.match(/^#\s+(.+)/m)?.[1]?.trim()
+    // Only match h1 (single #), not h2/h3 — use negative lookahead to exclude ##
+    const mdHeading = readme.match(/^#\s(?!#)(.+)/m)?.[1]?.trim()
     const readmeHeading = htmlHeading || mdHeading
-    if (readmeHeading && readmeHeading.length < 80) {
+    if (readmeHeading) {
       const clean = readmeHeading
         .replace(/[*_`]/g, '')
         .replace(/^\W+/, '')
         .trim()
-      // Use the heading — it's the properly-cased display name
-      if (clean) return clean
+      if (isValidHeading(clean)) return clean
     }
   }
 

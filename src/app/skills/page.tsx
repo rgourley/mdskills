@@ -2,6 +2,7 @@ import { SkillCard } from '@/components/SkillCard'
 import { getSkills, getPluginSkills } from '@/lib/skills'
 import { SearchBar } from '@/components/SearchBar'
 import { InlineFilters } from '@/components/InlineFilters'
+import { Pagination } from '@/components/Pagination'
 import { getClients } from '@/lib/clients'
 import { getCategoriesLight } from '@/lib/categories'
 import type { Metadata } from 'next'
@@ -29,6 +30,7 @@ interface PageProps {
     plugin?: string
     client?: string
     sort?: string
+    page?: string
   }>
 }
 
@@ -40,10 +42,11 @@ export default async function SkillsPage({ searchParams }: PageProps) {
   const pluginsOnly = params.plugin === '1'
   const clientSlug = params.client ?? ''
   const sort = (params.sort as 'trending' | 'popular' | 'recent') || undefined
+  const page = Math.max(1, parseInt(params.page ?? '1', 10) || 1)
 
-  const [skills, clients, categories] = await Promise.all([
+  const [result, clients, categories] = await Promise.all([
     pluginsOnly
-      ? getPluginSkills(100)
+      ? getPluginSkills(100).then((skills) => ({ skills, total: skills.length, page: 1, pageSize: 100, totalPages: 1 }))
       : getSkills({
           query,
           tags,
@@ -51,6 +54,7 @@ export default async function SkillsPage({ searchParams }: PageProps) {
           artifactType: 'skill_pack',
           clientSlug: clientSlug || undefined,
           sort,
+          page,
         }),
     getClients(),
     getCategoriesLight(),
@@ -84,11 +88,11 @@ export default async function SkillsPage({ searchParams }: PageProps) {
         {/* Results */}
         <div className="mt-8">
           <p className="text-sm text-neutral-500 mb-4">
-            {skills.length} {skills.length === 1 ? 'skill' : 'skills'}
+            {result.total} {result.total === 1 ? 'skill' : 'skills'}
           </p>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            {skills.length > 0 ? (
-              skills.map((skill) => (
+            {result.skills.length > 0 ? (
+              result.skills.map((skill) => (
                 <SkillCard key={skill.id} skill={skill} />
               ))
             ) : (
@@ -97,6 +101,13 @@ export default async function SkillsPage({ searchParams }: PageProps) {
               </p>
             )}
           </div>
+
+          <Pagination
+            currentPage={result.page}
+            totalPages={result.totalPages}
+            basePath="/skills"
+            searchParams={{ q: query, tag: params.tag, category, client: clientSlug, sort, plugin: params.plugin }}
+          />
         </div>
       </div>
     </div>

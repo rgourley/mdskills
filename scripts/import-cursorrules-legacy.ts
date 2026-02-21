@@ -283,7 +283,7 @@ async function main() {
 
   // 3. Pre-fetch all category IDs
   const categoryCache: Record<string, string | null> = {}
-  const uniqueCategories = [...new Set(Object.keys(CATEGORY_KEYWORDS))]
+  const uniqueCategories = Object.keys(CATEGORY_KEYWORDS)
   for (const catSlug of uniqueCategories) {
     categoryCache[catSlug] = await getCategoryId(catSlug)
   }

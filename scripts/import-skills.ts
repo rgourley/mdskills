@@ -45,8 +45,19 @@ const SKILLS_TO_IMPORT = [
   { githubUrl: 'https://github.com/modelcontextprotocol/servers', skillPath: 'src/everything', category: 'creative', featured: false },
 ];
 
+/** Reject headings that are clearly not project names */
+function isValidHeading(heading: string): boolean {
+  if (!heading || heading.length < 3 || heading.length > 60) return false;
+  if (/^(For|A|An|The|How|Getting|Introduction|Overview|About|README|Table of|Usage|Install)\b/i.test(heading)) return false;
+  if (heading.includes('![') || heading.includes('](') || heading.includes('```')) return false;
+  return true;
+}
+
 function inferDisplayName(slug: string, description?: string, readmeHeading?: string): string {
-  if (readmeHeading) return readmeHeading.replace(/^#\s+/, '').trim();
+  if (readmeHeading) {
+    const clean = readmeHeading.replace(/^#+\s*/, '').replace(/[*_`]/g, '').trim();
+    if (isValidHeading(clean)) return clean;
+  }
   if (description && description.length < 100 && !description.includes('.')) return description;
   return slug
     .replace(/^(vercel|anthropic|openai|claude|ai-sdk-preview)-/, '')

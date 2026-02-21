@@ -213,7 +213,7 @@ async function main() {
 
   // Pre-fetch all category IDs
   const categoryCache: Record<string, string | null> = {}
-  const uniqueCategories = [...new Set(Object.values(CATEGORY_MAP).filter(Boolean))] as string[]
+  const uniqueCategories = Array.from(new Set(Object.values(CATEGORY_MAP).filter(Boolean))) as string[]
   for (const catSlug of uniqueCategories) {
     categoryCache[catSlug] = await getCategoryId(catSlug)
   }

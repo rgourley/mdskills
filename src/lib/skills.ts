@@ -80,8 +80,11 @@ interface SkillRow {
   readme?: string | null
 }
 
-/** Select columns used in all skill queries */
+/** Select columns used in detail queries (includes large text fields) */
 const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, categories(slug, name)'
+
+/** Lightweight select for list/card views (excludes content & readme) */
+const LIST_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, format_standard, categories(slug, name)'
 
 function mapRow(row: SkillRow, commentsCount?: number): Skill {
   // categories comes back as an array from Supabase joins — normalize to single object
@@ -143,7 +146,7 @@ export async function getFeaturedSkills(): Promise<Skill[]> {
 
   const { data, error } = await supabase
     .from('skills')
-    .select(SKILL_SELECT)
+    .select(LIST_SELECT)
     .or('status.eq.published,status.is.null')
     .order('github_stars', { ascending: false, nullsFirst: false })
     .limit(6)
@@ -159,7 +162,7 @@ export async function getLatestSkills(limit = 6): Promise<Skill[]> {
 
   const { data, error } = await supabase
     .from('skills')
-    .select(SKILL_SELECT)
+    .select(LIST_SELECT)
     .or('status.eq.published,status.is.null')
     .order('created_at', { ascending: false })
     .limit(limit)
@@ -175,15 +178,32 @@ export interface GetSkillsOptions {
   artifactType?: string
   clientSlug?: string
   sort?: 'trending' | 'popular' | 'recent'
+  page?: number
+  pageSize?: number
 }
 
-export async function getSkills(opts?: GetSkillsOptions): Promise<Skill[]> {
+export interface PaginatedSkills {
+  skills: Skill[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+const DEFAULT_PAGE_SIZE = 24
+
+export async function getSkills(opts?: GetSkillsOptions): Promise<PaginatedSkills> {
   const supabase = await createClient()
-  if (!supabase) return []
+  if (!supabase) return { skills: [], total: 0, page: 1, pageSize: DEFAULT_PAGE_SIZE, totalPages: 0 }
+
+  const page = Math.max(1, opts?.page ?? 1)
+  const pageSize = opts?.pageSize ?? DEFAULT_PAGE_SIZE
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
 
   let q = supabase
     .from('skills')
-    .select(SKILL_SELECT)
+    .select(LIST_SELECT, { count: 'exact' })
     .or('status.eq.published,status.is.null')
 
   if (opts?.query?.trim()) {
@@ -210,7 +230,7 @@ export async function getSkills(opts?: GetSkillsOptions): Promise<Skill[]> {
 
   if (catId) q = q.eq('category_id', catId)
   if (clientSkillIds !== null) {
-    if (clientSkillIds.length === 0) return []
+    if (clientSkillIds.length === 0) return { skills: [], total: 0, page, pageSize, totalPages: 0 }
     q = q.in('id', clientSkillIds)
   }
 
@@ -221,10 +241,21 @@ export async function getSkills(opts?: GetSkillsOptions): Promise<Skill[]> {
     q = q.order('weekly_installs', { ascending: false })
   }
 
-  const { data, error } = await q
-  if (error) return []
-  if (!data?.length) return []
-  return data.map((row) => mapRow(row as unknown as SkillRow))
+  // Paginate
+  q = q.range(from, to)
+
+  const { data, error, count } = await q
+  if (error) return { skills: [], total: 0, page, pageSize, totalPages: 0 }
+  if (!data?.length) return { skills: [], total: count ?? 0, page, pageSize, totalPages: Math.ceil((count ?? 0) / pageSize) }
+
+  const total = count ?? data.length
+  return {
+    skills: data.map((row) => mapRow(row as unknown as SkillRow)),
+    total,
+    page,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
+  }
 }
 
 export async function getPluginSkills(limit = 6): Promise<Skill[]> {
@@ -233,7 +264,7 @@ export async function getPluginSkills(limit = 6): Promise<Skill[]> {
 
   const { data, error } = await supabase
     .from('skills')
-    .select(SKILL_SELECT)
+    .select(LIST_SELECT)
     .or('status.eq.published,status.is.null')
     .eq('has_plugin', true)
     .order('weekly_installs', { ascending: false })

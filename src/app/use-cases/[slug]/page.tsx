@@ -49,7 +49,7 @@ export default async function UseCaseDetailPage({ params }: PageProps) {
   const category = await getCategoryBySlug(slug)
   if (!category) notFound()
 
-  const skills = await getSkills({ categorySlug: slug })
+  const { skills } = await getSkills({ categorySlug: slug })
 
   return (
     <div className="py-12 sm:py-16">

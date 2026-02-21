@@ -80,7 +80,7 @@ export default async function ClientDetailPage({ params }: PageProps) {
   const client = await getClientBySlug(slug)
   if (!client) notFound()
 
-  const skills = await getSkills({ clientSlug: slug })
+  const { skills } = await getSkills({ clientSlug: slug })
   const capabilities = CLIENT_CAPABILITIES[slug] ?? ['Skill Packs']
 
   return (
