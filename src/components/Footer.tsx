@@ -15,7 +15,7 @@ export function Footer() {
                 <Link href="/use-cases" className="hover:text-neutral-900 transition-colors">Use Cases</Link>
               </li>
               <li>
-                <Link href="/clients" className="hover:text-neutral-900 transition-colors">Clients</Link>
+                <Link href="/clients" className="hover:text-neutral-900 transition-colors">Agents</Link>
               </li>
               <li>
                 <Link href="/submit" className="hover:text-neutral-900 transition-colors">Submit</Link>

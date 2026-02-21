@@ -1,5 +1,5 @@
 import { SkillCard } from '@/components/SkillCard'
-import { getSkills, getPluginSkills } from '@/lib/skills'
+import { getSkills, getPluginSkills, getArtifactTypesWithListings } from '@/lib/skills'
 import { SearchBar } from '@/components/SearchBar'
 import { ExploreFilters } from '@/components/ExploreFilters'
 import { getClients } from '@/lib/clients'
@@ -42,7 +42,7 @@ export default async function SkillsPage({ searchParams }: PageProps) {
   const clientSlug = params.client ?? ''
   const sort = (params.sort as 'trending' | 'popular' | 'recent') || undefined
 
-  const [skills, clients, categories] = await Promise.all([
+  const [skills, clients, categories, artifactTypes] = await Promise.all([
     pluginsOnly
       ? getPluginSkills(100)
       : getSkills({
@@ -55,6 +55,7 @@ export default async function SkillsPage({ searchParams }: PageProps) {
         }),
     getClients(),
     getCategoriesLight(),
+    getArtifactTypesWithListings(),
   ])
 
   // Build active filter description
@@ -101,6 +102,7 @@ export default async function SkillsPage({ searchParams }: PageProps) {
           <ExploreFilters
             clients={clients.map((c) => ({ slug: c.slug, name: c.name }))}
             categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
+            artifactTypes={artifactTypes}
           />
 
           {/* Results Grid */}

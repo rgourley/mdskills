@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import { BookOpen, Code, Download, GitCompare, Lightbulb, Puzzle, Server, FileText, ExternalLink } from 'lucide-react'
+import { BookOpen, Code, Download, GitCompare, Lightbulb, Puzzle, Server, FileText, ExternalLink, Bot, ScrollText } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Docs: AI Agent Ecosystem',
-  description: 'Understand the AI agent ecosystem: rules (CLAUDE.md, AGENTS.md, .cursorrules), skills (SKILL.md), and tools (MCP servers). Learn how they work together to extend AI agents.',
+  description: 'Understand the AI agent ecosystem: rules (CLAUDE.md, AGENTS.md, .cursorrules), skills (SKILL.md), tools (MCP servers), specs, and compatible agents. Learn how they work together.',
   alternates: { canonical: '/docs' },
   openGraph: {
     title: 'AI Agent Ecosystem Guide — mdskills.ai',
@@ -218,6 +218,55 @@ export default function DocsPage() {
             <p className="mt-2 text-sm text-neutral-600">
               Annotated walkthroughs of four skill patterns that work. Steal these structures.
             </p>
+          </Link>
+          <Link
+            href="/clients"
+            className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <Bot className="w-5 h-5 text-neutral-600 group-hover:text-blue-600 transition-colors" />
+              <h3 className="font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors">
+                Compatible Agents
+              </h3>
+            </div>
+            <p className="mt-2 text-sm text-neutral-600">
+              27+ AI agents and tools that support SKILL.md — Claude Code, Cursor, Codex, Gemini CLI, and more.
+            </p>
+          </Link>
+        </div>
+
+        {/* Specs & Standards */}
+        <div className="mt-12">
+          <div className="flex items-center gap-3 mb-6">
+            <ScrollText className="w-5 h-5 text-neutral-600" />
+            <h2 className="text-xl font-semibold text-neutral-900">Specs &amp; Standards</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { label: 'SKILL.md', href: '/specs/skill-md', desc: 'The agent skills format' },
+              { label: 'AGENTS.md', href: '/specs/agents-md', desc: 'Project context for AI agents' },
+              { label: 'MCP Protocol', href: '/specs/mcp', desc: 'Model Context Protocol' },
+              { label: 'CLAUDE.md', href: '/specs/claude-md', desc: 'Project instructions for Claude' },
+              { label: '.cursorrules', href: '/specs/cursorrules', desc: 'Custom rules for Cursor' },
+              { label: 'llms.txt', href: '/specs/llms-txt', desc: 'Making websites AI-readable' },
+            ].map((spec) => (
+              <Link
+                key={spec.href}
+                href={spec.href}
+                className="group block p-4 rounded-lg border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md transition-all duration-200"
+              >
+                <h3 className="font-semibold font-mono text-sm text-neutral-900 group-hover:text-blue-600 transition-colors">
+                  {spec.label}
+                </h3>
+                <p className="mt-1 text-xs text-neutral-500">{spec.desc}</p>
+              </Link>
+            ))}
+          </div>
+          <Link
+            href="/specs"
+            className="inline-block mt-4 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            All specs &amp; standards &rarr;
           </Link>
         </div>
       </div>

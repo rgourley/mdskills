@@ -12,17 +12,8 @@ interface FilterOption {
 interface ExploreFiltersProps {
   clients: FilterOption[]
   categories: FilterOption[]
+  artifactTypes: FilterOption[]
 }
-
-const ARTIFACT_TYPES: FilterOption[] = [
-  { slug: 'skill_pack', name: 'Agent Skill' },
-  { slug: 'mcp_server', name: 'MCP Server' },
-  { slug: 'workflow_pack', name: 'Workflow Pack' },
-  { slug: 'ruleset', name: 'Rules' },
-  { slug: 'openapi_action', name: 'OpenAPI Action' },
-  { slug: 'extension', name: 'Extension' },
-  { slug: 'template_bundle', name: 'Starter Kit' },
-]
 
 const SORT_OPTIONS: FilterOption[] = [
   { slug: 'popular', name: 'Most Popular' },
@@ -30,7 +21,7 @@ const SORT_OPTIONS: FilterOption[] = [
   { slug: 'trending', name: 'Trending' },
 ]
 
-export function ExploreFilters({ clients, categories }: ExploreFiltersProps) {
+export function ExploreFilters({ clients, categories, artifactTypes }: ExploreFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
@@ -89,17 +80,19 @@ export function ExploreFilters({ clients, categories }: ExploreFiltersProps) {
           )}
         </div>
 
-        {/* Artifact Type */}
-        <FilterSection title="Type">
-          {ARTIFACT_TYPES.map((type) => (
-            <FilterChip
-              key={type.slug}
-              label={type.name}
-              active={activeType === type.slug}
-              onClick={() => setParam('type', activeType === type.slug ? '' : type.slug)}
-            />
-          ))}
-        </FilterSection>
+        {/* Artifact Type — only show when there are types with enough listings */}
+        {artifactTypes.length > 0 && (
+          <FilterSection title="Type">
+            {artifactTypes.map((type) => (
+              <FilterChip
+                key={type.slug}
+                label={type.name}
+                active={activeType === type.slug}
+                onClick={() => setParam('type', activeType === type.slug ? '' : type.slug)}
+              />
+            ))}
+          </FilterSection>
+        )}
 
         {/* Works With */}
         {clients.length > 0 && (

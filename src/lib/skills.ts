@@ -243,6 +243,41 @@ export async function getPluginSkills(limit = 6): Promise<Skill[]> {
   return data.map((row) => mapRow(row as unknown as SkillRow))
 }
 
+const ARTIFACT_TYPE_LABELS: Record<string, string> = {
+  skill_pack: 'Agent Skill',
+  mcp_server: 'MCP Server',
+  workflow_pack: 'Workflow Pack',
+  ruleset: 'Rules',
+  openapi_action: 'OpenAPI Action',
+  extension: 'Extension',
+  template_bundle: 'Starter Kit',
+}
+
+/** Returns artifact types that have at least `minCount` published listings */
+export async function getArtifactTypesWithListings(minCount = 2): Promise<{ slug: string; name: string }[]> {
+  const supabase = await createClient()
+  if (!supabase) return []
+
+  const { data, error } = await supabase
+    .from('skills')
+    .select('artifact_type')
+    .or('status.eq.published,status.is.null')
+
+  if (error || !data?.length) return []
+
+  // Count per type
+  const counts: Record<string, number> = {}
+  for (const row of data) {
+    const t = (row as { artifact_type: string | null }).artifact_type || 'skill_pack'
+    counts[t] = (counts[t] || 0) + 1
+  }
+
+  return Object.entries(counts)
+    .filter(([, count]) => count >= minCount)
+    .map(([slug]) => ({ slug, name: ARTIFACT_TYPE_LABELS[slug] || slug }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+}
+
 export async function getSkillBySlug(slug: string): Promise<Skill | null> {
   const supabase = await createClient()
   if (!supabase) return null
