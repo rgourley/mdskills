@@ -8,24 +8,22 @@ import { getCategoriesLight } from '@/lib/categories'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Agent Skills — Free SKILL.md Files for Claude Code, Cursor & More',
-  description: 'Browse and install free AI agent skills. SKILL.md files give your AI tools domain expertise — PDF processing, design systems, API integration, testing, and more. One-command install.',
-  alternates: { canonical: '/skills' },
+  title: 'Plugins — Claude Code Plugins for AI Agent Superpowers',
+  description: 'Browse Claude Code plugins that extend your AI agent with commands, hooks, persistent memory, and more. Install plugins with one command for the best Claude Code experience.',
+  alternates: { canonical: '/plugins' },
   openGraph: {
-    title: 'Agent Skills — mdskills.ai',
-    description: 'Browse free SKILL.md files that give AI agents domain expertise. One-command install for Claude Code, Cursor, Codex, and 27+ tools.',
-    url: '/skills',
+    title: 'Plugins — mdskills.ai',
+    description: 'Browse Claude Code plugins that add commands, hooks, and persistent memory. One-command install.',
+    url: '/plugins',
   },
-  keywords: ['AI agent skills', 'SKILL.md', 'Claude Code skills', 'Cursor skills', 'agent skills marketplace', 'free AI skills'],
+  keywords: ['Claude Code plugins', 'AI plugins', 'Claude plugin', 'claude-code plugin', 'AI agent plugins', 'plugin marketplace'],
 }
 
-// Cache for 60s, revalidate in background
 export const revalidate = 60
 
 interface PageProps {
   searchParams: Promise<{
     q?: string
-    tag?: string
     category?: string
     client?: string
     sort?: string
@@ -33,10 +31,9 @@ interface PageProps {
   }>
 }
 
-export default async function SkillsPage({ searchParams }: PageProps) {
+export default async function PluginsPage({ searchParams }: PageProps) {
   const params = await searchParams
   const query = params.q ?? ''
-  const tags = params.tag ? [params.tag] : undefined
   const category = params.category ?? ''
   const clientSlug = params.client ?? ''
   const sort = (params.sort as 'trending' | 'popular' | 'recent') || undefined
@@ -44,10 +41,9 @@ export default async function SkillsPage({ searchParams }: PageProps) {
 
   const [result, clients, categories] = await Promise.all([
     getSkills({
-      query,
-      tags,
+      query: query || undefined,
       categorySlug: category || undefined,
-      artifactType: 'skill_pack',
+      artifactType: 'plugin',
       clientSlug: clientSlug || undefined,
       sort,
       page,
@@ -61,17 +57,17 @@ export default async function SkillsPage({ searchParams }: PageProps) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Hero / Intro */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900">Agent Skills</h1>
+          <h1 className="text-3xl font-bold text-neutral-900">Plugins</h1>
           <p className="mt-2 text-neutral-600 max-w-2xl">
-            SKILL.md files package domain expertise into something any AI agent can use. Drop one into your project and your agent learns how to process PDFs, design interfaces, write tests, or whatever the skill teaches.
+            Plugins are full-featured extensions for Claude Code. They bundle skills, slash commands, hooks, agents, and more into a single installable package. Install a plugin to unlock new capabilities.
           </p>
         </div>
 
-        <SearchBar defaultValue={query} basePath="/skills" placeholder="Search skills..." />
+        <SearchBar defaultValue={query} basePath="/plugins" placeholder="Search plugins..." />
 
         <div className="mt-6">
           <InlineFilters
-            basePath="/skills"
+            basePath="/plugins"
             categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
             clients={clients.map((c) => ({ slug: c.slug, name: c.name }))}
           />
@@ -80,7 +76,7 @@ export default async function SkillsPage({ searchParams }: PageProps) {
         {/* Results */}
         <div className="mt-8">
           <p className="text-sm text-neutral-500 mb-4">
-            {result.total} {result.total === 1 ? 'skill' : 'skills'}
+            {result.total} {result.total === 1 ? 'plugin' : 'plugins'}
           </p>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {result.skills.length > 0 ? (
@@ -89,7 +85,7 @@ export default async function SkillsPage({ searchParams }: PageProps) {
               ))
             ) : (
               <p className="col-span-full text-neutral-500 py-12 text-center">
-                No skills found. Try adjusting your filters.
+                No plugins found. Try adjusting your filters.
               </p>
             )}
           </div>
@@ -97,8 +93,8 @@ export default async function SkillsPage({ searchParams }: PageProps) {
           <Pagination
             currentPage={result.page}
             totalPages={result.totalPages}
-            basePath="/skills"
-            searchParams={{ q: query, tag: params.tag, category, client: clientSlug, sort }}
+            basePath="/plugins"
+            searchParams={{ q: query, category, client: clientSlug, sort }}
           />
         </div>
       </div>

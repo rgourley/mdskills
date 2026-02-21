@@ -30,7 +30,7 @@ export interface Skill {
   githubStars?: number
   githubForks?: number
   license?: string
-  /** 'skill_pack' | 'mcp_server' | 'workflow_pack' | 'ruleset' | 'openapi_action' | 'extension' | 'template_bundle' */
+  /** 'skill_pack' | 'mcp_server' | 'workflow_pack' | 'ruleset' | 'openapi_action' | 'extension' | 'template_bundle' | 'plugin' */
   artifactType?: string
   permFilesystemRead?: boolean
   permFilesystemWrite?: boolean
@@ -266,7 +266,7 @@ export async function getPluginSkills(limit = 6): Promise<Skill[]> {
     .from('skills')
     .select(LIST_SELECT)
     .or('status.eq.published,status.is.null')
-    .eq('has_plugin', true)
+    .or('has_plugin.eq.true,artifact_type.eq.plugin')
     .order('weekly_installs', { ascending: false })
     .limit(limit)
 
@@ -282,6 +282,7 @@ const ARTIFACT_TYPE_LABELS: Record<string, string> = {
   openapi_action: 'OpenAPI Action',
   extension: 'Extension',
   template_bundle: 'Starter Kit',
+  plugin: 'Plugin',
 }
 
 /** Returns artifact types that have at least `minCount` published listings */

@@ -10,6 +10,7 @@ const ARTIFACT_LABELS: Record<string, string> = {
   openapi_action: 'OpenAPI Action',
   extension: 'Extension',
   template_bundle: 'Starter Kit',
+  plugin: 'Plugin',
 }
 
 const FORMAT_INFO: Record<string, { label: string; specPath?: string }> = {
@@ -43,7 +44,7 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
             <dt className="text-neutral-500">Type</dt>
             <dd className="font-medium text-neutral-900">
               {ARTIFACT_LABELS[skill.artifactType] ?? skill.artifactType}
-              {skill.hasPlugin && ' + Plugin'}
+              {skill.hasPlugin && skill.artifactType !== 'plugin' && ' + Plugin'}
             </dd>
           </div>
         )}
@@ -104,7 +105,7 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
             </dd>
           </div>
         )}
-        {skill.hasPlugin && (
+        {(skill.hasPlugin || skill.artifactType === 'plugin') && (
           <div>
             <dt className="text-neutral-500 flex items-center gap-1">
               <Puzzle className="w-4 h-4" /> Best experience

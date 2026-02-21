@@ -17,7 +17,9 @@ export function SkillInstallationTab({ skill, installCommand, clients }: SkillIn
     clients?.find((c) => c.isPrimary)?.clientSlug ?? clients?.[0]?.clientSlug ?? ''
   )
 
-  const pluginCommand = `/plugin marketplace add ${skill.owner}/${skill.slug}`
+  const pluginCommand = skill.artifactType === 'plugin'
+    ? `/plugin install ${skill.owner}/${skill.repo}`
+    : `/plugin marketplace add ${skill.owner}/${skill.slug}`
 
   // If we have client-specific install instructions, show the dynamic selector
   if (clients && clients.length > 0) {
@@ -82,7 +84,7 @@ export function SkillInstallationTab({ skill, installCommand, clients }: SkillIn
   return (
     <div className="space-y-10">
       {/* Claude Code (full features) */}
-      {skill.hasPlugin && (
+      {(skill.hasPlugin || skill.artifactType === 'plugin') && (
         <section>
           <h3 className="text-sm font-semibold text-neutral-900 mb-2 flex items-center gap-2">
             <Terminal className="w-4 h-4" />

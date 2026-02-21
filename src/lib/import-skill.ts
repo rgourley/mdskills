@@ -353,6 +353,7 @@ function detectPermissions(content: string) {
 
 function detectArtifactType(fmRaw: Record<string, string>, repoName: string): string {
   const fmType = fmRaw.type?.toLowerCase() || fmRaw.artifact_type?.toLowerCase() || ''
+  if (fmType.includes('plugin')) return 'plugin'
   if (fmType.includes('mcp')) return 'mcp_server'
   if (fmType.includes('rule')) return 'ruleset'
   if (fmType.includes('workflow')) return 'workflow_pack'
@@ -531,7 +532,13 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   const artifactType = opts.artifactType || detectArtifactType(fm.raw, repo)
   const formatStandard = opts.formatStandard || (usingReadmeFallback ? 'generic' : 'skill_md')
   const platforms = opts.platforms || detectPlatforms(fm, skillContent, readme, artifactType, formatStandard)
-  const { skillType, hasPlugin } = detectSkillType(skillPath, meta.topics, readme)
+  let { skillType, hasPlugin } = detectSkillType(skillPath, meta.topics, readme)
+
+  // If artifact is a first-class plugin, override skill type fields
+  if (artifactType === 'plugin') {
+    skillType = 'plugin'
+    hasPlugin = false
+  }
   const tags = Array.from(new Set([...(fm.tags || []), ...meta.topics.slice(0, 10)])).slice(0, 15)
 
   let categorySlug = opts.category || null
@@ -627,7 +634,9 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
 
       if (client) {
         let instructions: string
-        if (artifactType === 'mcp_server') {
+        if (artifactType === 'plugin') {
+          instructions = `/plugin install ${owner}/${repo}`
+        } else if (artifactType === 'mcp_server') {
           const npmPackage = repo
           if (clientSlug === 'claude-code') {
             instructions = `claude mcp add ${slug} -- npx -y ${npmPackage}`

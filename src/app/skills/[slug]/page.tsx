@@ -124,7 +124,8 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: '/' },
-          { name: 'Skills', url: '/skills' },
+          { name: skill.artifactType === 'plugin' ? 'Plugins' : skill.artifactType === 'mcp_server' ? 'MCP Servers' : skill.artifactType === 'ruleset' ? 'Rules' : 'Skills',
+            url: skill.artifactType === 'plugin' ? '/plugins' : skill.artifactType === 'mcp_server' ? '/mcp-servers' : skill.artifactType === 'ruleset' ? '/rules' : '/skills' },
           { name: skill.name, url: `/skills/${skill.slug}` },
         ]}
       />
@@ -151,10 +152,10 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
     <div className="py-6 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <Link
-          href="/skills"
+          href={skill.artifactType === 'plugin' ? '/plugins' : skill.artifactType === 'mcp_server' ? '/mcp-servers' : skill.artifactType === 'ruleset' ? '/rules' : '/skills'}
           className="text-sm text-neutral-500 hover:text-neutral-700 mb-6 inline-block"
         >
-          ← Back to skills
+          ← Back to {skill.artifactType === 'plugin' ? 'plugins' : skill.artifactType === 'mcp_server' ? 'MCP servers' : skill.artifactType === 'ruleset' ? 'rules' : 'skills'}
         </Link>
         <div className="lg:flex lg:gap-10">
           <div className="min-w-0 flex-1 max-w-4xl">

@@ -13,6 +13,7 @@ const ARTIFACT_BADGE: Record<string, { label: string; icon: React.ElementType; c
   openapi_action: { label: 'OpenAPI', icon: Package, color: 'bg-purple-50 text-purple-700' },
   extension: { label: 'Extension', icon: Package, color: 'bg-teal-50 text-teal-700' },
   template_bundle: { label: 'Starter Kit', icon: Package, color: 'bg-pink-50 text-pink-700' },
+  plugin: { label: 'Plugin', icon: Puzzle, color: 'bg-violet-50 text-violet-700' },
 }
 
 export function SkillCard({ skill }: SkillCardProps) {
@@ -35,7 +36,7 @@ export function SkillCard({ skill }: SkillCardProps) {
             <artifactInfo.icon className="w-3 h-3" /> {artifactInfo.label}
           </span>
         )}
-        {skill.hasPlugin && (
+        {skill.hasPlugin && skill.artifactType !== 'plugin' && (
           <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-700">
             <Puzzle className="w-3 h-3" /> Plugin
           </span>

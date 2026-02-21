@@ -157,7 +157,7 @@ export default async function HomePage() {
                 <h2 className="text-2xl font-semibold text-neutral-900">Claude Code Plugins</h2>
                 <p className="mt-1 text-neutral-600">Skills with plugin support for full features in Claude Code</p>
               </div>
-              <Link href="/skills?plugin=1" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+              <Link href="/plugins" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                 View all plugins →
               </Link>
             </div>

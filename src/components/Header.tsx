@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { label: 'Skills', href: '/skills' },
   { label: 'MCP Servers', href: '/mcp-servers' },
   { label: 'Rules', href: '/rules' },
+  { label: 'Plugins', href: '/plugins' },
   { label: 'Use Cases', href: '/use-cases' },
   { label: 'Docs', href: '/docs' },
 ]

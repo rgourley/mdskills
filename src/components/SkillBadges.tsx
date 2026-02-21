@@ -13,6 +13,7 @@ const ARTIFACT_BADGE: Record<string, { label: string; icon: React.ElementType }>
   openapi_action: { label: 'OpenAPI Action', icon: Plug },
   extension: { label: 'Extension', icon: FileCode },
   template_bundle: { label: 'Starter Kit', icon: Package },
+  plugin: { label: 'Plugin', icon: Puzzle },
 }
 
 export function SkillBadges({ skill }: SkillBadgesProps) {
@@ -26,7 +27,7 @@ export function SkillBadges({ skill }: SkillBadgesProps) {
     }
   }
 
-  if (skill.hasPlugin) {
+  if (skill.hasPlugin && skill.artifactType !== 'plugin') {
     badges.push({ label: 'SKILL + PLUGIN', icon: Puzzle })
   }
   if (skill.categoryName) {
