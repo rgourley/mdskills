@@ -104,7 +104,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    ...['skill-md', 'agents-md', 'mcp', 'llms-txt', 'cursorrules', 'claude-md'].map((slug) => ({
+    ...['skill-md', 'agents-md', 'mcp', 'llms-txt', 'cursorrules', 'claude-md', 'soul-md'].map((slug) => ({
       url: `${SITE_URL}/specs/${slug}`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ExternalLink, FileText, Bot, Plug, Globe, FileCode, BookOpen } from 'lucide-react'
+import { ExternalLink, FileText, Bot, Plug, Globe, FileCode, BookOpen, Heart } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -62,6 +62,14 @@ const SPECS = [
     tagline: 'Project Instructions for Claude',
     description: 'A markdown file that gives Claude Code persistent context about your project, style preferences, and workflows.',
     org: 'Anthropic',
+  },
+  {
+    href: '/specs/soul-md',
+    icon: Heart,
+    name: 'SOUL.md',
+    tagline: 'Personal Identity for AI Agents',
+    description: 'A markdown file that encodes your personality, voice, worldview, and opinions so AI agents can embody your identity.',
+    org: 'Aaron Mars / OpenClaw',
   },
 ]
 
