@@ -154,16 +154,24 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
         </div>
       )}
 
-      {skill.githubUrl && (
-        <a
-          href={skill.githubUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+      <div className="flex flex-col gap-2">
+        <Link
+          href="/docs/install-skills"
           className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
         >
-          View on GitHub
-        </a>
-      )}
+          Install guide
+        </Link>
+        {skill.githubUrl && (
+          <a
+            href={skill.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            View on GitHub
+          </a>
+        )}
+      </div>
     </aside>
   )
 }
