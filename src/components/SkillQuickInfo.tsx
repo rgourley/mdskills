@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Github, Star, GitFork, Puzzle, FolderOpen, FolderEdit, Terminal, Globe, GitBranch } from 'lucide-react'
+import { Github, Star, GitFork, Puzzle, FolderOpen, FolderEdit, Terminal, Globe, GitBranch, Info } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 
 const ARTIFACT_LABELS: Record<string, string> = {
@@ -84,6 +84,28 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
           <div>
             <dt className="text-neutral-500">License</dt>
             <dd className="font-medium text-neutral-900">{skill.license}</dd>
+          </div>
+        )}
+        {skill.reviewQualityScore != null && (
+          <div>
+            <dt className="text-neutral-500 flex items-center gap-1">
+              Skill Advisor
+              <Link href="/docs/skill-advisor" className="text-neutral-400 hover:text-neutral-600 transition-colors" title="How we review skills">
+                <Info className="w-3 h-3" />
+              </Link>
+            </dt>
+            <dd className="font-medium">
+              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                skill.reviewQualityScore >= 8
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : skill.reviewQualityScore >= 5
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-red-100 text-red-700'
+              }`}>
+                {skill.reviewQualityScore}
+              </span>
+              <span className="ml-1.5 text-neutral-500 font-normal">/ 10</span>
+            </dd>
           </div>
         )}
         {(skill.githubStars != null || skill.githubForks != null) && (

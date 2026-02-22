@@ -23,6 +23,7 @@ export interface ImportOptions {
   artifactType?: string
   formatStandard?: string
   dryRun?: boolean
+  generateReview?: boolean
 }
 
 export interface ImportResult {
@@ -657,6 +658,38 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
       } else {
         log(`Client not found: ${clientSlug}`)
       }
+    }
+  }
+
+  // 6. Optionally generate AI review
+  if (opts.generateReview && data.id && process.env.ANTHROPIC_API_KEY) {
+    log('Generating AI review...')
+    try {
+      const { generateSkillReview } = await import('@/lib/generate-review')
+      const review = await generateSkillReview(skillContent, readme, {
+        filesystemRead: permissions.perm_filesystem_read,
+        filesystemWrite: permissions.perm_filesystem_write,
+        shellExec: permissions.perm_shell_exec,
+        networkAccess: permissions.perm_network_access,
+        gitWrite: permissions.perm_git_write,
+      })
+      if (review) {
+        await supabase
+          .from('skills')
+          .update({
+            review_summary: review.summary,
+            review_strengths: review.strengths,
+            review_weaknesses: review.weaknesses,
+            review_quality_score: review.quality_score,
+            review_generated_at: new Date().toISOString(),
+          })
+          .eq('id', data.id)
+        log(`Review generated: score ${review.quality_score}/10`)
+      } else {
+        log('Review generation failed (skipped)')
+      }
+    } catch {
+      log('Review generation error (skipped)')
     }
   }
 

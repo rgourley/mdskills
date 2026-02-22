@@ -41,6 +41,11 @@ export interface Skill {
   formatStandard?: string
   /** Project README (overview, installation, how it works) */
   readme?: string
+  /** AI-generated review fields */
+  reviewSummary?: string
+  reviewStrengths?: string[]
+  reviewWeaknesses?: string[]
+  reviewQualityScore?: number
 }
 
 /** DB row shape (snake_case) */
@@ -78,10 +83,14 @@ interface SkillRow {
   perm_git_write?: boolean | null
   format_standard?: string | null
   readme?: string | null
+  review_summary?: string | null
+  review_strengths?: string[] | null
+  review_weaknesses?: string[] | null
+  review_quality_score?: number | null
 }
 
 /** Select columns used in detail queries (includes large text fields) */
-const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, categories(slug, name)'
+const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, review_summary, review_strengths, review_weaknesses, review_quality_score, categories(slug, name)'
 
 /** Lightweight select for list/card views (excludes content & readme) */
 const LIST_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, format_standard, categories(slug, name)'
@@ -125,6 +134,10 @@ function mapRow(row: SkillRow, commentsCount?: number): Skill {
     permGitWrite: row.perm_git_write ?? undefined,
     formatStandard: row.format_standard ?? undefined,
     readme: row.readme ?? undefined,
+    reviewSummary: row.review_summary ?? undefined,
+    reviewStrengths: row.review_strengths ?? undefined,
+    reviewWeaknesses: row.review_weaknesses ?? undefined,
+    reviewQualityScore: row.review_quality_score ?? undefined,
   }
 }
 

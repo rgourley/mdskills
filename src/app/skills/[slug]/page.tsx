@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { createApiClient } from '@/lib/supabase/api'
 import { getSkillBySlug } from '@/lib/skills'
 import { getSkillClients } from '@/lib/clients'
-import { Star } from 'lucide-react'
+import { Star, Info } from 'lucide-react'
 import { SkillJsonLd, SkillFaqJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
 import { SkillDetailTabs, type TabId } from '@/components/SkillDetailTabs'
 import { SkillOverviewTab } from '@/components/SkillOverviewTab'
@@ -182,6 +182,47 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
         {/* Action buttons */}
         <SkillActions installCommand={installCommand} skill={skill} />
+
+        {/* Skill Advisor */}
+        {skill.reviewQualityScore != null && (
+          <div className="mt-6 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+            <div className="flex items-center gap-2.5 mb-2">
+              <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Skill Advisor</span>
+              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                skill.reviewQualityScore >= 8
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : skill.reviewQualityScore >= 5
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-red-100 text-red-700'
+              }`}>
+                {skill.reviewQualityScore}
+              </span>
+              <span className="text-xs text-neutral-400">/ 10</span>
+              <Link href="/docs/skill-advisor" className="ml-auto text-neutral-400 hover:text-neutral-600 transition-colors" title="How we review skills">
+                <Info className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+            {skill.reviewSummary && (
+              <p className="text-sm text-neutral-600 mb-2">{skill.reviewSummary}</p>
+            )}
+            {((skill.reviewStrengths && skill.reviewStrengths.length > 0) || (skill.reviewWeaknesses && skill.reviewWeaknesses.length > 0)) && (
+              <ul className="space-y-1">
+                {skill.reviewStrengths?.map((s, i) => (
+                  <li key={i} className="flex items-start gap-1.5 text-sm text-neutral-600">
+                    <span className="text-emerald-500 mt-0.5 shrink-0 font-medium">+</span>
+                    {s}
+                  </li>
+                ))}
+                {skill.reviewWeaknesses?.map((w, i) => (
+                  <li key={`w${i}`} className="flex items-start gap-1.5 text-sm text-neutral-500">
+                    <span className="text-amber-500 mt-0.5 shrink-0 font-medium">-</span>
+                    {w}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="mt-10">
