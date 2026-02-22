@@ -177,6 +177,50 @@ export default function InstallSkillsPage() {
             </div>
           </div>
 
+          {/* Manual download */}
+          <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">Download and save manually</h2>
+          <p className="text-neutral-600 mb-4">
+            The simplest approach &mdash; no CLI tools needed:
+          </p>
+
+          <ol className="list-decimal pl-5 space-y-3 text-neutral-600 mb-4">
+            <li>
+              <strong>Find a skill</strong> on{' '}
+              <Link href="/skills" className="text-blue-600 hover:underline">mdskills.ai</Link> and click the{' '}
+              <strong>Download</strong> button on its detail page.
+            </li>
+            <li>
+              <strong>Create the skill folder</strong> in your project. For example, for Claude Code:
+              <div className="rounded-lg bg-code-bg border border-neutral-200 text-neutral-800 p-3 font-mono text-sm my-2">
+                mkdir -p .claude/skills/my-skill
+              </div>
+            </li>
+            <li>
+              <strong>Save the file</strong> as{' '}
+              <code className="px-1.5 py-0.5 rounded bg-neutral-100 text-sm font-mono">SKILL.md</code> inside that folder:
+              <div className="rounded-lg bg-code-bg border border-neutral-200 text-neutral-800 p-3 font-mono text-sm my-2">
+                mv ~/Downloads/SKILL.md .claude/skills/my-skill/
+              </div>
+            </li>
+            <li>
+              <strong>Restart your agent</strong> (or start a new session). The skill is now available.
+            </li>
+          </ol>
+
+          <p className="text-neutral-600 mb-4">
+            The folder name becomes the skill name. A folder called{' '}
+            <code className="px-1.5 py-0.5 rounded bg-neutral-100 text-sm font-mono">review-pr</code> becomes
+            the <code className="px-1.5 py-0.5 rounded bg-neutral-100 text-sm font-mono">/review-pr</code> command
+            in agents that support slash commands.
+          </p>
+
+          <div className="p-5 rounded-xl bg-blue-50 border border-blue-100 text-sm text-neutral-700 mb-6">
+            <strong>Where to save?</strong> See the <a href="#agent-setup" className="text-blue-600 hover:underline">agent-by-agent guide below</a> for
+            the exact directory path for your specific tool. The short version: most agents use{' '}
+            <code className="px-1.5 py-0.5 rounded bg-neutral-100 text-xs font-mono">.&lt;agent&gt;/skills/&lt;name&gt;/SKILL.md</code> in
+            your project root.
+          </div>
+
           {/* CLI install */}
           <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">Quick install with the CLI</h2>
           <p className="text-neutral-600 mb-4">
@@ -199,7 +243,7 @@ export default function InstallSkillsPage() {
           </p>
 
           {/* Per-agent guides */}
-          <h2 className="text-xl font-semibold text-neutral-900 mt-10 mb-4">Agent-by-agent setup</h2>
+          <h2 id="agent-setup" className="text-xl font-semibold text-neutral-900 mt-10 mb-4 scroll-mt-20">Agent-by-agent setup</h2>
 
           <div className="space-y-6 my-6">
             {AGENTS.map((agent) => (
