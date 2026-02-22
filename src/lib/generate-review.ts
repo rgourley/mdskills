@@ -80,8 +80,9 @@ Rules:
 - summary: single sentence, 40-150 characters, do not mention the skill name
 - strengths: 1-3 items, each under 80 characters, start with a present-tense verb
 - weaknesses: 1-2 items, each under 80 characters, start with a present-tense verb. Every listing has room for improvement — always identify at least one concern or limitation
-- quality_score: integer 1-10 (1=no useful instructions, 4=vague/incomplete, 7=solid and actionable, 9=excellent with examples, 10=exceptional)
+- quality_score: integer 1-10 (1=no useful instructions, 4=vague/incomplete, 7=solid and actionable, 8=strong with good coverage, 9=excellent with examples and edge cases, 10=exceptional best-in-class)
 - A well-written skill with clear actionable instructions should score 7-8
+- A skill with comprehensive instructions, examples, edge case handling, and proper security should score 9+
 - Security concerns (undeclared permissions, prompt injection risk) should lower the score
 - A skill that requests permissions it doesn't need is a yellow flag, not a dealbreaker`
 
