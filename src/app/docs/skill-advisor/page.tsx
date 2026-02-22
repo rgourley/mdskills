@@ -142,7 +142,15 @@ export default function SkillAdvisorPage() {
           </ul>
         </section>
 
-        <div className="mt-12 p-6 rounded-xl bg-neutral-50 border border-neutral-200">
+        <div className="mt-12 p-5 rounded-xl bg-blue-50 border border-blue-100 text-sm text-neutral-700">
+          <strong>Want to improve your score?</strong> Read the{' '}
+          <Link href="/docs/skill-best-practices#security" className="text-blue-600 hover:text-blue-700 font-medium">
+            SKILL.md Best Practices
+          </Link>{' '}
+          guide &mdash; especially the security section on permissions, shell safety, and credential handling.
+        </div>
+
+        <div className="mt-6 p-6 rounded-xl bg-neutral-50 border border-neutral-200">
           <h3 className="font-semibold text-neutral-900">Have feedback?</h3>
           <p className="mt-1 text-sm text-neutral-600">
             If you think a review is inaccurate or unfair, let us know. We&apos;re continuously improving

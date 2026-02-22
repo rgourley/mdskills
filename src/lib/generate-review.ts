@@ -52,6 +52,7 @@ IMPORTANT scoring guidance:
 - Strong content with good examples/edge cases deserves 8+
 - Not having a README is fine — the primary content is what matters
 - Only penalize security issues that are genuine concerns, not theoretical
+- Content may be truncated for length — do NOT flag truncation as a weakness, it's a display limitation not a skill issue
 
 ---
 
@@ -78,7 +79,7 @@ Respond ONLY with valid JSON (no markdown fences, no explanation) matching this 
 Rules:
 - summary: single sentence, 40-150 characters, do not mention the skill name
 - strengths: 1-3 items, each under 80 characters, start with a present-tense verb
-- weaknesses: 0-2 items, each under 80 characters, start with a present-tense verb. Use [] if no concerns
+- weaknesses: 1-2 items, each under 80 characters, start with a present-tense verb. Every listing has room for improvement — always identify at least one concern or limitation
 - quality_score: integer 1-10 (1=no useful instructions, 4=vague/incomplete, 7=solid and actionable, 9=excellent with examples, 10=exceptional)
 - A well-written skill with clear actionable instructions should score 7-8
 - Security concerns (undeclared permissions, prompt injection risk) should lower the score
@@ -112,7 +113,7 @@ export async function generateSkillReview(
   if (!key) return null
 
   const anthropic = new Anthropic({ apiKey: key })
-  const truncatedContent = content.slice(0, 6000)
+  const truncatedContent = content.slice(0, 12000)
   const truncatedReadme = readme ? readme.slice(0, 2000) : 'None provided'
   const permissionsStr = permissions ? formatPermissions(permissions) : 'None declared'
   const typeLabel = ARTIFACT_TYPE_LABELS[artifactType ?? ''] ?? 'Skill'

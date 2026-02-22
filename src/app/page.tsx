@@ -126,11 +126,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Skills */}
+      {/* Most Popular */}
       <section className="py-16 sm:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-2xl font-semibold text-neutral-900">Featured Skills</h2>
+            <h2 className="text-2xl font-semibold text-neutral-900">Most Popular</h2>
             <Link href="/skills" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
               View all →
             </Link>
