@@ -93,7 +93,7 @@ interface SkillRow {
 const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, review_summary, review_strengths, review_weaknesses, review_quality_score, categories(slug, name)'
 
 /** Lightweight select for list/card views (excludes content & readme) */
-const LIST_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, format_standard, categories(slug, name)'
+const LIST_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, format_standard, review_quality_score, categories(slug, name)'
 
 function mapRow(row: SkillRow, commentsCount?: number): Skill {
   // categories comes back as an array from Supabase joins — normalize to single object
@@ -269,6 +269,24 @@ export async function getSkills(opts?: GetSkillsOptions): Promise<PaginatedSkill
     pageSize,
     totalPages: Math.ceil(total / pageSize),
   }
+}
+
+/** Top-reviewed skills by Skill Advisor score */
+export async function getTopReviewedSkills(limit = 6): Promise<Skill[]> {
+  const supabase = await createClient()
+  if (!supabase) return []
+
+  const { data, error } = await supabase
+    .from('skills')
+    .select(LIST_SELECT)
+    .or('status.eq.published,status.is.null')
+    .not('review_quality_score', 'is', null)
+    .order('review_quality_score', { ascending: false })
+    .order('weekly_installs', { ascending: false })
+    .limit(limit)
+
+  if (error || !data?.length) return []
+  return data.map((row) => mapRow(row as unknown as SkillRow))
 }
 
 export async function getPluginSkills(limit = 6): Promise<Skill[]> {

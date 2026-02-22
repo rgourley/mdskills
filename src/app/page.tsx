@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { SkillCard } from '@/components/SkillCard'
 import { CopyButton } from '@/components/CopyButton'
 import { AgentStrip } from '@/components/AgentStrip'
-import { getFeaturedSkills, getLatestSkills, getPluginSkills } from '@/lib/skills'
+import { getFeaturedSkills, getLatestSkills, getPluginSkills, getTopReviewedSkills } from '@/lib/skills'
 import { getCategories } from '@/lib/categories'
 import type { Metadata } from 'next'
 import {
@@ -61,10 +61,11 @@ function getCategoryIcon(icon?: string): LucideIcon {
 }
 
 export default async function HomePage() {
-  const [skills, pluginSkills, latestSkills, categories] = await Promise.all([
+  const [skills, pluginSkills, latestSkills, topReviewed, categories] = await Promise.all([
     getFeaturedSkills(),
     getPluginSkills(6),
     getLatestSkills(6),
+    getTopReviewedSkills(6),
     getCategories(),
   ])
 
@@ -147,6 +148,28 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Top Reviewed by Skill Advisor */}
+      {topReviewed.length > 0 && (
+        <section className="py-16 sm:py-20 border-t border-neutral-200 bg-neutral-50/50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <h2 className="text-2xl font-semibold text-neutral-900">Top Reviewed</h2>
+                <p className="mt-1 text-neutral-600">Highest rated by the <Link href="/docs/skill-advisor" className="text-blue-600 hover:text-blue-700">Skill Advisor</Link></p>
+              </div>
+              <Link href="/docs/skill-advisor" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                How we review →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {topReviewed.map((skill) => (
+                <SkillCard key={skill.id} skill={skill} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Claude Code Plugins */}
       {pluginSkills.length > 0 && (

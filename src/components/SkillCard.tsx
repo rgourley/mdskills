@@ -46,6 +46,20 @@ export function SkillCard({ skill }: SkillCardProps) {
         {skill.description}
       </p>
       <div className="mt-4 flex items-center gap-4 text-xs text-neutral-500">
+        {skill.reviewQualityScore != null && (
+          <span className="flex items-center gap-1">
+            <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
+              skill.reviewQualityScore >= 8
+                ? 'bg-emerald-100 text-emerald-700'
+                : skill.reviewQualityScore >= 5
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-red-100 text-red-700'
+            }`}>
+              {skill.reviewQualityScore}
+            </span>
+            <span className="text-neutral-400">/ 10</span>
+          </span>
+        )}
         {skill.weeklyInstalls > 0 && (
           <span className="flex items-center gap-1">
             <Star className="w-3.5 h-3.5" />
