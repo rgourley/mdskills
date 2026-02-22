@@ -52,7 +52,7 @@ IMPORTANT scoring guidance:
 - Strong content with good examples/edge cases deserves 8+
 - Not having a README is fine — the primary content is what matters
 - Only penalize security issues that are genuine concerns, not theoretical
-- Content may be truncated for length — do NOT flag truncation as a weakness, it's a display limitation not a skill issue
+- Content may be truncated for length — NEVER mention truncation in your review. Do not say "appears truncated", "content is cut off", "missing sections due to truncation", or anything similar. Judge only the content you can see. This is a hard rule.
 
 ---
 
