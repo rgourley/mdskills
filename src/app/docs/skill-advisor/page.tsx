@@ -81,24 +81,24 @@ export default function SkillAdvisorPage() {
               <tbody className="text-neutral-600">
                 <tr className="border-b border-neutral-100">
                   <td className="py-2 pr-4">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">8</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">7</span>
                     <span className="ml-1">- 10</span>
                   </td>
-                  <td className="py-2">Excellent &mdash; well-structured, secure, and immediately usable by an agent</td>
+                  <td className="py-2">Strong &mdash; actionable, well-structured, and immediately usable by an agent</td>
                 </tr>
                 <tr className="border-b border-neutral-100">
                   <td className="py-2 pr-4">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-amber-100 text-amber-700">5</span>
-                    <span className="ml-1">- 7</span>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-amber-100 text-amber-700">4</span>
+                    <span className="ml-1">- 6</span>
                   </td>
-                  <td className="py-2">Decent &mdash; functional but could improve in structure, docs, or security scoping</td>
+                  <td className="py-2">Decent &mdash; functional but could improve in specificity, examples, or permissions</td>
                 </tr>
                 <tr>
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-red-100 text-red-700">1</span>
-                    <span className="ml-1">- 4</span>
+                    <span className="ml-1">- 3</span>
                   </td>
-                  <td className="py-2">Weak &mdash; missing key sections, over-scoped permissions, or not usable as-is</td>
+                  <td className="py-2">Weak &mdash; missing actionable instructions or not usable by an agent as-is</td>
                 </tr>
               </tbody>
             </table>

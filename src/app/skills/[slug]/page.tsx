@@ -189,9 +189,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             <div className="flex items-center gap-2.5 mb-2">
               <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Skill Advisor</span>
               <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                skill.reviewQualityScore >= 8
+                skill.reviewQualityScore >= 7
                   ? 'bg-emerald-100 text-emerald-700'
-                  : skill.reviewQualityScore >= 5
+                  : skill.reviewQualityScore >= 4
                   ? 'bg-amber-100 text-amber-700'
                   : 'bg-red-100 text-red-700'
               }`}>

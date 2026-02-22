@@ -28,15 +28,30 @@ function formatPermissions(perms: {
   return lines.length > 0 ? lines.join('\n') : 'None declared'
 }
 
-const REVIEW_PROMPT = `You are a senior AI agent security researcher reviewing a listing on mdskills.ai — a directory of skills, plugins, and MCP servers for AI coding agents.
+const REVIEW_PROMPT = `You are a senior AI agent skill reviewer for mdskills.ai — a directory of skills, plugins, and MCP servers for AI coding agents.
 
-Analyze the skill content below. Evaluate on three dimensions:
+LISTING TYPE: <ARTIFACT_TYPE>
 
-1. **Capabilities**: What does this skill actually enable an agent to do? Is it useful and well-scoped, or shallow/trivial? Are the instructions specific enough that an agent could execute them reliably without guessing?
+Your job is to evaluate the content below based on its type:
+- **Skills/Rules**: Evaluate the SKILL.md (or equivalent agent instruction file). This is what an AI agent reads and executes. The README is supplementary context only.
+- **MCP Servers**: Evaluate the tool descriptions, setup documentation, and API quality. MCP servers provide tools to agents — they don't need trigger conditions or step-by-step instructions like skills do. Judge them on: clear tool descriptions, useful capabilities, good setup docs, and appropriate security.
+- **Plugins**: Evaluate the plugin's capabilities, configuration, and integration quality.
 
-2. **Quality**: Is the SKILL.md well-structured? Does it have clear trigger conditions (when to activate), step-by-step instructions, examples, and edge case handling? Does it use progressive disclosure (summary → details → advanced)? Would an agent or human understand exactly what this does out of the box?
+Evaluate on three dimensions:
 
-3. **Security**: Review the declared permissions against what the instructions actually require. Flag any mismatches — e.g. shell execution used when not declared, or filesystem write requested but never needed. Look for: unvalidated shell commands, unconstrained file writes, credential/secret handling, network calls to hardcoded or unknown endpoints. Assess prompt injection surface — could a malicious file or input trick an agent into running dangerous commands through this skill?
+1. **Capabilities** (most important): What does this listing enable an agent to do? Is it useful and well-scoped? For skills: are the instructions specific and actionable? For MCP servers: are the tools well-described and genuinely useful? For plugins: does the plugin integrate well and add real value?
+
+2. **Quality**: Is the content well-structured and clear? For skills: trigger conditions, step-by-step instructions, examples. For MCP servers: clear setup, good tool descriptions, configuration examples. A concise listing that gets the job done is better than a verbose one that rambles.
+
+3. **Security**: Do the declared permissions match what's actually needed? Flag over-scoped permissions. Look for unvalidated shell commands or prompt injection risks. Minimal, appropriate permissions are a strength.
+
+IMPORTANT scoring guidance:
+- Focus on whether this listing provides genuine value to an AI agent
+- A skill with clear actionable instructions deserves 7+
+- An MCP server with useful, well-documented tools deserves 7+
+- Strong content with good examples/edge cases deserves 8+
+- Not having a README is fine — the primary content is what matters
+- Only penalize security issues that are genuine concerns, not theoretical
 
 ---
 
@@ -64,10 +79,21 @@ Rules:
 - summary: single sentence, 40-150 characters, do not mention the skill name
 - strengths: 1-3 items, each under 80 characters, start with a present-tense verb
 - weaknesses: 0-2 items, each under 80 characters, start with a present-tense verb. Use [] if no concerns
-- quality_score: integer 1-10 (1=unusable, 4=weak, 6=decent, 8=excellent, 10=exceptional)
-- Be honest and critical — a score of 7 is good, 9+ is rare
-- Security concerns (especially undeclared permissions or prompt injection risk) should significantly impact the score
-- A skill that requests permissions it doesn't need, or uses shell/network without declaring it, is a red flag`
+- quality_score: integer 1-10 (1=no useful instructions, 4=vague/incomplete, 7=solid and actionable, 9=excellent with examples, 10=exceptional)
+- A well-written skill with clear actionable instructions should score 7-8
+- Security concerns (undeclared permissions, prompt injection risk) should lower the score
+- A skill that requests permissions it doesn't need is a yellow flag, not a dealbreaker`
+
+const ARTIFACT_TYPE_LABELS: Record<string, string> = {
+  skill_pack: 'Skill',
+  mcp_server: 'MCP Server',
+  plugin: 'Plugin',
+  ruleset: 'Rules/Ruleset',
+  workflow_pack: 'Workflow',
+  extension: 'Extension',
+  template_bundle: 'Starter Kit',
+  openapi_action: 'OpenAPI Action',
+}
 
 export async function generateSkillReview(
   content: string,
@@ -80,6 +106,7 @@ export async function generateSkillReview(
     gitWrite?: boolean
   },
   apiKey?: string,
+  artifactType?: string,
 ): Promise<SkillReview | null> {
   const key = apiKey || process.env.ANTHROPIC_API_KEY
   if (!key) return null
@@ -88,8 +115,10 @@ export async function generateSkillReview(
   const truncatedContent = content.slice(0, 6000)
   const truncatedReadme = readme ? readme.slice(0, 2000) : 'None provided'
   const permissionsStr = permissions ? formatPermissions(permissions) : 'None declared'
+  const typeLabel = ARTIFACT_TYPE_LABELS[artifactType ?? ''] ?? 'Skill'
 
   const prompt = REVIEW_PROMPT
+    .replace('<ARTIFACT_TYPE>', typeLabel)
     .replace('<CONTENT>', truncatedContent)
     .replace('<README>', truncatedReadme)
     .replace('<PERMISSIONS>', permissionsStr)

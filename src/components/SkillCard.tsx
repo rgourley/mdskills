@@ -49,9 +49,9 @@ export function SkillCard({ skill }: SkillCardProps) {
         {skill.reviewQualityScore != null && (
           <span className="flex items-center gap-1">
             <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
-              skill.reviewQualityScore >= 8
+              skill.reviewQualityScore >= 7
                 ? 'bg-emerald-100 text-emerald-700'
-                : skill.reviewQualityScore >= 5
+                : skill.reviewQualityScore >= 4
                 ? 'bg-amber-100 text-amber-700'
                 : 'bg-red-100 text-red-700'
             }`}>

@@ -47,15 +47,19 @@ async function main() {
   // Fetch skills to process
   let query = supabase
     .from('skills')
-    .select('id, slug, name, content, readme, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write')
+    .select('id, slug, name, content, readme, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write')
     .or('status.eq.published,status.is.null')
     .not('content', 'is', null)
+    .neq('artifact_type', 'mcp_server')
 
   if (targetSlug) {
     query = query.eq('slug', targetSlug)
   } else if (!regenerateAll) {
     query = query.is('review_generated_at', null)
   }
+
+  // Most popular first so top skills get reviewed earliest
+  query = query.order('weekly_installs', { ascending: false, nullsFirst: false })
 
   const { data: skills, error } = await query
 
@@ -92,6 +96,7 @@ async function main() {
         gitWrite: skill.perm_git_write as boolean,
       },
       anthropicApiKey,
+      (skill.artifact_type as string) || undefined,
     )
 
     if (!review) {
