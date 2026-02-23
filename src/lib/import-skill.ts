@@ -662,7 +662,7 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   }
 
   // 6. Optionally generate AI review
-  if (opts.generateReview && data.id && process.env.ANTHROPIC_API_KEY) {
+  if (data.id && process.env.ANTHROPIC_API_KEY) {
     log('Generating AI review...')
     try {
       const { generateSkillReview } = await import('@/lib/generate-review')
@@ -672,7 +672,7 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
         shellExec: permissions.perm_shell_exec,
         networkAccess: permissions.perm_network_access,
         gitWrite: permissions.perm_git_write,
-      })
+      }, undefined, record.artifact_type)
       if (review) {
         await supabase
           .from('skills')
