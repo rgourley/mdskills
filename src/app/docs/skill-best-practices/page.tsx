@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Practical guide to writing effective SKILL.md files that agents actually use well. Covers descriptions, structure, progressive disclosure, workflows, testing, and common mistakes to avoid.',
   alternates: { canonical: '/docs/skill-best-practices' },
   openGraph: {
-    title: 'SKILL.md Best Practices — mdskills.ai',
+    title: 'SKILL.md Best Practices | mdskills.ai',
     description: 'Practical guide to writing effective SKILL.md files. Covers descriptions, structure, progressive disclosure, workflows, and common mistakes.',
     url: '/docs/skill-best-practices',
   },

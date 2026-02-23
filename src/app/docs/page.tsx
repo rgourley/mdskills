@@ -3,11 +3,11 @@ import { BookOpen, Code, Download, GitCompare, Lightbulb, Puzzle, Server, FileTe
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Docs — AI Agent Skills, Plugins, MCP Servers & Rules',
+  title: 'Docs: AI Agent Skills, Plugins, MCP Servers & Rules',
   description: 'Everything you need to work with AI agent skills, plugins, MCP servers, and rules. Getting started guides, best practices, specs, and compatible agents.',
   alternates: { canonical: '/docs' },
   openGraph: {
-    title: 'Docs — mdskills.ai',
+    title: 'Docs | mdskills.ai',
     description: 'Everything you need to work with AI agent skills, plugins, MCP servers, and rules. Getting started, best practices, and specs.',
     url: '/docs',
   },

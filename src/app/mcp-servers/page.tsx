@@ -8,11 +8,11 @@ import { getCategoriesLight } from '@/lib/categories'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'MCP Servers — Connect AI Agents to APIs, Databases & Tools',
+  title: 'MCP Servers: Connect AI Agents to APIs, Databases & Tools',
   description: 'Browse MCP (Model Context Protocol) servers that give AI agents real capabilities. Search the web, query databases, call APIs, manage files, and more. Works with Claude Code, Cursor, and 27+ agents.',
   alternates: { canonical: '/mcp-servers' },
   openGraph: {
-    title: 'MCP Servers — mdskills.ai',
+    title: 'MCP Servers | mdskills.ai',
     description: 'Browse MCP servers that connect AI agents to APIs, databases, and external tools. One-command install for Claude Code, Cursor, and more.',
     url: '/mcp-servers',
   },

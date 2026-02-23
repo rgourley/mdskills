@@ -14,11 +14,11 @@ import {
 } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'mdskills.ai — Free AI Skills for Claude Code, Cursor & More',
+  title: 'mdskills.ai: Free AI Skills for Claude Code, Cursor & More',
   description: 'Download free skills for Claude Code, Cursor, Codex, and 27+ AI agents. PDF processing, design systems, Stripe integrations, testing tools and more. Install any skill in one command.',
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'mdskills.ai — Free AI Agent Skills Marketplace',
+    title: 'mdskills.ai: Free AI Agent Skills Marketplace',
     description: 'Download free skills for Claude Code, Cursor, Codex, and 27+ AI agents. Install any skill in one command.',
     url: '/',
   },

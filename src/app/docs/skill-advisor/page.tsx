@@ -2,11 +2,11 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Skill Advisor — How We Review Skills',
+  title: 'Skill Advisor: How We Review Skills',
   description: 'How the mdskills.ai Skill Advisor evaluates skills, plugins, and MCP servers for capabilities, quality, and security.',
   alternates: { canonical: '/docs/skill-advisor' },
   openGraph: {
-    title: 'Skill Advisor — How We Review Skills — mdskills.ai',
+    title: 'Skill Advisor: How We Review Skills | mdskills.ai',
     description: 'Our AI-powered review methodology for evaluating agent skills on capabilities, quality, and security.',
     url: '/docs/skill-advisor',
   },

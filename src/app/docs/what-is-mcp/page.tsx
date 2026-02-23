@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Understand the Model Context Protocol (MCP) — the open standard that connects AI agents to external tools, APIs, and data sources. Learn how it works and why it matters.',
   alternates: { canonical: '/docs/what-is-mcp' },
   openGraph: {
-    title: 'What is MCP? — mdskills.ai',
+    title: 'What is MCP? | mdskills.ai',
     description: 'The Model Context Protocol (MCP) is an open standard that gives AI agents access to external tools, APIs, and data. Learn how it works.',
     url: '/docs/what-is-mcp',
   },

@@ -3,11 +3,11 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'CLAUDE.md — Project Instructions for Claude',
+  title: 'CLAUDE.md: Project Instructions for Claude',
   description: 'CLAUDE.md is a markdown file that gives Claude Code persistent project context — coding standards, build commands, architectural decisions, and workflow preferences.',
   alternates: { canonical: '/specs/claude-md' },
   openGraph: {
-    title: 'CLAUDE.md — Project Instructions for Claude — mdskills.ai',
+    title: 'CLAUDE.md: Project Instructions for Claude | mdskills.ai',
     description: 'Give Claude Code persistent project context. Coding standards, build commands, architecture decisions, workflow preferences.',
     url: '/specs/claude-md',
   },

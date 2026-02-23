@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Step-by-step instructions for installing SKILL.md files on Claude Code, Cursor, VS Code, Codex, and other AI agents. Covers project skills, personal skills, and CLI tools.',
   alternates: { canonical: '/docs/install-skills' },
   openGraph: {
-    title: 'How to Install Agent Skills — mdskills.ai',
+    title: 'How to Install Agent Skills | mdskills.ai',
     description: 'Step-by-step instructions for installing SKILL.md files on Claude Code, Cursor, VS Code, Codex, and other AI agents.',
     url: '/docs/install-skills',
   },

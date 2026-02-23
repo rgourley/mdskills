@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'A guide to the open standards powering AI coding agents — SKILL.md, AGENTS.md, MCP, llms.txt, .cursorrules, CLAUDE.md and more. Learn how each format works and when to use it.',
   alternates: { canonical: '/specs' },
   openGraph: {
-    title: 'AI Agent Specifications & Standards — mdskills.ai',
+    title: 'AI Agent Specifications & Standards | mdskills.ai',
     description: 'A guide to the open standards powering AI coding agents. SKILL.md, AGENTS.md, MCP Protocol, llms.txt, .cursorrules, CLAUDE.md.',
     url: '/specs',
   },

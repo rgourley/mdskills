@@ -3,11 +3,11 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'MCP — Model Context Protocol',
+  title: 'MCP: Model Context Protocol',
   description: 'The Model Context Protocol (MCP) is an open standard for connecting AI models to external tools, data sources, and services. Learn how MCP servers work and who supports them.',
   alternates: { canonical: '/specs/mcp' },
   openGraph: {
-    title: 'MCP — Model Context Protocol — mdskills.ai',
+    title: 'MCP: Model Context Protocol | mdskills.ai',
     description: 'An open standard for connecting AI models to external tools, data sources, and services. Supported by Claude, Cursor, VS Code, and more.',
     url: '/specs/mcp',
   },

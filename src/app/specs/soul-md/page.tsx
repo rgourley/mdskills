@@ -3,11 +3,11 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'SOUL.md — Personal Identity for AI Agents',
+  title: 'SOUL.md: Personal Identity for AI Agents',
   description: 'SOUL.md encodes your personality, voice, worldview, and opinions into a structured markdown file that AI agents read and embody. Created by Aaron Mars / OpenClaw.',
   alternates: { canonical: '/specs/soul-md' },
   openGraph: {
-    title: 'SOUL.md — Personal Identity for AI Agents — mdskills.ai',
+    title: 'SOUL.md: Personal Identity for AI Agents | mdskills.ai',
     description: 'SOUL.md encodes personality, voice, and worldview into a file AI agents can read and embody. Identity persistence without fine-tuning.',
     url: '/specs/soul-md',
   },

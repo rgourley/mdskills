@@ -8,11 +8,11 @@ import { getCategoriesLight } from '@/lib/categories'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Rules & Rulesets — .cursorrules, CLAUDE.md & Agent Configuration',
+  title: 'Rules & Rulesets: .cursorrules, CLAUDE.md & Agent Configuration',
   description: 'Browse rules and rulesets that configure AI agent behavior. .cursorrules, CLAUDE.md, AGENTS.md, .clinerules, and more. Set coding conventions, enforce safety constraints, and standardize workflows across your team.',
   alternates: { canonical: '/rules' },
   openGraph: {
-    title: 'Rules & Rulesets — mdskills.ai',
+    title: 'Rules & Rulesets | mdskills.ai',
     description: 'Browse rules that configure AI agent behavior. .cursorrules, CLAUDE.md, AGENTS.md and more. Set coding standards and safety constraints.',
     url: '/rules',
   },

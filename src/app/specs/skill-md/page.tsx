@@ -3,11 +3,11 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'SKILL.md — The Agent Skills Format',
+  title: 'SKILL.md: The Agent Skills Format',
   description: 'SKILL.md is the open standard for creating modular, reusable capabilities for AI coding agents. Learn the format, frontmatter fields, and how 27+ agents discover and use skills.',
   alternates: { canonical: '/specs/skill-md' },
   openGraph: {
-    title: 'SKILL.md — The Agent Skills Format — mdskills.ai',
+    title: 'SKILL.md: The Agent Skills Format | mdskills.ai',
     description: 'The open standard for creating modular, reusable capabilities for AI coding agents. Supported by Claude Code, Cursor, Codex, and 27+ agents.',
     url: '/specs/skill-md',
   },

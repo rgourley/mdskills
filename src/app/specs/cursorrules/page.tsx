@@ -3,11 +3,11 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '.cursorrules — Custom Rules for Cursor',
+  title: '.cursorrules: Custom Rules for Cursor',
   description: 'The .cursorrules file lets you configure how Cursor writes code for your project. Set coding standards, naming conventions, preferred patterns, and project-specific instructions.',
   alternates: { canonical: '/specs/cursorrules' },
   openGraph: {
-    title: '.cursorrules — Custom Rules for Cursor — mdskills.ai',
+    title: '.cursorrules: Custom Rules for Cursor | mdskills.ai',
     description: 'Configure how Cursor writes code for your project. Set coding standards, naming conventions, and project-specific instructions.',
     url: '/specs/cursorrules',
   },

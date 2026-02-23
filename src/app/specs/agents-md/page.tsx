@@ -3,11 +3,11 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AGENTS.md — Project Context for AI Agents',
+  title: 'AGENTS.md: Project Context for AI Agents',
   description: 'AGENTS.md gives AI coding agents project-level context about your codebase, build steps, conventions, and testing workflows. Now a Linux Foundation standard with 60,000+ repos.',
   alternates: { canonical: '/specs/agents-md' },
   openGraph: {
-    title: 'AGENTS.md — Project Context for AI Agents — mdskills.ai',
+    title: 'AGENTS.md: Project Context for AI Agents | mdskills.ai',
     description: 'Project-level context for AI agents. Build steps, conventions, testing workflows. Linux Foundation standard with 60,000+ repos.',
     url: '/specs/agents-md',
   },

@@ -3,11 +3,11 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'llms.txt — Making Websites AI-Readable',
+  title: 'llms.txt: Making Websites AI-Readable',
   description: 'llms.txt is a simple standard for making your website content accessible to AI models. Like robots.txt for search engines, but designed for LLMs. Learn the format and how to add it.',
   alternates: { canonical: '/specs/llms-txt' },
   openGraph: {
-    title: 'llms.txt — Making Websites AI-Readable — mdskills.ai',
+    title: 'llms.txt: Making Websites AI-Readable | mdskills.ai',
     description: 'A simple standard for making website content accessible to AI models. Like robots.txt, but for LLMs.',
     url: '/specs/llms-txt',
   },

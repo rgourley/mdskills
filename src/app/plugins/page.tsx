@@ -8,11 +8,11 @@ import { getCategoriesLight } from '@/lib/categories'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Plugins — Claude Code Plugins for AI Agent Superpowers',
+  title: 'Plugins: Claude Code Plugins for AI Agent Superpowers',
   description: 'Browse Claude Code plugins that extend your AI agent with commands, hooks, persistent memory, and more. Install plugins with one command for the best Claude Code experience.',
   alternates: { canonical: '/plugins' },
   openGraph: {
-    title: 'Plugins — mdskills.ai',
+    title: 'Plugins | mdskills.ai',
     description: 'Browse Claude Code plugins that add commands, hooks, and persistent memory. One-command install.',
     url: '/plugins',
   },

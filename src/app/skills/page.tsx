@@ -8,11 +8,11 @@ import { getCategoriesLight } from '@/lib/categories'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Agent Skills — Free SKILL.md Files for Claude Code, Cursor & More',
+  title: 'Agent Skills: Free SKILL.md Files for Claude Code, Cursor & More',
   description: 'Browse and install free AI agent skills. SKILL.md files give your AI tools domain expertise — PDF processing, design systems, API integration, testing, and more. One-command install.',
   alternates: { canonical: '/skills' },
   openGraph: {
-    title: 'Agent Skills — mdskills.ai',
+    title: 'Agent Skills | mdskills.ai',
     description: 'Browse free SKILL.md files that give AI agents domain expertise. One-command install for Claude Code, Cursor, Codex, and 27+ tools.',
     url: '/skills',
   },

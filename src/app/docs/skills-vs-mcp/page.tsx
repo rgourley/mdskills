@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'When should you write a SKILL.md and when should you build an MCP server? A practical guide to choosing the right extension point for your AI agent.',
   alternates: { canonical: '/docs/skills-vs-mcp' },
   openGraph: {
-    title: 'Skills vs MCP Servers — mdskills.ai',
+    title: 'Skills vs MCP Servers | mdskills.ai',
     description: 'When should you write a SKILL.md and when should you build an MCP server? A practical guide to choosing the right extension point.',
     url: '/docs/skills-vs-mcp',
   },

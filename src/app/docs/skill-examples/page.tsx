@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Annotated walkthroughs of well-written SKILL.md files. See what makes a great skill — descriptions, structure, progressive disclosure, and practical patterns.',
   alternates: { canonical: '/docs/skill-examples' },
   openGraph: {
-    title: 'SKILL.md Examples — mdskills.ai',
+    title: 'SKILL.md Examples | mdskills.ai',
     description: 'Annotated walkthroughs of well-written SKILL.md files. Learn from real skills that agents use well.',
     url: '/docs/skill-examples',
   },

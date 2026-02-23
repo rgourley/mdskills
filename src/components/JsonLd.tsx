@@ -92,7 +92,7 @@ export function SkillJsonLd({
         data={{
           '@context': 'https://schema.org',
           '@type': 'SoftwareApplication',
-          name: `${name} — AI Agent Skill`,
+          name: `${name}: AI Agent Skill`,
           description,
           url: `${SITE_URL}${url}`,
           applicationCategory: category || 'DeveloperApplication',

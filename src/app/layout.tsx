@@ -16,7 +16,7 @@ const DEFAULT_DESCRIPTION = 'Discover and install AI agent skills, MCP servers, 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'mdskills.ai — AI Agent Skills Marketplace',
+    default: 'mdskills.ai: AI Agent Skills Marketplace',
     template: '%s | mdskills.ai',
   },
   description: DEFAULT_DESCRIPTION,
@@ -29,20 +29,20 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: 'mdskills.ai — AI Agent Skills Marketplace',
+    title: 'mdskills.ai: AI Agent Skills Marketplace',
     description: DEFAULT_DESCRIPTION,
     images: [
       {
         url: '/images/og.png',
         width: 1200,
         height: 630,
-        alt: 'mdskills.ai — Free AI Skills for Claude Code, Cursor & More',
+        alt: 'mdskills.ai: Free AI Skills for Claude Code, Cursor & More',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'mdskills.ai — AI Agent Skills Marketplace',
+    title: 'mdskills.ai: AI Agent Skills Marketplace',
     description: DEFAULT_DESCRIPTION,
     images: ['/images/og.png'],
   },
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.png', type: 'image/png' },
     ],
-    apple: '/apple-icon.svg',
+    apple: '/apple-icon.png',
   },
 }
 

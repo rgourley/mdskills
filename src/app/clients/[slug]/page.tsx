@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const client = await getClientBySlug(slug)
   if (!client) return { title: 'Client Not Found' }
 
-  const title = `${client.name} — AI Agent Skills`
+  const title = `${client.name}: AI Agent Skills`
   const description = `Browse AI agent skills compatible with ${client.name}. Find and install SKILL.md files, MCP servers, and workflows for ${client.name}.`
 
   return {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: { canonical: `/clients/${slug}` },
     openGraph: {
-      title: `${client.name} Skills — mdskills.ai`,
+      title: `${client.name} Skills | mdskills.ai`,
       description,
       url: `/clients/${slug}`,
     },

@@ -46,9 +46,8 @@ export function Header() {
     <header className="border-b border-neutral-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-baseline group flex-shrink-0" onClick={() => { setMenuOpen(false); setSearchOpen(false) }}>
-          <span className="text-[17px] font-semibold tracking-tight text-neutral-900 group-hover:text-neutral-700 transition-colors">mdskills</span>
-          <span className="text-[17px] font-light tracking-tight text-neutral-400">.ai</span>
+        <Link href="/" className="flex items-center group flex-shrink-0" onClick={() => { setMenuOpen(false); setSearchOpen(false) }}>
+          <img src="/images/logo.svg" alt="mdskills" width={135} height={44} className="h-6 w-auto" />
         </Link>
 
         {/* Spacer pushes nav to the right */}

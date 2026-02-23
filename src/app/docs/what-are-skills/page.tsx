@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Learn about Agent Skills — the open SKILL.md format for extending AI agent capabilities. Understand progressive disclosure, frontmatter fields, and how 27+ agents use skills.',
   alternates: { canonical: '/docs/what-are-skills' },
   openGraph: {
-    title: 'What are Agent Skills? — mdskills.ai',
+    title: 'What are Agent Skills? | mdskills.ai',
     description: 'The open SKILL.md format for extending AI agent capabilities. Progressive disclosure, frontmatter fields, and how 27+ agents discover and use skills.',
     url: '/docs/what-are-skills',
   },

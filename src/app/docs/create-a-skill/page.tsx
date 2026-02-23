@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Step-by-step guide to writing, validating, and publishing your first SKILL.md file. Learn the folder structure, frontmatter, instructions, and best practices.',
   alternates: { canonical: '/docs/create-a-skill' },
   openGraph: {
-    title: 'Create an Agent Skill — mdskills.ai',
+    title: 'Create an Agent Skill | mdskills.ai',
     description: 'Step-by-step guide to writing, validating, and publishing your first SKILL.md file for AI agents.',
     url: '/docs/create-a-skill',
   },
