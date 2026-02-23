@@ -46,6 +46,7 @@ export interface Skill {
   reviewStrengths?: string[]
   reviewWeaknesses?: string[]
   reviewQualityScore?: number
+  reviewGeneratedAt?: string
 }
 
 /** DB row shape (snake_case) */
@@ -87,10 +88,11 @@ interface SkillRow {
   review_strengths?: string[] | null
   review_weaknesses?: string[] | null
   review_quality_score?: number | null
+  review_generated_at?: string | null
 }
 
 /** Select columns used in detail queries (includes large text fields) */
-const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, review_summary, review_strengths, review_weaknesses, review_quality_score, categories(slug, name)'
+const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, review_summary, review_strengths, review_weaknesses, review_quality_score, review_generated_at, categories(slug, name)'
 
 /** Lightweight select for list/card views (excludes content & readme) */
 const LIST_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, format_standard, review_quality_score, categories(slug, name)'
@@ -138,6 +140,7 @@ function mapRow(row: SkillRow, commentsCount?: number): Skill {
     reviewStrengths: row.review_strengths ?? undefined,
     reviewWeaknesses: row.review_weaknesses ?? undefined,
     reviewQualityScore: row.review_quality_score ?? undefined,
+    reviewGeneratedAt: row.review_generated_at ?? undefined,
   }
 }
 

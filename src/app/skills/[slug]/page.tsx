@@ -141,6 +141,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         dateModified={skill.updatedAtIso}
         datePublished={skill.createdAtIso}
         tags={skill.tags}
+        reviewScore={skill.reviewQualityScore}
+        reviewSummary={skill.reviewSummary}
+        reviewDate={skill.reviewGeneratedAt}
       />
       <SkillFaqJsonLd
         name={skill.name}

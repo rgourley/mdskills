@@ -66,6 +66,9 @@ export function SkillJsonLd({
   dateModified,
   datePublished,
   tags,
+  reviewScore,
+  reviewSummary,
+  reviewDate,
 }: {
   name: string
   description: string
@@ -78,6 +81,9 @@ export function SkillJsonLd({
   dateModified?: string
   datePublished?: string
   tags?: string[]
+  reviewScore?: number
+  reviewSummary?: string
+  reviewDate?: string
 }) {
   return (
     <>
@@ -104,6 +110,31 @@ export function SkillJsonLd({
           ...(dateModified && { dateModified }),
           ...(datePublished && { datePublished }),
           ...(tags && tags.length > 0 && { keywords: tags.join(', ') }),
+          ...(reviewScore != null && {
+            review: {
+              '@type': 'Review',
+              author: {
+                '@type': 'Organization',
+                name: 'Skill Advisor',
+                url: 'https://www.mdskills.ai/docs/skill-advisor',
+              },
+              reviewRating: {
+                '@type': 'Rating',
+                ratingValue: reviewScore,
+                bestRating: 10,
+                worstRating: 1,
+              },
+              ...(reviewSummary && { reviewBody: reviewSummary }),
+              ...(reviewDate && { datePublished: reviewDate }),
+            },
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: reviewScore,
+              bestRating: 10,
+              worstRating: 1,
+              ratingCount: 1,
+            },
+          }),
         }}
       />
       {/* SoftwareSourceCode — rich code metadata */}
