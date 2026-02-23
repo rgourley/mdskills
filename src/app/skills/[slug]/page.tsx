@@ -200,7 +200,6 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               }`}>
                 {skill.reviewQualityScore}
               </span>
-              <span className="text-xs text-neutral-400">/ 10</span>
               <Link href="/docs/skill-advisor" className="ml-auto text-neutral-400 hover:text-neutral-600 transition-colors" title="How we review skills">
                 <Info className="w-3.5 h-3.5" />
               </Link>

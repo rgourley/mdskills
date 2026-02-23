@@ -57,7 +57,6 @@ export function SkillCard({ skill }: SkillCardProps) {
             }`}>
               {skill.reviewQualityScore}
             </span>
-            <span className="text-neutral-400">/ 10</span>
           </span>
         )}
         {skill.weeklyInstalls > 0 && (

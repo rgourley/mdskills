@@ -104,7 +104,6 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
               }`}>
                 {skill.reviewQualityScore}
               </span>
-              <span className="ml-1.5 text-neutral-500 font-normal">/ 10</span>
             </dd>
           </div>
         )}
