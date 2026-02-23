@@ -231,6 +231,34 @@ async function listAllSkills(owner: string, repo: string): Promise<string[]> {
           )
           .map((item: { path: string }) => item.path)
           .sort()
+
+        // Also discover plugin directories (contain .claude-plugin/ config)
+        const pluginDirs = data.tree
+          .filter((item: { path: string; type: string }) =>
+            item.type === 'tree' && /\/\.claude-plugin$/.test(item.path)
+          )
+          .map((item: { path: string }) => {
+            // e.g., "plugins/workflow/.claude-plugin" → "plugins/workflow/README.md"
+            const parentDir = item.path.replace(/\/\.claude-plugin$/, '')
+            return `${parentDir}/README.md`
+          })
+
+        // Add plugins — always import the plugin README as a separate listing
+        // (nested SKILL.md files within the plugin are separate skills, not replacements)
+        const genericContainers = ['plugins', '.claude/plugins', '.claude']
+        for (const pluginReadme of pluginDirs) {
+          const pluginDir = pluginReadme.replace('/README.md', '')
+          // Skip generic container directories (e.g., "plugins/.claude-plugin" → "plugins" is a container)
+          if (genericContainers.includes(pluginDir)) continue
+          // Only skip if there's a SKILL.md directly in the plugin dir (same level)
+          const hasDirectSkillMd = skillFiles.some((f: string) =>
+            f === `${pluginDir}/SKILL.md` || f === `${pluginDir}/skill.md`
+          )
+          if (!hasDirectSkillMd) {
+            skillFiles.push(pluginReadme)
+          }
+        }
+
         if (skillFiles.length > 0) {
           // Also check for root SKILL.md
           const rootSkill = data.tree.find(
@@ -263,6 +291,33 @@ async function listAllSkills(owner: string, repo: string): Promise<string[]> {
           const skillPath = `${dir}/${item.name}/SKILL.md`
           const content = await fetchGitHubRaw(owner, repo, skillPath)
           if (content) found.push(skillPath)
+        }
+      }
+    } catch {
+      continue
+    }
+  }
+
+  // Also check plugins/ directory for .claude-plugin directories
+  const pluginDirs = ['plugins', '.claude/plugins']
+  for (const dir of pluginDirs) {
+    try {
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${dir}`
+      const res = await fetch(url, { headers: githubHeaders })
+      if (!res.ok) continue
+      const items = await res.json()
+      if (!Array.isArray(items)) continue
+
+      for (const item of items) {
+        if (item.type === 'dir') {
+          // Check if this directory has a .claude-plugin config
+          const pluginConfig = await fetchGitHubRaw(owner, repo, `${dir}/${item.name}/.claude-plugin/manifest.json`)
+            || await fetchGitHubRaw(owner, repo, `${dir}/${item.name}/.claude-plugin/plugin.json`)
+          if (pluginConfig) {
+            const readmePath = `${dir}/${item.name}/README.md`
+            const readme = await fetchGitHubRaw(owner, repo, readmePath)
+            if (readme) found.push(readmePath)
+          }
         }
       }
     } catch {
@@ -605,14 +660,15 @@ function generateSlug(owner: string, repo: string, skillPath: string): string {
       .replace(/^-|-$/g, '')
   }
 
-  // For skills nested in a directory, use the parent directory name
+  // For skills/plugins nested in a directory, use the parent directory name
   // e.g., skills/pdf/SKILL.md → "pdf"
   // e.g., .claude/skills/interface-design/SKILL.md → "interface-design"
-  const parts = skillPath.replace('/SKILL.md', '').replace('/skill.md', '').split('/')
+  // e.g., plugins/workflow/README.md → "workflow"
+  const parts = skillPath.replace('/SKILL.md', '').replace('/skill.md', '').replace('/README.md', '').split('/')
   const dirName = parts[parts.length - 1] || repo
 
   // If the directory name is generic (like "skills" or ".claude"), use repo name
-  const genericNames = ['skills', '.claude', 'src', 'lib', 'root']
+  const genericNames = ['skills', '.claude', 'src', 'lib', 'root', 'plugins']
   const base = genericNames.includes(dirName.toLowerCase()) ? repo : dirName
 
   return base
@@ -705,18 +761,21 @@ async function main() {
   console.log(`  ✓ ${meta.stars} stars, ${meta.forks} forks, license: ${meta.license || 'none'}`)
   console.log(`  ✓ Topics: ${meta.topics.length > 0 ? meta.topics.join(', ') : '(none)'}`)
 
-  // Handle --list flag: show all SKILL.md files and exit
+  // Handle --list flag: show all SKILL.md files and plugins and exit
   if (args.list) {
-    console.log('\n📋 Scanning for all SKILL.md files...')
+    console.log('\n📋 Scanning for skills and plugins...')
     const allSkills = await listAllSkills(owner, repo)
     if (allSkills.length === 0) {
-      console.log('  No SKILL.md files found.')
+      console.log('  No SKILL.md or plugin files found.')
     } else {
-      console.log(`  Found ${allSkills.length} skill(s):\n`)
+      const pluginCount = allSkills.filter(p => p.endsWith('/README.md')).length
+      const skillCount = allSkills.length - pluginCount
+      console.log(`  Found ${skillCount} skill(s) + ${pluginCount} plugin(s):\n`)
       for (const path of allSkills) {
-        const skillName = path.split('/').slice(-2, -1)[0] || repo
-        console.log(`  ${path}`)
-        console.log(`    → import with: npx tsx scripts/import-from-github.ts https://github.com/${owner}/${repo}/tree/main/${path.replace('/SKILL.md', '')}`)
+        const isPlugin = path.endsWith('/README.md')
+        const dirPath = path.replace(/\/(SKILL|skill|README)\.md$/i, '')
+        console.log(`  ${isPlugin ? '🔌' : '📄'} ${path}`)
+        console.log(`    → import with: npx tsx scripts/import-from-github.ts https://github.com/${owner}/${repo}/tree/main/${dirPath}`)
         console.log('')
       }
     }
@@ -729,11 +788,13 @@ async function main() {
     const allSkillPaths = await listAllSkills(owner, repo)
 
     if (allSkillPaths.length === 0) {
-      console.log('  No SKILL.md files found.')
+      console.log('  No SKILL.md or plugin files found.')
       return
     }
 
-    console.log(`  Found ${allSkillPaths.length} skill(s) to import\n`)
+    const pluginCount = allSkillPaths.filter(p => p.endsWith('/README.md')).length
+    const skillCount = allSkillPaths.length - pluginCount
+    console.log(`  Found ${skillCount} skill(s) + ${pluginCount} plugin(s) to import\n`)
 
     if (args.dryRun) {
       console.log('  DRY RUN — listing what would be imported:\n')
@@ -751,32 +812,37 @@ async function main() {
 
     for (let i = 0; i < allSkillPaths.length; i++) {
       const skillPath = allSkillPaths[i]
-      const dirPath = skillPath.replace(/\/(SKILL|skill)\.md$/i, '')
+      const isPluginReadme = skillPath.endsWith('/README.md')
+      const dirPath = skillPath.replace(/\/(SKILL|skill|README)\.md$/i, '')
       const slug = generateSlug(owner, repo, skillPath)
 
       process.stdout.write(`  [${String(i + 1).padStart(String(allSkillPaths.length).length)}/${allSkillPaths.length}] ${slug}... `)
 
       try {
-        // Fetch SKILL.md content
+        // Fetch content (SKILL.md or README.md for plugins)
         const skillContent = await fetchGitHubRaw(owner, repo, skillPath)
         if (!skillContent) {
-          console.log('⚠ not found, skipping')
+          console.log(`⚠ not found, skipping`)
           failed++
-          errors.push({ path: skillPath, error: 'SKILL.md not found' })
+          errors.push({ path: skillPath, error: `${isPluginReadme ? 'README.md' : 'SKILL.md'} not found` })
           continue
         }
 
         const fm = parseFrontmatter(skillContent)
         const skillDir = skillPath.includes('/') ? skillPath.split('/').slice(0, -1).join('/') : undefined
 
-        // Try to fetch a README from the skill's own directory only
-        // Don't fall back to root README — for collection repos it's a shared overview, not relevant
+        // For SKILL.md imports, try to find a README in the same directory
+        // For plugin README imports, the README IS the content
         let readme: string | null = null
-        if (skillDir) {
-          readme = await fetchGitHubRaw(owner, repo, `${skillDir}/README.md`)
-        }
-        if (!readme) {
-          readme = skillContent  // Use SKILL.md as the display content
+        if (isPluginReadme) {
+          readme = skillContent  // README is the primary content for plugins
+        } else {
+          if (skillDir) {
+            readme = await fetchGitHubRaw(owner, repo, `${skillDir}/README.md`)
+          }
+          if (!readme) {
+            readme = skillContent  // Use SKILL.md as the display content
+          }
         }
 
         const displayName = inferDisplayName(repo, fm.name, readme, skillDir)
@@ -787,17 +853,19 @@ async function main() {
           `${displayName} - AI agent skill`
         ).slice(0, 500)
         const permissions = detectPermissions(skillContent)
-        const artifactType = args.artifactType || detectArtifactType(fm.raw, repo)
-        const formatStd = 'skill_md'
+        const artifactType = isPluginReadme ? 'plugin' : (args.artifactType || detectArtifactType(fm.raw, repo))
+        const formatStd = isPluginReadme ? 'generic' : 'skill_md'
         const platforms = args.platforms || detectPlatforms(fm, skillContent, readme, artifactType, formatStd)
-        const { skillType, hasPlugin } = detectSkillType(owner, repo, skillPath, meta.topics, readme)
+        const { skillType, hasPlugin } = isPluginReadme
+          ? { skillType: 'hybrid' as string, hasPlugin: true }
+          : detectSkillType(owner, repo, skillPath, meta.topics, readme)
         // For batch imports, only use per-skill frontmatter tags (not repo-level topics)
         const tags = Array.from(new Set(fm.tags || [])).slice(0, 15)
 
-        // Category detection
+        // Category detection — plugins go to claude-code-plugins by default
         let categorySlug = args.category || null
         if (!categorySlug) {
-          if (hasPlugin) {
+          if (isPluginReadme || hasPlugin) {
             categorySlug = 'claude-code-plugins'
           } else {
             categorySlug = detectCategory(meta.topics, description, repo, readme)
