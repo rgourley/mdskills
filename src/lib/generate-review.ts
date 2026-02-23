@@ -31,11 +31,20 @@ function formatPermissions(perms: {
 const REVIEW_PROMPT = `You are a senior AI agent skill reviewer for mdskills.ai — a directory of skills, plugins, and MCP servers for AI coding agents.
 
 LISTING TYPE: <ARTIFACT_TYPE>
+SOURCE FORMAT: <FORMAT_STANDARD>
 
-Your job is to evaluate the content below based on its type:
+Your job is to evaluate the content below based on its type and source format:
+
+If the SOURCE FORMAT is "generic" or "readme", the content below is a PROJECT README — not a SKILL.md file. Evaluate it as documentation for a tool, plugin, or project:
+- Does it clearly describe useful capabilities?
+- Is it well-structured with good examples and setup instructions?
+- Would a developer find this documentation helpful?
+- Do NOT penalize it for lacking agent instructions, trigger conditions, or SKILL.md-style prompts — those are not expected in a README.
+
+If the SOURCE FORMAT is "skill_md", "cursorrules", "mdc", or another agent instruction format:
 - **Skills/Rules**: Evaluate the SKILL.md (or equivalent agent instruction file). This is what an AI agent reads and executes. The README is supplementary context only.
 - **MCP Servers**: Evaluate the tool descriptions, setup documentation, and API quality. MCP servers provide tools to agents — they don't need trigger conditions or step-by-step instructions like skills do. Judge them on: clear tool descriptions, useful capabilities, good setup docs, and appropriate security.
-- **Plugins**: Evaluate the plugin's capabilities, configuration, and integration quality.
+- **Plugins**: Evaluate the plugin's capabilities, code quality, hook/command design, and documentation. Plugins are CODE-BASED extensions — judge them on: useful functionality, clean integration, good docs, and appropriate permissions.
 
 Evaluate on three dimensions:
 
@@ -46,13 +55,16 @@ Evaluate on three dimensions:
 3. **Security**: Do the declared permissions match what's actually needed? Flag over-scoped permissions. Look for unvalidated shell commands or prompt injection risks. Minimal, appropriate permissions are a strength.
 
 IMPORTANT scoring guidance:
-- Focus on whether this listing provides genuine value to an AI agent
+- Focus on whether this listing provides genuine value to an AI agent or developer
 - A skill with clear actionable instructions deserves 7+
 - An MCP server with useful, well-documented tools deserves 7+
+- A plugin with useful functionality, good code quality, and clear docs deserves 7+. Plugins are judged on their capabilities and integration — NOT on having SKILL.md-style prompts
 - Strong content with good examples/edge cases deserves 8+
 - Not having a README is fine — the primary content is what matters
 - Only penalize security issues that are genuine concerns, not theoretical
 - Content may be truncated for length — NEVER mention truncation in your review. Do not say "appears truncated", "content is cut off", "missing sections due to truncation", or anything similar. Judge only the content you can see. This is a hard rule.
+- If the SOURCE FORMAT is "generic" or "readme", the content is a README — evaluate it as project documentation. Do NOT penalize it for lacking SKILL.md-style agent instructions. Judge it on: how useful and clear the documentation is, whether it describes real capabilities, and whether it helps a developer understand and use the tool
+- If the SOURCE FORMAT is "skill_md", "cursorrules", or "mdc", it IS agent instructions and should have actionable directives
 
 ---
 
@@ -80,9 +92,10 @@ Rules:
 - summary: single sentence, 40-150 characters, do not mention the skill name
 - strengths: 1-3 items, each under 80 characters, start with a present-tense verb
 - weaknesses: 1-2 items, each under 80 characters, start with a present-tense verb. Every listing has room for improvement — always identify at least one concern or limitation
-- quality_score: integer 1-10 (1=no useful instructions, 4=vague/incomplete, 7=solid and actionable, 8=strong with good coverage, 9=excellent with examples and edge cases, 10=exceptional best-in-class)
-- A well-written skill with clear actionable instructions should score 7-8
-- A skill with comprehensive instructions, examples, edge case handling, and proper security should score 9+
+- quality_score: integer 1-10 (1=empty or no useful content, 4=vague/incomplete, 7=solid and useful, 8=strong with good coverage, 9=excellent and comprehensive, 10=exceptional best-in-class)
+- For skills: clear actionable instructions → 7-8, comprehensive with examples and edge cases → 9+
+- For plugins: useful functionality with good docs → 7-8, well-architected with great docs → 9+
+- For MCP servers: useful tools with clear descriptions → 7-8, comprehensive with good setup docs → 9+
 - Security concerns (undeclared permissions, prompt injection risk) should lower the score
 - A skill that requests permissions it doesn't need is a yellow flag, not a dealbreaker`
 
@@ -109,6 +122,7 @@ export async function generateSkillReview(
   },
   apiKey?: string,
   artifactType?: string,
+  formatStandard?: string,
 ): Promise<SkillReview | null> {
   const key = apiKey || process.env.ANTHROPIC_API_KEY
   if (!key) return null
@@ -118,9 +132,11 @@ export async function generateSkillReview(
   const truncatedReadme = readme ? readme.slice(0, 2000) : 'None provided'
   const permissionsStr = permissions ? formatPermissions(permissions) : 'None declared'
   const typeLabel = ARTIFACT_TYPE_LABELS[artifactType ?? ''] ?? 'Skill'
+  const formatLabel = formatStandard || 'generic'
 
   const prompt = REVIEW_PROMPT
     .replace('<ARTIFACT_TYPE>', typeLabel)
+    .replace('<FORMAT_STANDARD>', formatLabel)
     .replace('<CONTENT>', truncatedContent)
     .replace('<README>', truncatedReadme)
     .replace('<PERMISSIONS>', permissionsStr)

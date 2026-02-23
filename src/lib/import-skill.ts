@@ -672,7 +672,7 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
         shellExec: permissions.perm_shell_exec,
         networkAccess: permissions.perm_network_access,
         gitWrite: permissions.perm_git_write,
-      }, undefined, record.artifact_type)
+      }, undefined, record.artifact_type, record.format_standard)
       if (review) {
         await supabase
           .from('skills')

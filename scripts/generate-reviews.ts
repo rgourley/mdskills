@@ -47,7 +47,7 @@ async function main() {
   // Fetch skills to process
   let query = supabase
     .from('skills')
-    .select('id, slug, name, content, readme, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write')
+    .select('id, slug, name, content, readme, artifact_type, format_standard, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write')
     .or('status.eq.published,status.is.null')
     .not('content', 'is', null)
     .neq('artifact_type', 'mcp_server')
@@ -97,6 +97,7 @@ async function main() {
       },
       anthropicApiKey,
       (skill.artifact_type as string) || undefined,
+      (skill.format_standard as string) || undefined,
     )
 
     if (!review) {
