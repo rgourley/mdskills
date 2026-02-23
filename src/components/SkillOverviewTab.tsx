@@ -30,6 +30,29 @@ function stripHtml(content: string): string {
     .replace(/<[^>]+>/g, '')
 }
 
+/** Check if a URL is a badge/shield image (shields.io, badge.fury.io, etc.) */
+const BADGE_PATTERNS = [
+  /img\.shields\.io/i,
+  /badge\.fury\.io/i,
+  /badgen\.net/i,
+  /badges\.gitter\.im/i,
+  /pypistats\.org/i,
+  /coveralls\.io\/repos/i,
+  /codecov\.io/i,
+  /travis-ci\.(org|com)/i,
+  /circleci\.com/i,
+  /github\.com\/[^/]+\/[^/]+\/(actions\/)?workflows\/.*badge/i,
+  /github\.com\/[^/]+\/[^/]+\/badge/i,
+  /app\.codacy\.com\/project\/badge/i,
+  /snyk\.io\/test/i,
+  /david-dm\.org/i,
+  /flat\.badgen\.net/i,
+]
+
+function isBadgeUrl(src: string): boolean {
+  return BADGE_PATTERNS.some(pattern => pattern.test(src))
+}
+
 /** Resolve a relative image URL to an absolute GitHub raw content URL */
 function resolveImageUrl(src: string, owner: string, repo: string): string {
   if (!src || src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//') || src.startsWith('data:')) {
@@ -48,15 +71,19 @@ function SkillContent({ content, owner, repo }: { content: string; owner: string
     <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-700 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[13px] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none prose-pre:bg-code-bg prose-pre:text-neutral-800 prose-pre:rounded-lg prose-pre:border prose-pre:border-neutral-200 prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
       <ReactMarkdown
         components={{
-          img: ({ src, alt, ...props }) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={resolveImageUrl(src || '', owner, repo)}
-              alt={alt || ''}
-              loading="lazy"
-              {...props}
-            />
-          ),
+          img: ({ src, alt, ...props }) => {
+            // Strip badge/shield images (shields.io, badge.fury.io, etc.)
+            if (src && isBadgeUrl(src)) return null
+            return (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={resolveImageUrl(src || '', owner, repo)}
+                alt={alt || ''}
+                loading="lazy"
+                {...props}
+              />
+            )
+          },
         }}
       >
         {cleaned}
