@@ -14,7 +14,7 @@ function stripFrontmatter(content: string): string {
   return content.replace(/^---\n[\s\S]*?\n---\n?/, '').trim()
 }
 
-/** Strip HTML tags from content (e.g. <p align="center">) and convert to plain text */
+/** Strip HTML tags from content (e.g. <p align="center">) but preserve images */
 function stripHtml(content: string): string {
   return content
     .replace(/<p[^>]*>/gi, '')
@@ -23,16 +23,44 @@ function stripHtml(content: string): string {
     .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
     .replace(/<em>(.*?)<\/em>/gi, '*$1*')
     .replace(/<a\s+href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+    // Convert HTML <img> to markdown ![alt](src) before stripping other tags
+    .replace(/<img\s+[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*\/?>/gi, '![$2]($1)')
+    .replace(/<img\s+[^>]*alt="([^"]*)"[^>]*src="([^"]*)"[^>]*\/?>/gi, '![$1]($2)')
+    .replace(/<img\s+[^>]*src="([^"]*)"[^>]*\/?>/gi, '![]($1)')
     .replace(/<[^>]+>/g, '')
 }
 
-/** Render markdown content with react-markdown */
-function SkillContent({ content }: { content: string }) {
+/** Resolve a relative image URL to an absolute GitHub raw content URL */
+function resolveImageUrl(src: string, owner: string, repo: string): string {
+  if (!src || src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//') || src.startsWith('data:')) {
+    return src
+  }
+  // Strip leading ./ if present
+  const cleaned = src.replace(/^\.\//, '')
+  return `https://raw.githubusercontent.com/${owner}/${repo}/main/${cleaned}`
+}
+
+/** Render markdown content with react-markdown, resolving relative image URLs */
+function SkillContent({ content, owner, repo }: { content: string; owner: string; repo: string }) {
   const cleaned = stripHtml(stripFrontmatter(content))
 
   return (
     <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-700 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[13px] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none prose-pre:bg-code-bg prose-pre:text-neutral-800 prose-pre:rounded-lg prose-pre:border prose-pre:border-neutral-200 prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
-      <ReactMarkdown>{cleaned}</ReactMarkdown>
+      <ReactMarkdown
+        components={{
+          img: ({ src, alt, ...props }) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={resolveImageUrl(src || '', owner, repo)}
+              alt={alt || ''}
+              loading="lazy"
+              {...props}
+            />
+          ),
+        }}
+      >
+        {cleaned}
+      </ReactMarkdown>
     </div>
   )
 }
@@ -70,7 +98,7 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
       {/* README (project overview, installation, how it works) */}
       {(skill.readme || skill.skillContent) && (
         <section>
-          <SkillContent content={skill.readme || skill.skillContent!} />
+          <SkillContent content={skill.readme || skill.skillContent!} owner={skill.owner} repo={skill.repo} />
         </section>
       )}
 
