@@ -106,6 +106,7 @@ const ARTIFACT_TYPE_LABELS: Record<string, string> = {
   ruleset: 'Rules/Ruleset',
   workflow_pack: 'Workflow',
   extension: 'Extension',
+  tool: 'Tool/Extension',
   template_bundle: 'Starter Kit',
   openapi_action: 'OpenAPI Action',
 }

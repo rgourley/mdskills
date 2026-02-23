@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Package, Star, Puzzle, Server, Workflow, Shield } from 'lucide-react'
+import { Package, Star, Puzzle, Server, Workflow, Shield, Wrench } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 
 interface SkillCardProps {
@@ -12,6 +12,7 @@ const ARTIFACT_BADGE: Record<string, { label: string; icon: React.ElementType; c
   ruleset: { label: 'Rules', icon: Shield, color: 'bg-amber-50 text-amber-700' },
   openapi_action: { label: 'OpenAPI', icon: Package, color: 'bg-purple-50 text-purple-700' },
   extension: { label: 'Extension', icon: Package, color: 'bg-teal-50 text-teal-700' },
+  tool: { label: 'Tool', icon: Wrench, color: 'bg-cyan-50 text-cyan-700' },
   template_bundle: { label: 'Starter Kit', icon: Package, color: 'bg-pink-50 text-pink-700' },
   plugin: { label: 'Plugin', icon: Puzzle, color: 'bg-violet-50 text-violet-700' },
 }

@@ -191,7 +191,7 @@ export interface GetSkillsOptions {
   query?: string
   tags?: string[]
   categorySlug?: string
-  artifactType?: string
+  artifactType?: string | string[]
   clientSlug?: string
   sort?: 'trending' | 'popular' | 'recent'
   page?: number
@@ -230,8 +230,12 @@ export async function getSkills(opts?: GetSkillsOptions): Promise<PaginatedSkill
   if (opts?.tags?.length) {
     q = q.overlaps('tags', opts.tags)
   }
-  if (opts?.artifactType?.trim()) {
-    q = q.eq('artifact_type', opts.artifactType.trim())
+  if (opts?.artifactType) {
+    if (Array.isArray(opts.artifactType)) {
+      q = q.in('artifact_type', opts.artifactType)
+    } else if (opts.artifactType.trim()) {
+      q = q.eq('artifact_type', opts.artifactType.trim())
+    }
   }
 
   // Run sub-queries in parallel if needed (category lookup + client filter)
@@ -315,6 +319,7 @@ const ARTIFACT_TYPE_LABELS: Record<string, string> = {
   ruleset: 'Rules',
   openapi_action: 'OpenAPI Action',
   extension: 'Extension',
+  tool: 'Tool',
   template_bundle: 'Starter Kit',
   plugin: 'Plugin',
 }

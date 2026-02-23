@@ -612,12 +612,15 @@ function detectArtifactType(
   if (fmType.includes('rule')) return 'ruleset'
   if (fmType.includes('workflow')) return 'workflow_pack'
   if (fmType.includes('template') || fmType.includes('starter')) return 'template_bundle'
+  if (fmType.includes('extension')) return 'extension'
+  if (fmType.includes('tool')) return 'tool'
 
   // Check repo name for strong signals
   const lower = repoName.toLowerCase()
   if (/^mcp[-_]|[-_]mcp$|mcp[-_]server/.test(lower)) return 'mcp_server'
   if (/cursorrules|\.cursorrules/.test(lower)) return 'ruleset'
   if (/template|starter|scaffold/.test(lower)) return 'template_bundle'
+  if (/vscode|vs-code|[-_]extension$/.test(lower)) return 'extension'
 
   return 'skill_pack'
 }

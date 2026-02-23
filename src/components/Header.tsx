@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: 'MCP Servers', href: '/mcp-servers' },
   { label: 'Rules', href: '/rules' },
   { label: 'Plugins', href: '/plugins' },
+  { label: 'Tools', href: '/tools' },
   { label: 'Use Cases', href: '/use-cases' },
   { label: 'Docs', href: '/docs' },
 ]
