@@ -49,4 +49,14 @@ async function fetchCategories() {
   return res.json()
 }
 
-module.exports = { fetchSkills, fetchSkillDetail, fetchCategories }
+/** Fire-and-forget install tracking. Never throws, never blocks. */
+function trackInstall(slug) {
+  fetch(`${BASE_URL}/api/installs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slug }),
+    signal: AbortSignal.timeout(5000),
+  }).catch(() => {}) // Silently ignore errors
+}
+
+module.exports = { fetchSkills, fetchSkillDetail, fetchCategories, trackInstall }

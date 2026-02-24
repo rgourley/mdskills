@@ -33,7 +33,8 @@
     "cli-table3": "^0.6.5",
     "critters": "^0.0.23",
     "inquirer": "^9.3.8",
-    "ora": "^5.4.1"
+    "ora": "^5.4.1",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

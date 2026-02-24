@@ -399,6 +399,17 @@ function parseFrontmatter(content: string): Frontmatter {
   }
 }
 
+/** Truncate text at the last sentence boundary within maxLen, or last word boundary with ellipsis */
+function truncateDescription(text: string, maxLen = 500): string {
+  if (text.length <= maxLen) return text
+  const trimmed = text.slice(0, maxLen)
+  const lastSentence = trimmed.search(/[.!?][^.!?]*$/)
+  if (lastSentence > maxLen * 0.5) return trimmed.slice(0, lastSentence + 1).trim()
+  const lastSpace = trimmed.lastIndexOf(' ')
+  if (lastSpace > maxLen * 0.5) return trimmed.slice(0, lastSpace).trim() + '...'
+  return trimmed + '...'
+}
+
 /** Extract description from README when SKILL.md doesn't have one */
 function descriptionFromReadme(readme: string | null, maxLen = 400): string {
   if (!readme) return ''
@@ -1097,7 +1108,7 @@ async function main() {
   const record = {
     slug,
     name: displayName,
-    description: description.slice(0, 500),
+    description: truncateDescription(description),
     owner,
     repo,
     skill_path: skillDir || skillPath.replace('/SKILL.md', '').replace('/README.md', ''),

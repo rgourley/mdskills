@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const chalk = require('chalk')
 const ora = require('ora')
-const { fetchSkillDetail } = require('../api')
+const { fetchSkillDetail, trackInstall } = require('../api')
 const { formatType } = require('../ui/format')
 
 /** Map format_standard to default install path */
@@ -77,6 +77,7 @@ async function installCommand(args) {
       console.log(chalk.dim('  No install instructions available.'))
       console.log(chalk.dim(`  Check: ${skill.github_url}\n`))
     }
+    trackInstall(slug)
     return
   }
 
@@ -135,6 +136,7 @@ async function installCommand(args) {
     fs.mkdirSync(dir, { recursive: true })
   }
   fs.writeFileSync(fullPath, content, 'utf-8')
+  trackInstall(slug)
 
   console.log(chalk.green(`\n  Installed ${skill.name} to ${targetPath}`))
   console.log(chalk.dim(`  View: https://www.mdskills.ai/skills/${slug}\n`))

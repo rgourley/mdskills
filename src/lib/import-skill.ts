@@ -175,6 +175,19 @@ function parseFrontmatter(content: string): Frontmatter {
   return { name: raw.name || '', description: raw.description || '', license: raw.license, compatibility, tags, body, raw }
 }
 
+/** Truncate text at the last sentence boundary within maxLen, or last word boundary with ellipsis */
+function truncateDescription(text: string, maxLen = 500): string {
+  if (text.length <= maxLen) return text
+  const trimmed = text.slice(0, maxLen)
+  // Try to cut at last sentence boundary (. ! ?)
+  const lastSentence = trimmed.search(/[.!?][^.!?]*$/)
+  if (lastSentence > maxLen * 0.5) return trimmed.slice(0, lastSentence + 1).trim()
+  // Fall back to last word boundary
+  const lastSpace = trimmed.lastIndexOf(' ')
+  if (lastSpace > maxLen * 0.5) return trimmed.slice(0, lastSpace).trim() + '...'
+  return trimmed + '...'
+}
+
 function descriptionFromReadme(readme: string | null, maxLen = 400): string {
   if (!readme) return ''
   let text = readme
@@ -529,7 +542,7 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   const skillContent = skill?.content || readme || ''
   const slug = opts.slug || generateSlug(repo, skillPath)
   const displayName = opts.name || inferDisplayName(repo, fm.name, readme, skillDir)
-  const description = (fm.description || descriptionFromReadme(readme) || meta.description || `${displayName} - AI agent skill`).slice(0, 500)
+  const description = truncateDescription(fm.description || descriptionFromReadme(readme) || meta.description || `${displayName} - AI agent skill`)
   const permissions = detectPermissions(skillContent)
   const artifactType = opts.artifactType || detectArtifactType(fm.raw, repo)
   const formatStandard = opts.formatStandard || (usingReadmeFallback ? 'generic' : 'skill_md')
