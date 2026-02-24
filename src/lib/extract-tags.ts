@@ -162,6 +162,27 @@ const TAG_KEYWORDS: Record<string, string> = {
   datadog: 'datadog',
   grafana: 'grafana',
   prometheus: 'prometheus',
+  // Creative tools
+  blender: 'blender',
+  photoshop: 'photoshop',
+  illustrator: 'illustrator',
+  maya: 'maya',
+  cinema4d: 'cinema4d',
+  davinci: 'davinci-resolve',
+  // Browsers
+  browser: 'browser',
+  chrome: 'chrome',
+  firefox: 'firefox',
+  puppeteer: 'puppeteer',
+  selenium: 'selenium',
+  // Finance & crypto
+  finance: 'finance',
+  trading: 'trading',
+  stocks: 'finance',
+  // Communication
+  email: 'email',
+  whatsapp: 'whatsapp',
+  telegram: 'telegram',
   // Misc
   graphql: 'graphql',
   grpc: 'grpc',

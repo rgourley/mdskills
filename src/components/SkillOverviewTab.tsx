@@ -15,6 +15,21 @@ function stripFrontmatter(content: string): string {
   return content.replace(/^---\n[\s\S]*?\n---\n?/, '').trim()
 }
 
+/** Convert GitHub-style admonitions (> [!NOTE], > [!IMPORTANT], etc.) into styled blockquotes */
+function convertAdmonitions(content: string): string {
+  const LABELS: Record<string, string> = {
+    NOTE: 'Note',
+    TIP: 'Tip',
+    IMPORTANT: 'Important',
+    WARNING: 'Warning',
+    CAUTION: 'Caution',
+  }
+  return content.replace(
+    /^(>\s*)\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*\n/gim,
+    (_, prefix, type) => `${prefix}**${LABELS[type.toUpperCase()] || type}:**\n${prefix}\n`
+  )
+}
+
 /** Strip HTML tags from content (e.g. <p align="center">) but preserve images */
 function stripHtml(content: string): string {
   return content
@@ -87,7 +102,7 @@ function resolveImageUrl(src: string, owner: string, repo: string): string {
 
 /** Render markdown content with react-markdown, resolving relative image URLs */
 function SkillContent({ content, owner, repo }: { content: string; owner: string; repo: string }) {
-  const cleaned = stripHtml(stripFrontmatter(content))
+  const cleaned = convertAdmonitions(stripHtml(stripFrontmatter(content)))
   let imageCount = 0
 
   return (

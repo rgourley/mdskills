@@ -29,24 +29,32 @@ async function main() {
   if (targetSlug) console.log(`🎯 SINGLE SKILL — slug: ${targetSlug}`)
   console.log('')
 
-  // Fetch skills
-  let query = supabase
-    .from('skills')
-    .select('id, slug, repo, name, description, readme, tags')
-    .or('status.eq.published,status.is.null')
-
+  // Fetch skills (paginated — Supabase defaults to 1000 rows)
+  let skills: any[] = []
   if (targetSlug) {
-    query = query.eq('slug', targetSlug)
+    const { data, error } = await supabase
+      .from('skills')
+      .select('id, slug, repo, name, description, readme, tags')
+      .eq('slug', targetSlug)
+    if (error) { console.error('Failed to fetch skills:', error.message); process.exit(1) }
+    skills = data || []
+  } else {
+    let from = 0
+    const PAGE = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('skills')
+        .select('id, slug, repo, name, description, readme, tags')
+        .or('status.eq.published,status.is.null')
+        .range(from, from + PAGE - 1)
+      if (error) { console.error('Failed to fetch skills:', error.message); process.exit(1) }
+      skills = skills.concat(data || [])
+      if (!data || data.length < PAGE) break
+      from += PAGE
+    }
   }
 
-  const { data: skills, error } = await query
-
-  if (error) {
-    console.error('Failed to fetch skills:', error.message)
-    process.exit(1)
-  }
-
-  if (!skills?.length) {
+  if (!skills.length) {
     console.log('No skills found.')
     return
   }

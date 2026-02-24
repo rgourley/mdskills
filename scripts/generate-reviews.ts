@@ -44,30 +44,35 @@ async function main() {
   if (targetSlug) console.log(`SINGLE SKILL — slug: ${targetSlug}`)
   console.log('')
 
-  // Fetch skills to process
-  let query = supabase
-    .from('skills')
-    .select('id, slug, name, content, readme, artifact_type, format_standard, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write')
-    .or('status.eq.published,status.is.null')
-    .not('content', 'is', null)
+  // Fetch skills to process (paginated — Supabase defaults to 1000 rows)
+  const COLS = 'id, slug, name, content, readme, artifact_type, format_standard, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write'
+  let skills: any[] = []
 
   if (targetSlug) {
-    query = query.eq('slug', targetSlug)
-  } else if (!regenerateAll) {
-    query = query.is('review_generated_at', null)
+    const { data, error } = await supabase.from('skills').select(COLS).eq('slug', targetSlug)
+    if (error) { console.error('Failed to fetch skills:', error.message); process.exit(1) }
+    skills = data || []
+  } else {
+    let from = 0
+    const PAGE = 1000
+    while (true) {
+      let query = supabase.from('skills').select(COLS)
+        .or('status.eq.published,status.is.null')
+        .not('content', 'is', null)
+      if (!regenerateAll) {
+        query = query.is('review_generated_at', null)
+      }
+      query = query.order('weekly_installs', { ascending: false, nullsFirst: false })
+        .range(from, from + PAGE - 1)
+      const { data, error } = await query
+      if (error) { console.error('Failed to fetch skills:', error.message); process.exit(1) }
+      skills = skills.concat(data || [])
+      if (!data || data.length < PAGE) break
+      from += PAGE
+    }
   }
 
-  // Most popular first so top skills get reviewed earliest
-  query = query.order('weekly_installs', { ascending: false, nullsFirst: false })
-
-  const { data: skills, error } = await query
-
-  if (error) {
-    console.error('Failed to fetch skills:', error.message)
-    process.exit(1)
-  }
-
-  if (!skills?.length) {
+  if (!skills.length) {
     console.log('No skills need reviews.')
     return
   }

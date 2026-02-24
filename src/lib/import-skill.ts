@@ -246,13 +246,49 @@ const ACRONYMS = new Set([
   'vm', 'xml', 'xlsx', 'yaml',
 ])
 
+const SPECIAL_WORDS: Record<string, string> = {
+  openai: 'OpenAI',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  bitbucket: 'BitBucket',
+  youtube: 'YouTube',
+  postgresql: 'PostgreSQL',
+  mysql: 'MySQL',
+  mongodb: 'MongoDB',
+  nextjs: 'Next.js',
+  nodejs: 'Node.js',
+  vuejs: 'Vue.js',
+  nuxtjs: 'Nuxt.js',
+  typescript: 'TypeScript',
+  javascript: 'JavaScript',
+  graphql: 'GraphQL',
+  devops: 'DevOps',
+  chatgpt: 'ChatGPT',
+  ollama: 'Ollama',
+  supabase: 'Supabase',
+  firebase: 'Firebase',
+  kubernetes: 'Kubernetes',
+  terraform: 'Terraform',
+  dockerfile: 'Dockerfile',
+  elasticsearch: 'Elasticsearch',
+  langchain: 'LangChain',
+  openrouter: 'OpenRouter',
+  deepseek: 'DeepSeek',
+  midjourney: 'Midjourney',
+  cloudflare: 'Cloudflare',
+  pinecone: 'Pinecone',
+  weaviate: 'Weaviate',
+}
+
 function titleCase(slug: string): string {
   return slug
     .replace(/[-_]/g, ' ')
     .split(' ')
     .filter((w) => w.length > 0)
     .map((w) => {
-      if (ACRONYMS.has(w.toLowerCase())) return w.toUpperCase()
+      const lower = w.toLowerCase()
+      if (ACRONYMS.has(lower)) return w.toUpperCase()
+      if (SPECIAL_WORDS[lower]) return SPECIAL_WORDS[lower]
       return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
     })
     .join(' ')
@@ -261,7 +297,7 @@ function titleCase(slug: string): string {
 /** Reject headings that are clearly not project names */
 function isValidHeading(heading: string): boolean {
   if (!heading || heading.length < 3 || heading.length > 60) return false
-  if (/^(For|A|An|The|How|Getting|Introduction|Overview|About|README|Table of|Usage|Install)\b/i.test(heading)) return false
+  if (/^(For|A|An|The|How|Getting|Introduction|Overview|About|README|Table of|Usage|Install|Sponsor|Platinum|Gold|Silver|Contributors|Contributing|License|Changelog|Features|Prerequisites|Requirements|Documentation|Support|Acknowledgements)\b/i.test(heading)) return false
   if (heading.includes('![') || heading.includes('](') || heading.includes('```')) return false
   return true
 }
@@ -283,11 +319,17 @@ function inferDisplayName(repoName: string, fmName: string, readme: string | nul
     const mdHeading = readme.match(/^#\s(?!#)(.+)/m)?.[1]?.trim()
     const readmeHeading = htmlHeading || mdHeading
     if (readmeHeading) {
-      const clean = readmeHeading
+      let clean = readmeHeading
         .replace(/[*_`]/g, '')
         .replace(/^\W+/, '')
         .trim()
-      if (isValidHeading(clean)) return clean
+      if (isValidHeading(clean)) {
+        // If the heading looks slug-style (has hyphens but no spaces), titleCase it
+        if (clean.includes('-') && !clean.includes(' ')) {
+          clean = titleCase(clean)
+        }
+        return clean
+      }
     }
   }
 
