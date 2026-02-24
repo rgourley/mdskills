@@ -3,6 +3,7 @@
  * Shared between the CLI script and the admin API route.
  */
 import { createClient } from '@supabase/supabase-js'
+import { extractTagsFromContent } from './extract-tags'
 
 const githubToken = process.env.GITHUB_TOKEN
 
@@ -540,7 +541,11 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
     skillType = 'plugin'
     hasPlugin = false
   }
-  const tags = Array.from(new Set([...(fm.tags || []), ...meta.topics.slice(0, 10)])).slice(0, 15)
+  const tags = Array.from(new Set([
+    ...(fm.tags || []),
+    ...meta.topics.slice(0, 10),
+    ...extractTagsFromContent(repo, description, readme),
+  ])).slice(0, 15)
 
   let categorySlug = opts.category || null
   if (!categorySlug) {

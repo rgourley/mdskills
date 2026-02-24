@@ -51,6 +51,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${SITE_URL}/tags`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
       url: `${SITE_URL}/submit`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -174,5 +180,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  return [...staticPages, ...skillPages, ...clientPages, ...categoryPages]
+  // Dynamic tag pages
+  let tagPages: MetadataRoute.Sitemap = []
+  if (supabase) {
+    const { data: tagRows } = await supabase
+      .from('skills')
+      .select('tags')
+      .or('status.eq.published,status.is.null')
+
+    if (tagRows) {
+      const tagSlugs = new Set<string>()
+      for (const row of tagRows) {
+        const tags: string[] = (row as { tags: string[] }).tags ?? []
+        for (const tag of tags) {
+          if (tag) tagSlugs.add(tag)
+        }
+      }
+      tagPages = Array.from(tagSlugs).sort().map((tag) => ({
+        url: `${SITE_URL}/tags/${tag}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.5,
+      }))
+    }
+  }
+
+  return [...staticPages, ...skillPages, ...clientPages, ...categoryPages, ...tagPages]
 }

@@ -49,9 +49,30 @@ const BADGE_PATTERNS = [
   /flat\.badgen\.net/i,
 ]
 
+/** Junk image patterns — contributor avatars, sponsor logos, etc. */
+const JUNK_IMAGE_PATTERNS = [
+  /avatars\.githubusercontent\.com/i,
+  /contributors-img/i,
+  /contrib\.rocks/i,
+  /opencollective\.com\/.*\/avatar/i,
+  /opencollective\.com\/.*\/sponsor/i,
+  /buymeacoffee\.com/i,
+  /ko-fi\.com/i,
+  /patreon\.com/i,
+  /sponsor/i,
+  /\.gif$/i,  // Animated GIFs are often decorative
+]
+
 function isBadgeUrl(src: string): boolean {
   return BADGE_PATTERNS.some(pattern => pattern.test(src))
 }
+
+function isJunkImage(src: string): boolean {
+  return JUNK_IMAGE_PATTERNS.some(pattern => pattern.test(src))
+}
+
+/** Max number of content images to render from a README */
+const MAX_README_IMAGES = 5
 
 /** Resolve a relative image URL to an absolute GitHub raw content URL */
 function resolveImageUrl(src: string, owner: string, repo: string): string {
@@ -66,6 +87,7 @@ function resolveImageUrl(src: string, owner: string, repo: string): string {
 /** Render markdown content with react-markdown, resolving relative image URLs */
 function SkillContent({ content, owner, repo }: { content: string; owner: string; repo: string }) {
   const cleaned = stripHtml(stripFrontmatter(content))
+  let imageCount = 0
 
   return (
     <div className="prose prose-neutral max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-strong:text-neutral-800 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-code:text-neutral-700 prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[13px] prose-code:font-medium prose-code:before:content-none prose-code:after:content-none prose-pre:bg-code-bg prose-pre:text-neutral-800 prose-pre:rounded-lg prose-pre:border prose-pre:border-neutral-200 prose-hr:border-neutral-200 prose-th:text-neutral-700 prose-td:text-neutral-600 prose-img:rounded-lg">
@@ -74,6 +96,11 @@ function SkillContent({ content, owner, repo }: { content: string; owner: string
           img: ({ src, alt, ...props }) => {
             // Strip badge/shield images (shields.io, badge.fury.io, etc.)
             if (src && isBadgeUrl(src)) return null
+            // Strip junk images (contributor avatars, sponsor logos, GIFs, etc.)
+            if (src && isJunkImage(src)) return null
+            // Cap total images to avoid README clutter at the bottom
+            if (imageCount >= MAX_README_IMAGES) return null
+            imageCount++
             return (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -140,7 +167,7 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
               {skill.tags.map((tag) => (
                 <Link
                   key={tag}
-                  href={`/skills?tag=${tag}`}
+                  href={`/tags/${tag}`}
                   className="px-3 py-1 rounded-full bg-neutral-100 text-sm text-neutral-700 hover:bg-neutral-200 transition-colors"
                 >
                   {tag}

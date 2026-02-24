@@ -23,6 +23,7 @@
  */
 import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
+import { extractTagsFromContent } from '../src/lib/extract-tags'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -1052,6 +1053,7 @@ async function main() {
   const tags = Array.from(new Set([
     ...(fm.tags || []),
     ...meta.topics.slice(0, 10),
+    ...extractTagsFromContent(repo, description, readme),
   ])).slice(0, 15)
 
   // Category
