@@ -487,7 +487,15 @@ function inferDisplayName(
   skillDir?: string
 ): string {
   // Use frontmatter name if it looks like a proper name (has spaces, capitalization)
-  if (fmName && fmName.includes(' ')) return fmName
+  // BUT sanity-check it against the repo name — if zero word overlap, prefer repo name
+  // e.g., frontmatter "MCP Source" for repo "unity-mcp" → should be "Unity MCP"
+  if (fmName && fmName.includes(' ')) {
+    const fmWords = new Set(fmName.toLowerCase().split(/[\s\-_]+/))
+    const repoWords = repoName.toLowerCase().split(/[\s\-_]+/)
+    const hasOverlap = repoWords.some(w => w.length > 3 && fmWords.has(w))
+    if (hasOverlap || repoWords.length <= 1) return fmName
+    // No overlap — fall through to try better sources
+  }
 
   // If frontmatter has a slug-style name (e.g. "angular-architect"), titleCase it
   // This is a stronger signal than README headings, especially in multi-skill repos
