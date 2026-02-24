@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Package, Star, Puzzle, Server, Workflow, Shield, Wrench } from 'lucide-react'
+import { getSkillPath } from '@/lib/skills'
 import type { Skill } from '@/lib/skills'
 
 interface SkillCardProps {
@@ -24,7 +25,7 @@ export function SkillCard({ skill }: SkillCardProps) {
 
   return (
     <Link
-      href={`/skills/${skill.slug}`}
+      href={getSkillPath(skill.slug, skill.artifactType)}
       prefetch={false}
       className="group block p-6 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-lg transition-all duration-200"
     >

@@ -312,6 +312,21 @@ export async function getPluginSkills(limit = 6): Promise<Skill[]> {
   return data.map((row) => mapRow(row as unknown as SkillRow))
 }
 
+/** Map artifact type to URL path prefix for detail pages */
+const ARTIFACT_PATH_PREFIX: Record<string, string> = {
+  plugin: '/plugins',
+  mcp_server: '/mcp-servers',
+  ruleset: '/rules',
+  extension: '/tools',
+  tool: '/tools',
+}
+
+/** Get the canonical URL path for a skill detail page */
+export function getSkillPath(slug: string, artifactType?: string): string {
+  const prefix = artifactType ? ARTIFACT_PATH_PREFIX[artifactType] : undefined
+  return `${prefix || '/skills'}/${slug}`
+}
+
 const ARTIFACT_TYPE_LABELS: Record<string, string> = {
   skill_pack: 'Agent Skill',
   mcp_server: 'MCP Server',

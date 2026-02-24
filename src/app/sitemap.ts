@@ -117,13 +117,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (supabase) {
     const { data: skills } = await supabase
       .from('skills')
-      .select('slug, updated_at')
+      .select('slug, updated_at, artifact_type')
       .or('status.eq.published,status.is.null')
       .order('weekly_installs', { ascending: false })
 
     if (skills) {
+      const pathPrefix: Record<string, string> = {
+        plugin: '/plugins',
+        mcp_server: '/mcp-servers',
+        ruleset: '/rules',
+        extension: '/tools',
+        tool: '/tools',
+      }
       skillPages = skills.map((skill) => ({
-        url: `${SITE_URL}/skills/${skill.slug}`,
+        url: `${SITE_URL}${pathPrefix[skill.artifact_type] || '/skills'}/${skill.slug}`,
         lastModified: new Date(skill.updated_at),
         changeFrequency: 'weekly' as const,
         priority: 0.8,

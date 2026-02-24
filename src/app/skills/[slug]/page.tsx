@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createApiClient } from '@/lib/supabase/api'
-import { getSkillBySlug } from '@/lib/skills'
+import { getSkillBySlug, getSkillPath } from '@/lib/skills'
 import { getSkillClients } from '@/lib/clients'
 import { Star, Info } from 'lucide-react'
 import { SkillJsonLd, SkillFaqJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
@@ -78,11 +78,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description: fullDescription,
-    alternates: { canonical: `/skills/${slug}` },
+    alternates: { canonical: getSkillPath(slug, skill.artifactType) },
     openGraph: {
       title: `${skill.name} for ${platformStr} | mdskills.ai`,
       description: fullDescription,
-      url: `/skills/${slug}`,
+      url: getSkillPath(slug, skill.artifactType),
       type: 'article',
     },
     twitter: {
@@ -124,15 +124,15 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: '/' },
-          { name: skill.artifactType === 'plugin' ? 'Plugins' : skill.artifactType === 'mcp_server' ? 'MCP Servers' : skill.artifactType === 'ruleset' ? 'Rules' : 'Skills',
-            url: skill.artifactType === 'plugin' ? '/plugins' : skill.artifactType === 'mcp_server' ? '/mcp-servers' : skill.artifactType === 'ruleset' ? '/rules' : '/skills' },
-          { name: skill.name, url: `/skills/${skill.slug}` },
+          { name: skill.artifactType === 'plugin' ? 'Plugins' : skill.artifactType === 'mcp_server' ? 'MCP Servers' : skill.artifactType === 'ruleset' ? 'Rules' : skill.artifactType === 'extension' || skill.artifactType === 'tool' ? 'Tools' : 'Skills',
+            url: skill.artifactType === 'plugin' ? '/plugins' : skill.artifactType === 'mcp_server' ? '/mcp-servers' : skill.artifactType === 'ruleset' ? '/rules' : skill.artifactType === 'extension' || skill.artifactType === 'tool' ? '/tools' : '/skills' },
+          { name: skill.name, url: getSkillPath(skill.slug, skill.artifactType) },
         ]}
       />
       <SkillJsonLd
         name={skill.name}
         description={skill.description}
-        url={`/skills/${skill.slug}`}
+        url={getSkillPath(skill.slug, skill.artifactType)}
         author={skill.owner}
         license={skill.license}
         category={skill.categoryName}

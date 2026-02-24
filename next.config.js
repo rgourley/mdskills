@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  async rewrites() {
+    // Type-specific detail routes all resolve to the shared /skills/[slug] page
+    return [
+      { source: '/tools/:slug', destination: '/skills/:slug' },
+      { source: '/plugins/:slug', destination: '/skills/:slug' },
+      { source: '/mcp-servers/:slug', destination: '/skills/:slug' },
+      { source: '/rules/:slug', destination: '/skills/:slug' },
+    ]
+  },
   async headers() {
     return [
       {
