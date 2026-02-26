@@ -86,6 +86,9 @@ export default async function HomePage() {
               <p className="mt-4 text-lg text-neutral-600 max-w-2xl">
                 Discover, create, fork, and share reusable capabilities for Claude Code, Codex, Cursor, and 18+ AI agents.
               </p>
+              <p className="mt-3 text-sm text-neutral-500 max-w-2xl">
+                Every listing is reviewed by the Skill Advisor for quality, security, and compatibility.
+              </p>
               <div className="mt-10">
                 <p className="text-sm font-medium text-neutral-900 mb-3">Try it now</p>
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-code-bg border border-neutral-200 max-w-md">

@@ -156,9 +156,49 @@ async function selectSkill(inquirer, skills) {
 
   if (!selected) return
 
-  // Show detail
-  const infoCommand = require('./info')
-  await infoCommand([selected])
+  // Fetch and show detail inline (instead of delegating to info command)
+  const { fetchSkillDetail } = require('../api')
+  const { skillDetail } = require('../ui/format')
+
+  const detailSpinner = ora(`Loading ${selected}...`).start()
+  let data
+  try {
+    data = await fetchSkillDetail(selected)
+    detailSpinner.stop()
+  } catch (err) {
+    detailSpinner.fail('Failed to load skill')
+    return
+  }
+
+  if (!data || !data.skill) {
+    console.log(chalk.yellow(`\n  Skill "${selected}" not found\n`))
+    return
+  }
+
+  console.log(skillDetail(data.skill))
+
+  // Offer actions after viewing detail
+  const choices = []
+  if (data.skill.artifact_type === 'mcp_server') {
+    choices.push({ name: 'Show install commands', value: 'install' })
+  } else if (data.skill.content) {
+    choices.push({ name: 'Install this skill', value: 'install' })
+  }
+  choices.push(
+    { name: `View on mdskills.ai`, value: 'web' },
+    { name: 'Back', value: 'back' },
+  )
+
+  const { action } = await inquirer.prompt([
+    { type: 'list', name: 'action', message: 'What would you like to do?', choices },
+  ])
+
+  if (action === 'install') {
+    const installCommand = require('./install')
+    await installCommand([selected])
+  } else if (action === 'web') {
+    console.log(chalk.dim(`\n  https://www.mdskills.ai/skills/${selected}\n`))
+  }
 }
 
 module.exports = interactiveCommand

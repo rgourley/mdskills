@@ -523,8 +523,10 @@ function titleCase(slug: string): string {
 /** Reject headings that are clearly not project names */
 function isValidHeading(heading: string): boolean {
   if (!heading || heading.length < 3 || heading.length > 60) return false
-  if (/^(For|A|An|The|How|Getting|Introduction|Overview|About|README|Table of|Usage|Install|Sponsor|Platinum|Gold|Silver|Contributors|Contributing|License|Changelog|Features|Prerequisites|Requirements|Documentation|Support|Acknowledgements)\b/i.test(heading)) return false
+  if (/^(For|A|An|The|How|Getting|Introduction|Overview|About|README|Table of|Usage|Install|Clone|Deprecated|Sponsor|Platinum|Gold|Silver|Contributors|Contributing|License|Changelog|Features|Prerequisites|Requirements|Documentation|Support|Acknowledgements|Build|Run|Setup|Quick Start|Configuration|Troubleshooting)\b/i.test(heading)) return false
   if (heading.includes('![') || heading.includes('](') || heading.includes('```')) return false
+  // Reject headings that are just the generic artifact type name
+  if (/^(MCP Server|Skill Pack|Plugin|Extension|Tool)$/i.test(heading)) return false
   return true
 }
 
@@ -554,14 +556,19 @@ function inferDisplayName(
 
   if (readme) {
     // Check HTML headings first: <h1>Title</h1> or <h1 align="center">Title</h1>
-    const htmlHeading = readme.match(/<h1[^>]*>([^<]+)<\/h1>/i)?.[1]?.trim()
+    const htmlH1 = readme.match(/<h1[^>]*>([^<]+)<\/h1>/i)?.[1]?.trim()
     // Only match h1 (single #), not h2/h3 — use negative lookahead to exclude ##
-    const mdHeading = readme.match(/^#\s(?!#)(.+)/m)?.[1]?.trim()
-    const readmeHeading = htmlHeading || mdHeading
-    if (readmeHeading) {
-      let clean = readmeHeading
+    const mdH1 = readme.match(/^#\s(?!#)(.+)/m)?.[1]?.trim()
+    // Fall back to h2 if no valid h1 found
+    const htmlH2 = readme.match(/<h2[^>]*>([^<]+)<\/h2>/i)?.[1]?.trim()
+    const mdH2 = readme.match(/^##\s(?!#)(.+)/m)?.[1]?.trim()
+
+    // Try h1 first, then h2 as fallback
+    for (const raw of [htmlH1, mdH1, htmlH2, mdH2]) {
+      if (!raw) continue
+      let clean = raw
         .replace(/[*_`]/g, '')
-        .replace(/^\W+/, '')
+        .replace(/^[\s!@#$%^&*()\-=+\[\]{};:'"<>,.?/\\|~⚠️🚨]+/, '') // strip leading punctuation/emoji but keep CJK/Unicode letters
         .trim()
       if (isValidHeading(clean)) {
         // If the heading looks slug-style (has hyphens but no spaces), titleCase it
