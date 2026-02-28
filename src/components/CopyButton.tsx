@@ -3,17 +3,32 @@
 import { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
 
-interface CopyButtonProps {
-  text: string
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void
+  }
 }
 
-export function CopyButton({ text }: CopyButtonProps) {
+interface CopyButtonProps {
+  text: string
+  /** Optional GA event label (e.g. skill slug) for tracking install command copies */
+  eventLabel?: string
+}
+
+export function CopyButton({ text, eventLabel }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    if (eventLabel && window.gtag) {
+      window.gtag('event', 'copy_install_command', {
+        event_category: 'engagement',
+        event_label: eventLabel,
+        value: text,
+      })
+    }
   }
 
   return (

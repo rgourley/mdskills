@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
-import { Download, Terminal, GitFork, ThumbsUp, Share2 } from 'lucide-react'
+import { Download, Terminal, GitFork, Share2 } from 'lucide-react'
+import { VoteButton } from './VoteButton'
 import type { Skill } from '@/lib/skills'
 
 interface SkillActionsProps {
@@ -19,6 +20,16 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
     : null
 
   const handleDownload = () => {
+    // Track in Google Analytics
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'download_skill', {
+        event_category: 'engagement',
+        event_label: skill.slug,
+        skill_name: skill.name,
+        artifact_type: skill.artifactType,
+      })
+    }
+
     if (downloadUrl) {
       window.location.href = downloadUrl
       return
@@ -35,6 +46,13 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
 
   const handleShare = async () => {
     const shareUrl = window.location.href
+    if (window.gtag) {
+      window.gtag('event', 'share_skill', {
+        event_category: 'engagement',
+        event_label: skill.slug,
+        method: typeof navigator.share === 'function' ? 'native' : 'clipboard',
+      })
+    }
     if (navigator.share) {
       await navigator.share({
         title: shareTitle,
@@ -55,7 +73,7 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
           <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-code-bg border border-neutral-200 text-neutral-800 sm:w-[70%]">
             <Terminal className="w-4 h-4 shrink-0" />
             <code className="text-sm font-mono truncate flex-1 min-w-0">{installCommand}</code>
-            <CopyButton text={installCommand} />
+            <CopyButton text={installCommand} eventLabel={skill.slug} />
           </div>
           <button
             onClick={handleDownload}
@@ -76,13 +94,7 @@ export function SkillActions({ skill, installCommand }: SkillActionsProps) {
           <GitFork className="w-4 h-4" />
           Fork & Edit
         </Link>
-        <button
-          className="inline-flex items-center gap-2 px-4 py-2.5 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors"
-          title="Upvote (coming soon)"
-        >
-          <ThumbsUp className="w-4 h-4" />
-          Upvote
-        </button>
+        <VoteButton skillId={skill.id} initialCount={skill.upvotes ?? 0} />
         <button
           onClick={handleShare}
           className="inline-flex items-center gap-2 px-4 py-2.5 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors"

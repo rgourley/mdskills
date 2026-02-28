@@ -24,6 +24,13 @@ export function SearchBar({ defaultValue = '', basePath = '/skills', placeholder
       if (q) params.set('q', q)
       else params.delete('q')
       const qs = params.toString()
+      if (q && typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'search', {
+          search_term: q,
+          event_category: 'engagement',
+          event_label: basePath,
+        })
+      }
       startTransition(() => {
         router.push(qs ? `${basePath}?${qs}` : basePath)
       })

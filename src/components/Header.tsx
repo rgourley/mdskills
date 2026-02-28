@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useCallback, useTransition, useRef, useEffect } from 'react'
 import { Menu, X, Search } from 'lucide-react'
+import { UserMenu } from './UserMenu'
 
 const NAV_LINKS = [
   { label: 'Skills', href: '/skills', exact: true },
@@ -87,6 +88,11 @@ export function Header() {
           <Search className="w-4 h-4" />
         </button>
 
+        {/* Desktop user menu */}
+        <div className="hidden lg:block flex-shrink-0">
+          <UserMenu />
+        </div>
+
         {/* Mobile: search icon + hamburger */}
         <div className="flex items-center gap-1 lg:hidden">
           <button
@@ -147,6 +153,9 @@ export function Header() {
               {link.label}
             </Link>
           ))}
+          <div className="pt-2 border-t border-neutral-100 mt-2">
+            <UserMenu />
+          </div>
         </nav>
       )}
     </header>

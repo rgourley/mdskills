@@ -55,7 +55,7 @@ export function SkillInstallationTab({ skill, installCommand, clients }: SkillIn
               <pre className="flex-1 font-mono text-sm whitespace-pre-wrap break-all">
                 {selected.installInstructions}
               </pre>
-              <CopyButton text={selected.installInstructions} />
+              <CopyButton text={selected.installInstructions} eventLabel={skill.slug} />
             </div>
           </div>
         )}
@@ -72,7 +72,7 @@ export function SkillInstallationTab({ skill, installCommand, clients }: SkillIn
           <div className="p-4 rounded-xl bg-neutral-100">
             <div className="flex items-center gap-3">
               <code className="flex-1 font-mono text-sm break-all">{installCommand}</code>
-              <CopyButton text={installCommand} />
+              <CopyButton text={installCommand} eventLabel={skill.slug} />
             </div>
           </div>
         </section>
@@ -96,7 +96,7 @@ export function SkillInstallationTab({ skill, installCommand, clients }: SkillIn
           <div className="p-4 rounded-xl bg-neutral-900 text-white space-y-2">
             <div className="flex items-center gap-3">
               <code className="flex-1 font-mono text-sm break-all">{pluginCommand}</code>
-              <CopyButton text={pluginCommand} />
+              <CopyButton text={pluginCommand} eventLabel={skill.slug} />
             </div>
             <p className="text-xs text-neutral-400">Then run /plugin menu, select the skill, and restart.</p>
           </div>
@@ -112,7 +112,7 @@ export function SkillInstallationTab({ skill, installCommand, clients }: SkillIn
         <div className="p-4 rounded-xl bg-neutral-100">
           <div className="flex items-center gap-3">
             <code className="flex-1 font-mono text-sm break-all">{installCommand}</code>
-            <CopyButton text={installCommand} />
+            <CopyButton text={installCommand} eventLabel={skill.slug} />
           </div>
         </div>
       </section>
