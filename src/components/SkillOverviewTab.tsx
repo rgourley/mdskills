@@ -141,6 +141,13 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
 
   return (
     <div className="space-y-10">
+      {/* README (project overview, installation, how it works) */}
+      {(skill.readme || skill.skillContent) && (
+        <section>
+          <SkillContent content={skill.readme || skill.skillContent!} owner={skill.owner} repo={skill.repo} />
+        </section>
+      )}
+
       {/* Quick Start */}
       <section>
         <h2 className="text-sm font-semibold text-neutral-900 mb-3">Quick Start</h2>
@@ -165,13 +172,6 @@ export function SkillOverviewTab({ skill, installCommand }: SkillOverviewTabProp
           </div>
         </div>
       </section>
-
-      {/* README (project overview, installation, how it works) */}
-      {(skill.readme || skill.skillContent) && (
-        <section>
-          <SkillContent content={skill.readme || skill.skillContent!} owner={skill.owner} repo={skill.repo} />
-        </section>
-      )}
 
       {/* Tags & Platforms */}
       <section className="flex flex-wrap gap-8">

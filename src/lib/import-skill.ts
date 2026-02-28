@@ -328,7 +328,8 @@ function inferDisplayName(repoName: string, fmName: string, readme: string | nul
       if (!raw) continue
       let clean = raw
         .replace(/[*_`]/g, '')
-        .replace(/^[\s!@#$%^&*()\-=+\[\]{};:'"<>,.?/\\|~⚠️🚨]+/, '') // strip leading punctuation/emoji but keep CJK/Unicode letters
+        .replace(/[\ud800-\udfff\uFE0F]/g, '') // strip broken surrogates + variation selectors
+        .replace(/^[\s!@#$%^&*()\-=+\[\]{};:'"<>,.?/\\|~]+/, '') // strip leading punctuation
         .trim()
       if (isValidHeading(clean)) {
         // If the heading looks slug-style (has hyphens but no spaces), titleCase it
@@ -590,8 +591,10 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   const skillPath = skill?.path || 'README.md'
   const skillContent = skill?.content || readme || ''
   const slug = opts.slug || generateSlug(repo, skillPath)
-  const displayName = opts.name || inferDisplayName(repo, fm.name, readme, skillDir)
-  const description = truncateDescription(fm.description || descriptionFromReadme(readme) || meta.description || `${displayName} - AI agent skill`)
+  // Strip broken Unicode surrogates that break JSON serialization (e.g. emoji decoded incorrectly)
+  const sanitize = (s: string) => s.replace(/[\ud800-\udfff]/g, '')
+  const displayName = sanitize(opts.name || inferDisplayName(repo, fm.name, readme, skillDir))
+  const description = sanitize(truncateDescription(fm.description || descriptionFromReadme(readme) || meta.description || `${displayName} - AI agent skill`))
   const permissions = detectPermissions(skillContent)
   const artifactType = opts.artifactType || detectArtifactType(fm.raw, repo)
   const formatStandard = opts.formatStandard || (usingReadmeFallback ? 'generic' : 'skill_md')

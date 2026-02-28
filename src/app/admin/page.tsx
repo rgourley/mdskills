@@ -40,6 +40,8 @@ const ARTIFACT_TYPES = [
   { value: 'template_bundle', label: 'Starter Kit' },
   { value: 'openapi_action', label: 'OpenAPI Action' },
   { value: 'extension', label: 'Extension' },
+  { value: 'tool', label: 'Tool' },
+  { value: 'plugin', label: 'Plugin' },
 ]
 
 const FORMAT_STANDARDS = [
