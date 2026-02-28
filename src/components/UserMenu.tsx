@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LogOut, Settings, FolderHeart, User } from 'lucide-react'
+import { LogOut, Settings, FolderHeart, Shield, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export function UserMenu() {
   const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -24,6 +25,17 @@ export function UserMenu() {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user)
       setLoading(false)
+      // Check admin role
+      if (data.user) {
+        supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile?.role === 'admin') setIsAdmin(true)
+          })
+      }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -116,6 +128,22 @@ export function UserMenu() {
               Settings
             </Link>
           </div>
+
+          {isAdmin && (
+            <div className="border-t border-neutral-100 py-1">
+              <div className="px-3 py-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Admin</span>
+              </div>
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+              >
+                <Upload className="w-4 h-4 text-neutral-400" />
+                Import Skills
+              </Link>
+            </div>
+          )}
 
           <div className="border-t border-neutral-100 py-1">
             <button

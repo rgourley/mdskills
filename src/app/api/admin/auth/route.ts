@@ -1,30 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { getAdminUser } from '@/lib/admin'
 
-export async function POST(request: NextRequest) {
-  try {
-    const { password } = await request.json()
-    const adminKey = process.env.ADMIN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!adminKey) {
-      return NextResponse.json({ error: 'Admin not configured' }, { status: 500 })
-    }
-
-    if (password !== adminKey) {
-      return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
-    }
-
-    // Set an httpOnly cookie with the admin token
-    const response = NextResponse.json({ success: true })
-    response.cookies.set('admin_token', adminKey, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 24 hours
-      path: '/',
-    })
-
-    return response
-  } catch {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+// Simple check endpoint — returns 200 if admin, 401 if not
+export async function GET() {
+  const admin = await getAdminUser()
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  return NextResponse.json({ success: true, email: admin.email })
 }

@@ -1,15 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getAdminUser } from '@/lib/admin'
 
-function isAuthorized(request: NextRequest): boolean {
-  const adminKey = process.env.ADMIN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!adminKey) return false
-  const cookie = request.cookies.get('admin_token')
-  return cookie?.value === adminKey
-}
-
-export async function GET(request: NextRequest) {
-  if (!isAuthorized(request)) {
+export async function GET() {
+  const admin = await getAdminUser()
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

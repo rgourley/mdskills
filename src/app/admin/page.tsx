@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2, Plus, Check, AlertCircle, ExternalLink, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Loader2, Plus, Check, AlertCircle, ExternalLink, Trash2, ShieldAlert } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 interface ImportResult {
   success: boolean
@@ -55,10 +57,8 @@ const FORMAT_STANDARDS = [
 ]
 
 export default function AdminPage() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [authError, setAuthError] = useState('')
-  const [authLoading, setAuthLoading] = useState(false)
+  const [authState, setAuthState] = useState<'loading' | 'not_signed_in' | 'not_admin' | 'admin'>('loading')
+  const router = useRouter()
 
   // Import form
   const [urlInput, setUrlInput] = useState('')
@@ -73,48 +73,27 @@ export default function AdminPage() {
   const [queue, setQueue] = useState<QueueItem[]>([])
   const [processing, setProcessing] = useState(false)
 
-  // Check if already authenticated (cookie exists)
+  // Check auth on mount
   useEffect(() => {
-    fetch('/api/admin/categories')
-      .then((r) => {
-        if (r.ok) {
-          setAuthenticated(true)
-          return r.json()
-        }
-        return null
-      })
-      .then((data) => {
-        if (data) setCategories(data)
-      })
-      .catch(() => {})
-  }, [])
+    const checkAuth = async () => {
+      const supabase = createClient()
+      if (!supabase) { setAuthState('not_signed_in'); return }
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setAuthLoading(true)
-    setAuthError('')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setAuthState('not_signed_in'); return }
 
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-
+      // Check admin via API
+      const res = await fetch('/api/admin/auth')
       if (res.ok) {
-        setAuthenticated(true)
-        // Fetch categories
+        setAuthState('admin')
         const catRes = await fetch('/api/admin/categories')
         if (catRes.ok) setCategories(await catRes.json())
       } else {
-        setAuthError('Invalid password')
+        setAuthState('not_admin')
       }
-    } catch {
-      setAuthError('Connection error')
-    } finally {
-      setAuthLoading(false)
     }
-  }
+    checkAuth()
+  }, [])
 
   const addToQueue = () => {
     const urls = urlInput
@@ -195,32 +174,43 @@ export default function AdminPage() {
     setProcessing(false)
   }, [queue])
 
-  // Login screen
-  if (!authenticated) {
+  // Loading
+  if (authState === 'loading') {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
-        <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
-          <h1 className="text-2xl font-bold text-neutral-900">Admin</h1>
-          <p className="text-sm text-neutral-500">Enter the admin password to continue.</p>
-          {authError && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">{authError}</div>
-          )}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-            autoFocus
-          />
+        <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+      </div>
+    )
+  }
+
+  // Not signed in
+  if (authState === 'not_signed_in') {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <ShieldAlert className="w-10 h-10 text-neutral-300 mx-auto" />
+          <h1 className="text-xl font-bold text-neutral-900">Admin Access</h1>
+          <p className="text-sm text-neutral-500">You need to sign in to access the admin panel.</p>
           <button
-            type="submit"
-            disabled={authLoading}
-            className="w-full px-4 py-3 bg-neutral-900 text-white font-medium rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50"
+            onClick={() => router.push('/login?next=/admin')}
+            className="px-4 py-2.5 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors"
           >
-            {authLoading ? 'Signing in...' : 'Sign in'}
+            Sign in
           </button>
-        </form>
+        </div>
+      </div>
+    )
+  }
+
+  // Signed in but not admin
+  if (authState === 'not_admin') {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <ShieldAlert className="w-10 h-10 text-red-300 mx-auto" />
+          <h1 className="text-xl font-bold text-neutral-900">Access Denied</h1>
+          <p className="text-sm text-neutral-500">Your account does not have admin privileges.</p>
+        </div>
       </div>
     )
   }

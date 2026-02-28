@@ -1,23 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { importSkill } from '@/lib/import-skill'
+import { getAdminUser } from '@/lib/admin'
 
-/** Simple admin auth check using the service role key as the secret */
-function isAuthorized(request: NextRequest): boolean {
-  const adminKey = process.env.ADMIN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!adminKey) return false
-
-  const authHeader = request.headers.get('authorization')
-  if (authHeader === `Bearer ${adminKey}`) return true
-
-  // Also check cookie for browser-based admin UI
-  const cookie = request.cookies.get('admin_token')
-  if (cookie?.value === adminKey) return true
-
-  return false
-}
-
-export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
+export async function POST(request: Request) {
+  const admin = await getAdminUser()
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
