@@ -155,10 +155,10 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
     <div className="py-6 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <Link
-          href={skill.artifactType === 'plugin' ? '/plugins' : skill.artifactType === 'mcp_server' ? '/mcp-servers' : skill.artifactType === 'ruleset' ? '/rules' : '/skills'}
+          href={skill.artifactType === 'plugin' ? '/plugins' : skill.artifactType === 'mcp_server' ? '/mcp-servers' : skill.artifactType === 'ruleset' ? '/rules' : skill.artifactType === 'tool' ? '/tools' : '/skills'}
           className="text-sm text-neutral-500 hover:text-neutral-700 mb-6 inline-block"
         >
-          ← Back to {skill.artifactType === 'plugin' ? 'plugins' : skill.artifactType === 'mcp_server' ? 'MCP servers' : skill.artifactType === 'ruleset' ? 'rules' : 'skills'}
+          ← Back to {skill.artifactType === 'plugin' ? 'plugins' : skill.artifactType === 'mcp_server' ? 'MCP servers' : skill.artifactType === 'ruleset' ? 'rules' : skill.artifactType === 'tool' ? 'tools' : 'skills'}
         </Link>
         <div className="lg:flex lg:gap-10">
           <div className="min-w-0 flex-1 max-w-4xl">
