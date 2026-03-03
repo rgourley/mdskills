@@ -3,7 +3,8 @@ import Image from 'next/image'
 import { SkillCard } from '@/components/SkillCard'
 import { CopyButton } from '@/components/CopyButton'
 import { AgentStrip } from '@/components/AgentStrip'
-import { getFeaturedSkills, getLatestSkills, getPluginSkills, getTopReviewedSkills, getHeroFeaturedSkill, getSkillPath } from '@/lib/skills'
+import { getFeaturedSkills, getLatestSkills, getPluginSkills, getTopReviewedSkills, getHeroFeaturedSkill } from '@/lib/skills'
+import { FeaturedListingCard } from '@/components/FeaturedListingCard'
 import { getCategories } from '@/lib/categories'
 import type { Metadata } from 'next'
 import {
@@ -60,54 +61,6 @@ function getCategoryIcon(icon?: string): LucideIcon {
   return CATEGORY_ICONS[icon] || Package
 }
 
-const HERO_ARTIFACT_BADGE: Record<string, { label: string; icon: React.ElementType }> = {
-  mcp_server: { label: 'MCP Server', icon: Server },
-  plugin: { label: 'Plugin', icon: Puzzle },
-  ruleset: { label: 'Rules', icon: Shield },
-  workflow_pack: { label: 'Workflow', icon: Workflow },
-  tool: { label: 'Tool', icon: Wrench },
-}
-
-function FeaturedHeroCard({ skill }: { skill: import('@/lib/skills').Skill }) {
-  const badge = skill.artifactType && skill.artifactType !== 'skill_pack'
-    ? HERO_ARTIFACT_BADGE[skill.artifactType]
-    : null
-  return (
-    <Link
-      href={getSkillPath(skill.slug, skill.artifactType)}
-      className="hidden lg:block -mt-[200px] ml-8 mr-4 p-4 rounded-xl border border-amber-200/60 bg-white/90 backdrop-blur-sm hover:border-amber-300 hover:shadow-md transition-all group"
-    >
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700">
-          <Star className="w-3 h-3" /> Featured
-        </span>
-        {badge && (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 text-neutral-600">
-            <badge.icon className="w-3 h-3" /> {badge.label}
-          </span>
-        )}
-        {skill.reviewQualityScore != null && (
-          <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
-            skill.reviewQualityScore >= 7
-              ? 'bg-emerald-100 text-emerald-700'
-              : skill.reviewQualityScore >= 4
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-red-100 text-red-700'
-          }`}>
-            {skill.reviewQualityScore}
-          </span>
-        )}
-      </div>
-      <h3 className="font-semibold text-sm text-neutral-900 group-hover:text-blue-600 transition-colors truncate">
-        {skill.name}
-      </h3>
-      <p className="mt-0.5 text-xs text-neutral-500 line-clamp-2">
-        {skill.description}
-      </p>
-    </Link>
-  )
-}
-
 export default async function HomePage() {
   const [skills, pluginSkills, latestSkills, topReviewed, categories, heroFeatured] = await Promise.all([
     getFeaturedSkills(),
@@ -121,8 +74,8 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="border-b border-neutral-200 bg-gradient-to-b from-neutral-50 to-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
+      <section className="border-b border-neutral-200 bg-gradient-to-b from-neutral-50 to-white overflow-x-clip">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28 relative">
           <div className="flex flex-col lg:flex-row lg:items-start gap-12 lg:gap-12">
             <div className="flex-1 min-w-0 lg:w-[60%] lg:flex-none">
               <h1 className="text-5xl sm:text-6xl font-bold text-neutral-900 tracking-tight max-w-3xl">
@@ -175,11 +128,14 @@ export default async function HomePage() {
                   />
                 </div>
               </div>
-              {heroFeatured && (
-                <FeaturedHeroCard skill={heroFeatured} />
-              )}
             </div>
           </div>
+          {/* Featured card — absolute positioned so right edge aligns with container (matches header) */}
+          {heroFeatured && (
+            <div className="hidden lg:block absolute right-6 bottom-[326px] w-[22rem]">
+              <FeaturedListingCard skill={heroFeatured} />
+            </div>
+          )}
         </div>
       </section>
 

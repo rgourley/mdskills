@@ -1,5 +1,6 @@
 import { SkillCard } from '@/components/SkillCard'
-import { getSkills } from '@/lib/skills'
+import { FeaturedListingCard } from '@/components/FeaturedListingCard'
+import { getSkills, getFeaturedByType } from '@/lib/skills'
 import { SearchBar } from '@/components/SearchBar'
 import { InlineFilters } from '@/components/InlineFilters'
 import { Pagination } from '@/components/Pagination'
@@ -42,7 +43,7 @@ export default async function SkillsPage({ searchParams }: PageProps) {
   const sort = (params.sort as 'trending' | 'popular' | 'recent') || undefined
   const page = Math.max(1, parseInt(params.page ?? '1', 10) || 1)
 
-  const [result, clients, categories] = await Promise.all([
+  const [result, clients, categories, featured] = await Promise.all([
     getSkills({
       query,
       tags,
@@ -54,17 +55,25 @@ export default async function SkillsPage({ searchParams }: PageProps) {
     }),
     getClients(),
     getCategoriesLight(),
+    getFeaturedByType('skill_pack'),
   ])
 
   return (
     <div className="py-12 sm:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Hero / Intro */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900">Agent Skills</h1>
-          <p className="mt-2 text-neutral-600 max-w-2xl">
-            SKILL.md files package domain expertise into something any AI agent can use. Drop one into your project and your agent learns how to process PDFs, design interfaces, write tests, or whatever the skill teaches.
-          </p>
+        <div className="mb-8 flex items-start gap-8">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold text-neutral-900">Agent Skills</h1>
+            <p className="mt-2 text-neutral-600 max-w-2xl">
+              SKILL.md files package domain expertise into something any AI agent can use. Drop one into your project and your agent learns how to process PDFs, design interfaces, write tests, or whatever the skill teaches.
+            </p>
+          </div>
+          {featured && (
+            <div className="flex-shrink-0 w-[22rem]">
+              <FeaturedListingCard skill={featured} />
+            </div>
+          )}
         </div>
 
         <SearchBar defaultValue={query} basePath="/skills" placeholder="Search skills..." />

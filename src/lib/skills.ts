@@ -206,6 +206,61 @@ export async function getHeroFeaturedSkill(): Promise<Skill | null> {
   return null
 }
 
+/** Single featured skill for a listing page — filtered by artifact type */
+export async function getFeaturedByType(artifactType: string | string[]): Promise<Skill | null> {
+  const supabase = await createClient()
+  if (!supabase) return null
+
+  const types = Array.isArray(artifactType) ? artifactType : [artifactType]
+
+  // Try explicitly featured skills of this type first
+  let q = supabase
+    .from('skills')
+    .select(LIST_SELECT)
+    .eq('featured', true)
+    .or('status.eq.published,status.is.null')
+    .in('artifact_type', types)
+    .limit(10)
+
+  const { data: featured } = await q
+
+  if (featured?.length) {
+    const pick = featured[Math.floor(Math.random() * featured.length)]
+    return mapRow(pick as unknown as SkillRow)
+  }
+
+  // Fall back to highest reviewed of this type
+  const { data: topReviewed } = await supabase
+    .from('skills')
+    .select(LIST_SELECT)
+    .or('status.eq.published,status.is.null')
+    .in('artifact_type', types)
+    .not('review_quality_score', 'is', null)
+    .order('review_quality_score', { ascending: false })
+    .limit(10)
+
+  if (topReviewed?.length) {
+    const pick = topReviewed[Math.floor(Math.random() * topReviewed.length)]
+    return mapRow(pick as unknown as SkillRow)
+  }
+
+  // Last resort — most popular of this type
+  const { data: popular } = await supabase
+    .from('skills')
+    .select(LIST_SELECT)
+    .or('status.eq.published,status.is.null')
+    .in('artifact_type', types)
+    .order('weekly_installs', { ascending: false })
+    .limit(5)
+
+  if (popular?.length) {
+    const pick = popular[Math.floor(Math.random() * popular.length)]
+    return mapRow(pick as unknown as SkillRow)
+  }
+
+  return null
+}
+
 /** Most recently added skills */
 export async function getLatestSkills(limit = 6): Promise<Skill[]> {
   const supabase = await createClient()

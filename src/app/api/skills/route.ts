@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/api'
 
+/**
+ * Sanitize a user search query for safe use in PostgREST .or() filters.
+ * Removes characters that could inject additional filter operators:
+ * commas (condition separator), dots (column.operator), parens (grouping).
+ */
+function sanitizeSearch(raw: string): string {
+  return raw.replace(/[,.()"'\\%;]/g, '').trim().slice(0, 200)
+}
+
 /** GET /api/skills — Public skills list/search endpoint */
 export async function GET(request: NextRequest) {
   const supabase = createApiClient()
@@ -12,8 +21,9 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get('q')
   const category = searchParams.get('category')
   const artifactType = searchParams.get('artifact_type')
-  const sort = searchParams.get('sort') || 'popular'
-  const limit = Math.min(Number(searchParams.get('limit') || 20), 50)
+  const sortParam = searchParams.get('sort') || 'popular'
+  const sort = ['popular', 'trending', 'recent'].includes(sortParam) ? sortParam : 'popular'
+  const limit = Math.min(Math.max(Number(searchParams.get('limit') || 20), 1), 50)
   const featured = searchParams.get('featured') === 'true'
 
   // List columns — exclude content and readme (large blobs) for list view
@@ -29,7 +39,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (query) {
-    q = q.or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+    const safe = sanitizeSearch(query)
+    if (safe) {
+      q = q.or(`name.ilike.%${safe}%,description.ilike.%${safe}%`)
+    }
   }
 
   if (category) {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LogOut, Settings, FolderHeart, Shield, Upload } from 'lucide-react'
+import { LogOut, Settings, FolderHeart, Shield, Upload, LayoutDashboard, PlusCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
@@ -111,6 +111,27 @@ export function UserMenu() {
           </div>
 
           <div className="py-1">
+            <Link
+              href="/submit"
+              onClick={() => {
+                setOpen(false)
+                if (typeof window !== 'undefined' && window.gtag) {
+                  window.gtag('event', 'submit_listing_start')
+                }
+              }}
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+            >
+              <PlusCircle className="w-4 h-4 text-neutral-400" />
+              Submit Listing
+            </Link>
+            <Link
+              href="/dashboard"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+            >
+              <LayoutDashboard className="w-4 h-4 text-neutral-400" />
+              My Submissions
+            </Link>
             <Link
               href="/collections"
               onClick={() => setOpen(false)}

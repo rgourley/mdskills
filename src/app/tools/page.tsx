@@ -1,5 +1,6 @@
 import { SkillCard } from '@/components/SkillCard'
-import { getSkills } from '@/lib/skills'
+import { FeaturedListingCard } from '@/components/FeaturedListingCard'
+import { getSkills, getFeaturedByType } from '@/lib/skills'
 import { SearchBar } from '@/components/SearchBar'
 import { InlineFilters } from '@/components/InlineFilters'
 import { Pagination } from '@/components/Pagination'
@@ -39,7 +40,7 @@ export default async function ToolsPage({ searchParams }: PageProps) {
   const sort = (params.sort as 'trending' | 'popular' | 'recent') || undefined
   const page = Math.max(1, parseInt(params.page ?? '1', 10) || 1)
 
-  const [result, clients, categories] = await Promise.all([
+  const [result, clients, categories, featured] = await Promise.all([
     getSkills({
       query: query || undefined,
       categorySlug: category || undefined,
@@ -50,17 +51,25 @@ export default async function ToolsPage({ searchParams }: PageProps) {
     }),
     getClients(),
     getCategoriesLight(),
+    getFeaturedByType(['extension', 'tool']),
   ])
 
   return (
     <div className="py-12 sm:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Hero / Intro */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900">Tools & Extensions</h1>
-          <p className="mt-2 text-neutral-600 max-w-2xl">
-            Developer tools, VS Code extensions, CLIs, and utilities that enhance your AI-assisted coding workflow. Not skills or plugins — just useful things.
-          </p>
+        <div className="mb-8 flex items-start gap-8">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold text-neutral-900">Tools & Extensions</h1>
+            <p className="mt-2 text-neutral-600 max-w-2xl">
+              Developer tools, VS Code extensions, CLIs, and utilities that enhance your AI-assisted coding workflow. Not skills or plugins — just useful things.
+            </p>
+          </div>
+          {featured && (
+            <div className="flex-shrink-0 w-[22rem]">
+              <FeaturedListingCard skill={featured} />
+            </div>
+          )}
         </div>
 
         <SearchBar defaultValue={query} basePath="/tools" placeholder="Search tools & extensions..." />

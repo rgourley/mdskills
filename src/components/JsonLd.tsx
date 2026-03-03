@@ -7,10 +7,19 @@ interface JsonLdProps {
 }
 
 export function JsonLd({ data }: JsonLdProps) {
+  // Escape HTML-significant characters to prevent XSS injection
+  // via user-controlled data (e.g. skill names, descriptions, author names).
+  // Without this, a value like '</script><script>alert(1)' would break out
+  // of the JSON-LD script tag.
+  const safeJson = JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: safeJson }}
     />
   )
 }

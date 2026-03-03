@@ -25,6 +25,11 @@ export interface ImportOptions {
   formatStandard?: string
   dryRun?: boolean
   generateReview?: boolean
+  /** User submission overrides */
+  submittedBy?: string
+  status?: string
+  skipReview?: boolean
+  skipClientLinking?: boolean
 }
 
 export interface ImportResult {
@@ -639,7 +644,7 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
     ? `https://github.com/${owner}/${repo}/tree/${meta.defaultBranch}/${subpath}`
     : `https://github.com/${owner}/${repo}`
 
-  const record = {
+  const record: Record<string, any> = {
     slug,
     name: displayName,
     description,
@@ -649,12 +654,12 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
     github_url: githubUrl,
     content: skillContent,
     readme,
-    status: 'published' as const,
+    status: opts.status || 'published',
     featured: false,
     skill_type: skillType,
     has_plugin: hasPlugin,
     has_examples: false,
-    difficulty: 'intermediate' as const,
+    difficulty: 'intermediate',
     category_id: categoryId,
     author_username: owner,
     github_stars: meta.stars,
@@ -668,6 +673,11 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
     artifact_type: artifactType,
     format_standard: formatStandard,
     ...permissions,
+  }
+
+  // User submission: track who submitted it
+  if (opts.submittedBy) {
+    record.submitted_by = opts.submittedBy
   }
 
   log(`Slug: ${record.slug}`)
@@ -694,8 +704,8 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   }
   log(`Saved: ${data.name} (id: ${data.id})`)
 
-  // 5. Link to clients
-  if (data.id) {
+  // 5. Link to clients (skip for user submissions — done on approval)
+  if (data.id && !opts.skipClientLinking) {
     log('Linking to clients...')
     const clientSlugs = [...record.platforms]
     if (!clientSlugs.includes('claude-code')) clientSlugs.unshift('claude-code')
@@ -729,10 +739,12 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
         log(`Client not found: ${clientSlug}`)
       }
     }
+  } else if (opts.skipClientLinking) {
+    log('Skipping client linking (user submission)')
   }
 
-  // 6. Optionally generate AI review
-  if (data.id && process.env.ANTHROPIC_API_KEY) {
+  // 6. Optionally generate AI review (skip for user submissions — done on approval)
+  if (data.id && process.env.ANTHROPIC_API_KEY && !opts.skipReview) {
     log('Generating AI review...')
     try {
       const { generateSkillReview } = await import('@/lib/generate-review')
@@ -761,6 +773,8 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
     } catch {
       log('Review generation error (skipped)')
     }
+  } else if (opts.skipReview) {
+    log('Skipping AI review (user submission)')
   }
 
   log(`Done! View at: /skills/${record.slug}`)
