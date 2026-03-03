@@ -243,9 +243,26 @@ export function SubmitForm() {
 
       // Step 2: If paid tier, redirect to Stripe Checkout
       if (isPaid && data.id) {
+        const tierPrice = getLivePrice(reviewTier) ?? (reviewTier === 'priority' ? 19 : 49)
+
         trackEvent('submit_payment_start', {
           tier: reviewTier,
-          amount: reviewTier === 'priority' ? 19 : 49,
+          amount: tierPrice,
+        })
+
+        // GA4 begin_checkout — standard ecommerce funnel event
+        trackEvent('begin_checkout', {
+          value: tierPrice,
+          currency: 'USD',
+          items: [
+            {
+              item_id: data.id,
+              item_name: `${reviewTier}_review`,
+              item_category: 'review_tier',
+              price: tierPrice,
+              quantity: 1,
+            },
+          ],
         })
 
         const checkoutRes = await fetch('/api/stripe/checkout', {

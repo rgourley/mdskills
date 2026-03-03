@@ -62,13 +62,39 @@ export function DashboardContent() {
     fetchSubmissions()
   }, [])
 
-  // Track payment completion
+  // Track payment completion with GA Enhanced Ecommerce
   useEffect(() => {
-    if (justPaid && typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'submit_payment_complete', {
-        session_id: searchParams.get('session_id'),
+    if (!justPaid || typeof window === 'undefined' || !window.gtag) return
+    const sessionId = searchParams.get('session_id')
+    if (!sessionId) return
+
+    // Fire basic event immediately
+    window.gtag('event', 'submit_payment_complete', { session_id: sessionId })
+
+    // Fetch session details for GA4 ecommerce purchase event
+    fetch(`/api/stripe/session?session_id=${encodeURIComponent(sessionId)}`)
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (!data || data.payment_status !== 'paid') return
+        const value = (data.amount_total || 0) / 100
+
+        // GA4 standard purchase event — lights up Monetization reports
+        window.gtag?.('event', 'purchase', {
+          transaction_id: data.id,
+          value,
+          currency: (data.currency || 'usd').toUpperCase(),
+          items: [
+            {
+              item_id: data.skillId || 'unknown',
+              item_name: `${data.tier || 'paid'}_review`,
+              item_category: 'review_tier',
+              price: value,
+              quantity: 1,
+            },
+          ],
+        })
       })
-    }
+      .catch(() => { /* best-effort */ })
   }, [justPaid, searchParams])
 
   useEffect(() => {
