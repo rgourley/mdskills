@@ -171,6 +171,41 @@ export async function getFeaturedSkills(): Promise<Skill[]> {
   return data.map((row) => mapRow(row as unknown as SkillRow))
 }
 
+/** Single featured skill for homepage hero — picks randomly from featured=true, falls back to top reviewed */
+export async function getHeroFeaturedSkill(): Promise<Skill | null> {
+  const supabase = await createClient()
+  if (!supabase) return null
+
+  // Try explicitly featured skills first
+  const { data: featured } = await supabase
+    .from('skills')
+    .select(LIST_SELECT)
+    .eq('featured', true)
+    .or('status.eq.published,status.is.null')
+    .limit(10)
+
+  if (featured?.length) {
+    const pick = featured[Math.floor(Math.random() * featured.length)]
+    return mapRow(pick as unknown as SkillRow)
+  }
+
+  // Fall back to highest reviewed
+  const { data: topReviewed } = await supabase
+    .from('skills')
+    .select(LIST_SELECT)
+    .or('status.eq.published,status.is.null')
+    .not('review_quality_score', 'is', null)
+    .order('review_quality_score', { ascending: false })
+    .limit(10)
+
+  if (topReviewed?.length) {
+    const pick = topReviewed[Math.floor(Math.random() * topReviewed.length)]
+    return mapRow(pick as unknown as SkillRow)
+  }
+
+  return null
+}
+
 /** Most recently added skills */
 export async function getLatestSkills(limit = 6): Promise<Skill[]> {
   const supabase = await createClient()

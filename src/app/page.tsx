@@ -3,14 +3,14 @@ import Image from 'next/image'
 import { SkillCard } from '@/components/SkillCard'
 import { CopyButton } from '@/components/CopyButton'
 import { AgentStrip } from '@/components/AgentStrip'
-import { getFeaturedSkills, getLatestSkills, getPluginSkills, getTopReviewedSkills } from '@/lib/skills'
+import { getFeaturedSkills, getLatestSkills, getPluginSkills, getTopReviewedSkills, getHeroFeaturedSkill, getSkillPath } from '@/lib/skills'
 import { getCategories } from '@/lib/categories'
 import type { Metadata } from 'next'
 import {
   Palette, SearchCode, BookOpen, TestTube, Shield, Plug, BarChart3,
   Zap, Sparkles, Rocket, Search, PenTool, Code, Terminal, Globe,
   Puzzle, Wrench, Database, Cloud, Lock, FileText, GitBranch, Cpu,
-  Package, type LucideIcon,
+  Package, Star, Server, Workflow, type LucideIcon,
 } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -60,13 +60,62 @@ function getCategoryIcon(icon?: string): LucideIcon {
   return CATEGORY_ICONS[icon] || Package
 }
 
+const HERO_ARTIFACT_BADGE: Record<string, { label: string; icon: React.ElementType }> = {
+  mcp_server: { label: 'MCP Server', icon: Server },
+  plugin: { label: 'Plugin', icon: Puzzle },
+  ruleset: { label: 'Rules', icon: Shield },
+  workflow_pack: { label: 'Workflow', icon: Workflow },
+  tool: { label: 'Tool', icon: Wrench },
+}
+
+function FeaturedHeroCard({ skill }: { skill: import('@/lib/skills').Skill }) {
+  const badge = skill.artifactType && skill.artifactType !== 'skill_pack'
+    ? HERO_ARTIFACT_BADGE[skill.artifactType]
+    : null
+  return (
+    <Link
+      href={getSkillPath(skill.slug, skill.artifactType)}
+      className="hidden lg:block -mt-[200px] ml-8 mr-4 p-4 rounded-xl border border-amber-200/60 bg-white/90 backdrop-blur-sm hover:border-amber-300 hover:shadow-md transition-all group"
+    >
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700">
+          <Star className="w-3 h-3" /> Featured
+        </span>
+        {badge && (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 text-neutral-600">
+            <badge.icon className="w-3 h-3" /> {badge.label}
+          </span>
+        )}
+        {skill.reviewQualityScore != null && (
+          <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
+            skill.reviewQualityScore >= 7
+              ? 'bg-emerald-100 text-emerald-700'
+              : skill.reviewQualityScore >= 4
+              ? 'bg-amber-100 text-amber-700'
+              : 'bg-red-100 text-red-700'
+          }`}>
+            {skill.reviewQualityScore}
+          </span>
+        )}
+      </div>
+      <h3 className="font-semibold text-sm text-neutral-900 group-hover:text-blue-600 transition-colors truncate">
+        {skill.name}
+      </h3>
+      <p className="mt-0.5 text-xs text-neutral-500 line-clamp-2">
+        {skill.description}
+      </p>
+    </Link>
+  )
+}
+
 export default async function HomePage() {
-  const [skills, pluginSkills, latestSkills, topReviewed, categories] = await Promise.all([
+  const [skills, pluginSkills, latestSkills, topReviewed, categories, heroFeatured] = await Promise.all([
     getFeaturedSkills(),
     getPluginSkills(6),
     getLatestSkills(6),
     getTopReviewedSkills(6),
     getCategories(),
+    getHeroFeaturedSkill(),
   ])
 
   return (
@@ -113,17 +162,22 @@ export default async function HomePage() {
               </div>
               <AgentStrip />
             </div>
-            <div className="flex-shrink-0 lg:w-[40%] lg:self-start lg:-mt-24 lg:flex lg:justify-end">
-              <div className="relative w-[450px] h-[450px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] flex items-center justify-center">
-                <Image
-                  src="/images/lobster.webp"
-                  alt=""
-                  width={600}
-                  height={600}
-                  className="object-contain w-full h-full"
-                  priority
-                />
+            <div className="relative flex-shrink-0 lg:w-[40%] lg:self-start lg:-mt-24">
+              <div className="lg:flex lg:justify-end">
+                <div className="relative w-[450px] h-[450px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] flex items-center justify-center">
+                  <Image
+                    src="/images/lobster.webp"
+                    alt=""
+                    width={600}
+                    height={600}
+                    className="object-contain w-full h-full"
+                    priority
+                  />
+                </div>
               </div>
+              {heroFeatured && (
+                <FeaturedHeroCard skill={heroFeatured} />
+              )}
             </div>
           </div>
         </div>
