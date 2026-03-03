@@ -140,7 +140,7 @@ export function DashboardContent() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this draft? This cannot be undone.')) return
+    if (!confirm('Are you sure you want to delete this submission? This cannot be undone.')) return
     setActionLoading(id)
     try {
       const res = await fetch(`/api/submissions/${id}`, { method: 'DELETE' })
@@ -292,28 +292,18 @@ export function DashboardContent() {
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {sub.status === 'draft' && (
-                        <>
-                          <button
-                            onClick={() => handleSubmitForReview(sub.id)}
-                            disabled={isLoading}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                          >
-                            {isLoading ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <Send className="w-3 h-3" />
-                            )}
-                            Submit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(sub.id)}
-                            disabled={isLoading}
-                            className="p-1.5 text-neutral-400 hover:text-red-500 transition-colors disabled:opacity-50"
-                            title="Delete draft"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </>
+                        <button
+                          onClick={() => handleSubmitForReview(sub.id)}
+                          disabled={isLoading}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Send className="w-3 h-3" />
+                          )}
+                          Submit
+                        </button>
                       )}
                       {sub.status === 'rejected' && (
                         <button
@@ -336,6 +326,17 @@ export function DashboardContent() {
                         >
                           <ExternalLink className="w-3 h-3" /> View
                         </Link>
+                      )}
+                      {/* Delete button — available for all non-published submissions */}
+                      {sub.status !== 'published' && (
+                        <button
+                          onClick={() => handleDelete(sub.id)}
+                          disabled={isLoading}
+                          className="p-1.5 text-neutral-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                          title="Delete submission"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
                   </div>

@@ -353,8 +353,11 @@ export async function deleteSubmission(userId: string, skillId: string): Promise
 
   if (!skill) return { success: false, error: 'Skill not found' }
   if (skill.submitted_by !== userId) return { success: false, error: 'Not your submission' }
-  if (skill.status !== 'draft') {
-    return { success: false, error: 'Can only delete draft submissions' }
+
+  // Users can delete their own submissions in any non-published state
+  const deletableStatuses = ['draft', 'pending_review', 'in_review', 'rejected']
+  if (!deletableStatuses.includes(skill.status)) {
+    return { success: false, error: 'Published listings cannot be deleted. Contact support.' }
   }
 
   const { error } = await supabase
