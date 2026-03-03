@@ -160,8 +160,8 @@ export function UserMenu() {
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
               >
-                <Upload className="w-4 h-4 text-neutral-400" />
-                Import Skills
+                <Shield className="w-4 h-4 text-neutral-400" />
+                Admin Panel
               </Link>
             </div>
           )}
