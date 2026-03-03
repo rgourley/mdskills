@@ -26,6 +26,9 @@ export function Footer() {
               <li>
                 <Link href="/submit" className="hover:text-neutral-900 transition-colors">Submit</Link>
               </li>
+              <li>
+                <Link href="/advertise" className="hover:text-neutral-900 transition-colors">Advertise</Link>
+              </li>
             </ul>
           </div>
           <div>
