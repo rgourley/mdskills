@@ -85,14 +85,14 @@ Respond ONLY with valid JSON (no markdown fences, no explanation) matching this 
   "summary": "One sentence (40-150 chars) capturing overall quality and what stands out",
   "strengths": ["strength 1", "strength 2"],
   "weaknesses": ["concern 1"],
-  "quality_score": 7
+  "quality_score": 7.4
 }
 
 Rules:
 - summary: single sentence, 40-150 characters, do not mention the skill name
 - strengths: 1-3 items, each under 80 characters, start with a present-tense verb
 - weaknesses: 1-2 items, each under 80 characters, start with a present-tense verb. Every listing has room for improvement — always identify at least one concern or limitation
-- quality_score: integer 1-10 (1=empty or no useful content, 4=vague/incomplete, 7=solid and useful, 8=strong with good coverage, 9=excellent and comprehensive, 10=exceptional best-in-class)
+- quality_score: number 1.0-10.0 with one decimal place (1.0=empty or no useful content, 4.0=vague/incomplete, 7.0=solid and useful, 8.0=strong with good coverage, 9.0=excellent and comprehensive, 10.0=exceptional best-in-class)
 - For skills: clear actionable instructions → 7-8, comprehensive with examples and edge cases → 9+
 - For plugins: useful functionality with good docs → 7-8, well-architected with great docs → 9+
 - For MCP servers: useful tools with clear descriptions → 7-8, comprehensive with good setup docs → 9+

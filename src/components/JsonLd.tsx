@@ -78,6 +78,9 @@ export function SkillJsonLd({
   reviewScore,
   reviewSummary,
   reviewDate,
+  isPaid,
+  priceAmount,
+  priceCurrency,
 }: {
   name: string
   description: string
@@ -93,6 +96,9 @@ export function SkillJsonLd({
   reviewScore?: number
   reviewSummary?: string
   reviewDate?: string
+  isPaid?: boolean
+  priceAmount?: number
+  priceCurrency?: string
 }) {
   return (
     <>
@@ -108,8 +114,8 @@ export function SkillJsonLd({
           operatingSystem: platforms?.join(', ') || 'Any',
           offers: {
             '@type': 'Offer',
-            price: '0',
-            priceCurrency: 'USD',
+            price: isPaid && priceAmount ? (priceAmount / 100).toFixed(2) : '0',
+            priceCurrency: (priceCurrency || 'usd').toUpperCase(),
           },
           author: {
             '@type': 'Person',
@@ -124,7 +130,7 @@ export function SkillJsonLd({
               '@type': 'Review',
               author: {
                 '@type': 'Organization',
-                name: 'Skill Advisor',
+                name: 'mdskills Skill Advisor',
                 url: 'https://www.mdskills.ai/docs/skill-advisor',
               },
               reviewRating: {
@@ -135,6 +141,7 @@ export function SkillJsonLd({
               },
               ...(reviewSummary && { reviewBody: reviewSummary }),
               ...(reviewDate && { datePublished: reviewDate }),
+              ...(reviewScore >= 7 && { name: 'Verified' }),
             },
             aggregateRating: {
               '@type': 'AggregateRating',

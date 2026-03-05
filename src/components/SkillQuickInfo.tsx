@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Github, Star, GitFork, Puzzle, FolderOpen, FolderEdit, Terminal, Globe, GitBranch, Info } from 'lucide-react'
+import { Github, Star, GitFork, Puzzle, FolderOpen, FolderEdit, Terminal, Globe, GitBranch, Info, DollarSign, ShieldCheck } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 
 const ARTIFACT_LABELS: Record<string, string> = {
@@ -54,6 +54,16 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
             <dd className="font-medium text-neutral-900">Skill + Plugin</dd>
           </div>
         )}
+        {/* Price for paid skills */}
+        {skill.isPaid && skill.priceAmount && (
+          <div>
+            <dt className="text-neutral-500">Price</dt>
+            <dd className="font-semibold text-emerald-700">
+              ${(skill.priceAmount / 100).toFixed(skill.priceAmount % 100 === 0 ? 0 : 2)}
+              <span className="text-xs font-normal text-neutral-500 ml-1">one-time</span>
+            </dd>
+          </div>
+        )}
         {skill.formatStandard && skill.formatStandard !== 'skill_md' && skill.formatStandard !== 'generic' && FORMAT_INFO[skill.formatStandard] && (
           <div>
             <dt className="text-neutral-500">Format</dt>
@@ -94,16 +104,21 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
                 <Info className="w-3 h-3" />
               </Link>
             </dt>
-            <dd className="font-medium">
-              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                skill.reviewQualityScore >= 7
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : skill.reviewQualityScore >= 4
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-red-100 text-red-700'
-              }`}>
-                {skill.reviewQualityScore}
-              </span>
+            <dd className="font-medium mt-1">
+              {skill.reviewQualityScore >= 7 ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold">
+                  <ShieldCheck className="w-4.5 h-4.5" />
+                  Verified · {skill.reviewQualityScore.toFixed(1)}
+                </span>
+              ) : (
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium ${
+                  skill.reviewQualityScore >= 4
+                    ? 'bg-amber-50 text-amber-700'
+                    : 'bg-red-50 text-red-700'
+                }`}>
+                  {skill.reviewQualityScore.toFixed(1)}
+                </span>
+              )}
             </dd>
           </div>
         )}
@@ -182,7 +197,7 @@ export function SkillQuickInfo({ skill }: SkillQuickInfoProps) {
         >
           Install guide
         </Link>
-        {skill.githubUrl && (
+        {skill.githubUrl && !skill.isPaid && (
           <a
             href={skill.githubUrl}
             target="_blank"

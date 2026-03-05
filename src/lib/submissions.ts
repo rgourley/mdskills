@@ -34,13 +34,17 @@ export interface Submission {
 
 export interface CreateSubmissionData {
   artifactType: string
-  sourceType: 'github' | 'markdown'
+  sourceType: 'github' | 'markdown' | 'upload'
   githubUrl?: string
   content?: string
   name: string
   description?: string
   categorySlug?: string
   formatStandard?: string
+  /** Paid skill fields */
+  isPaid?: boolean
+  priceAmount?: number   // cents
+  sourceFilePath?: string // Supabase Storage path (from upload)
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -141,6 +145,15 @@ export async function createSubmission(userId: string, data: CreateSubmissionDat
   const supabase = getServiceClient()
   if (!supabase) return { success: false, error: 'Database unavailable' }
 
+  // Paid skill fields
+  const paidFields = data.isPaid
+    ? {
+        is_paid: true,
+        price_amount: data.priceAmount || 0,
+        price_currency: 'usd',
+      }
+    : {}
+
   // If GitHub URL, use importSkill for metadata extraction
   if (data.sourceType === 'github' && data.githubUrl) {
     try {
@@ -161,13 +174,43 @@ export async function createSubmission(userId: string, data: CreateSubmissionDat
       if (!result.success) {
         return { success: false, error: result.error || 'Import failed' }
       }
+
+      // For paid GitHub submissions, pull repo to storage and update record
+      if (data.isPaid && result.id) {
+        try {
+          const url = new URL(data.githubUrl)
+          const [, owner, repo] = url.pathname.split('/')
+          if (owner && repo) {
+            const { pullGitHubRepoToStorage } = await import('@/lib/storage')
+            const storageResult = await pullGitHubRepoToStorage(owner, repo, userId, result.id)
+            const sourceFilePath = 'path' in storageResult ? storageResult.path : undefined
+
+            await supabase
+              .from('skills')
+              .update({
+                ...paidFields,
+                source_file_path: sourceFilePath || null,
+              })
+              .eq('id', result.id)
+          }
+        } catch (err: any) {
+          // Storage pull failed — still create the skill but log warning
+          console.warn('GitHub repo storage pull failed:', err.message)
+          await supabase
+            .from('skills')
+            .update(paidFields)
+            .eq('id', result.id)
+        }
+      }
+
       return { success: true, id: result.id, slug: result.slug }
     } catch (err: any) {
       return { success: false, error: err.message || 'Import failed' }
     }
   }
 
-  // Markdown paste submission
+  // Upload submission — file already in storage
+  // Markdown paste submission — may need storage upload for paid skills
   const slug = generateSlug(data.name)
   const content = data.content || ''
   const platforms = detectPlatformsSimple(data.artifactType, data.formatStandard)
@@ -193,6 +236,12 @@ export async function createSubmission(userId: string, data: CreateSubmissionDat
 
   const finalSlug = existing ? `${slug}-${Date.now().toString(36)}` : slug
 
+  // Determine source_file_path
+  let sourceFilePath: string | null = null
+  if (data.sourceType === 'upload' && data.sourceFilePath) {
+    sourceFilePath = data.sourceFilePath
+  }
+
   const record = {
     slug: finalSlug,
     name: data.name,
@@ -214,6 +263,8 @@ export async function createSubmission(userId: string, data: CreateSubmissionDat
     mdskills_upvotes: 0,
     mdskills_forks: 0,
     ...permissions,
+    ...paidFields,
+    source_file_path: sourceFilePath,
   }
 
   const { data: inserted, error } = await supabase
@@ -224,6 +275,22 @@ export async function createSubmission(userId: string, data: CreateSubmissionDat
 
   if (error) {
     return { success: false, error: `Database error: ${error.message}` }
+  }
+
+  // For paid markdown submissions, upload content to storage
+  if (data.isPaid && data.sourceType === 'markdown' && content && inserted?.id) {
+    try {
+      const { uploadMarkdownToStorage } = await import('@/lib/storage')
+      const storageResult = await uploadMarkdownToStorage(userId, inserted.id, content)
+      if ('path' in storageResult) {
+        await supabase
+          .from('skills')
+          .update({ source_file_path: storageResult.path })
+          .eq('id', inserted.id)
+      }
+    } catch (err: any) {
+      console.warn('Markdown storage upload failed:', err.message)
+    }
   }
 
   return { success: true, id: inserted.id, slug: inserted.slug }

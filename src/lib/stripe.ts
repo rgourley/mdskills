@@ -110,6 +110,62 @@ export async function createCheckoutSession(
   }
 }
 
+// ── Purchase checkout (paid skill downloads) ────────────────────
+
+const PLATFORM_FEE_PERCENT = 15
+
+export async function createPurchaseCheckoutSession(
+  skillId: string,
+  skillName: string,
+  skillSlug: string,
+  buyerUserId: string,
+  priceAmountCents: number,
+  priceCurrency: string = 'usd'
+): Promise<{ url: string } | { error: string }> {
+  const stripe = getStripeClient()
+  if (!stripe) return { error: 'Stripe not configured' }
+
+  const baseUrl = getBaseUrl()
+  const platformFeeCents = Math.round(priceAmountCents * PLATFORM_FEE_PERCENT / 100)
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: priceCurrency,
+            product_data: {
+              name: skillName,
+              description: `One-time purchase — download access to "${skillName}"`,
+            },
+            unit_amount: priceAmountCents,
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        type: 'skill_purchase',
+        skillId,
+        skillSlug,
+        buyerUserId,
+        platformFeeCents: String(platformFeeCents),
+        amountCents: String(priceAmountCents),
+      },
+      success_url: `${baseUrl}/skills/${skillSlug}?purchased=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/skills/${skillSlug}`,
+      client_reference_id: buyerUserId,
+    })
+
+    if (!session.url) return { error: 'Failed to create checkout session' }
+    return { url: session.url }
+  } catch (err: any) {
+    console.error('Stripe purchase checkout error:', err.message)
+    return { error: err.message || 'Stripe error' }
+  }
+}
+
 // ── Webhook handler ──────────────────────────────────────────────
 
 export async function handleWebhookEvent(event: Stripe.Event): Promise<{ ok: boolean; error?: string }> {
@@ -119,8 +175,41 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<{ ok: boo
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
-      const { skillId, userId, tier } = session.metadata || {}
+      const metadata = session.metadata || {}
 
+      // ── Skill purchase checkout ──
+      if (metadata.type === 'skill_purchase') {
+        const { skillId, buyerUserId, platformFeeCents, amountCents } = metadata
+        if (!skillId || !buyerUserId) {
+          return { ok: false, error: 'Missing metadata on purchase session' }
+        }
+
+        // Upsert purchase record
+        const { error: purchaseError } = await supabase
+          .from('purchases')
+          .upsert(
+            {
+              user_id: buyerUserId,
+              skill_id: skillId,
+              amount: parseInt(amountCents || '0', 10),
+              currency: 'usd',
+              platform_fee: parseInt(platformFeeCents || '0', 10),
+              stripe_session_id: session.id,
+              stripe_payment_intent_id: typeof session.payment_intent === 'string'
+                ? session.payment_intent
+                : session.payment_intent?.id || null,
+            },
+            { onConflict: 'user_id,skill_id' }
+          )
+
+        if (purchaseError) {
+          return { ok: false, error: `Purchase record error: ${purchaseError.message}` }
+        }
+        return { ok: true }
+      }
+
+      // ── Review tier checkout (existing logic) ──
+      const { skillId, userId, tier } = metadata
       if (!skillId || !tier) {
         return { ok: false, error: 'Missing metadata on checkout session' }
       }

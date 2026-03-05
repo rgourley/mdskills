@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createApiClient } from '@/lib/supabase/api'
-import { getSkillBySlug, getSkillPath } from '@/lib/skills'
+import { createClient } from '@/lib/supabase/server'
+import { getSkillBySlug, getSkillBySlugWithAccess, getSkillPath } from '@/lib/skills'
 import { getSkillClients } from '@/lib/clients'
-import { Star, Info } from 'lucide-react'
+import { Star, Info, ShieldCheck } from 'lucide-react'
 import { SkillJsonLd, SkillFaqJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
 import { SkillDetailTabs, type TabId } from '@/components/SkillDetailTabs'
 import { SkillOverviewTab } from '@/components/SkillOverviewTab'
@@ -109,7 +110,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function SkillDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params
   const { tab } = await searchParams
-  const skill = await getSkillBySlug(slug)
+
+  // Get current user for purchase/creator checks
+  let userId: string | undefined
+  try {
+    const supabase = await createClient()
+    if (supabase) {
+      const { data: { user } } = await supabase.auth.getUser()
+      userId = user?.id
+    }
+  } catch {}
+
+  const { skill, isPurchased, isCreator } = await getSkillBySlugWithAccess(slug, userId)
   if (!skill) notFound()
 
   const [installCommand, skillClients] = [
@@ -144,6 +156,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         reviewScore={skill.reviewQualityScore}
         reviewSummary={skill.reviewSummary}
         reviewDate={skill.reviewGeneratedAt}
+        isPaid={skill.isPaid}
+        priceAmount={skill.priceAmount}
+        priceCurrency={skill.priceCurrency}
       />
       <SkillFaqJsonLd
         name={skill.name}
@@ -165,7 +180,15 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
         {/* Header */}
         <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">{skill.name}</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">{skill.name}</h1>
+              {skill.reviewQualityScore != null && skill.reviewQualityScore >= 7 && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold">
+                  <ShieldCheck className="w-5 h-5" />
+                  Verified
+                </span>
+              )}
+            </div>
             <SkillBadges skill={skill} />
             <p className="mt-2 text-neutral-600">{skill.description}</p>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-neutral-500">
@@ -184,22 +207,27 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         </div>
 
         {/* Action buttons */}
-        <SkillActions installCommand={installCommand} skill={skill} />
+        <SkillActions installCommand={installCommand} skill={skill} isPurchased={isPurchased} isCreator={isCreator} />
 
         {/* Skill Advisor */}
         {skill.reviewQualityScore != null && (
           <div className="mt-6 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
             <div className="flex items-center gap-2.5 mb-2">
               <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Skill Advisor</span>
-              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                skill.reviewQualityScore >= 7
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : skill.reviewQualityScore >= 4
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-red-100 text-red-700'
-              }`}>
-                {skill.reviewQualityScore}
-              </span>
+              {skill.reviewQualityScore >= 7 ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold">
+                  <ShieldCheck className="w-4 h-4" />
+                  {skill.reviewQualityScore.toFixed(1)}
+                </span>
+              ) : (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium ${
+                  skill.reviewQualityScore >= 4
+                    ? 'bg-amber-50 text-amber-700'
+                    : 'bg-red-50 text-red-700'
+                }`}>
+                  {skill.reviewQualityScore.toFixed(1)}
+                </span>
+              )}
               <Link href="/docs/skill-advisor" className="ml-auto text-neutral-400 hover:text-neutral-600 transition-colors" title="How we review skills">
                 <Info className="w-3.5 h-3.5" />
               </Link>
@@ -244,11 +272,16 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 <SkillSourceCode
                   content={skill.skillContent ?? ''}
                   filename="SKILL.md"
-                  editHref={`/create?fork=${skill.slug}`}
+                  editHref={!skill.isPaid ? `/create?fork=${skill.slug}` : undefined}
+                  isPaid={skill.isPaid}
+                  isLocked={skill.isPaid && !isPurchased && !isCreator}
+                  priceAmount={skill.priceAmount}
                 />
-                <p className="text-sm text-neutral-500">
-                  Full transparency — inspect the skill content before installing.
-                </p>
+                {!skill.isPaid && (
+                  <p className="text-sm text-neutral-500">
+                    Full transparency — inspect the skill content before installing.
+                  </p>
+                )}
               </div>
             )}
             {activeTab === 'installation' && (

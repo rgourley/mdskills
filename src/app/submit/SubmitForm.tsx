@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import {
   Package, Server, Shield, Puzzle, Wrench, FileCode,
   ArrowLeft, ArrowRight, Loader2, Check, Github, FileText,
-  Zap, Crown, Clock, CreditCard,
+  Zap, Crown, Clock, CreditCard, Upload, DollarSign,
+  ShieldCheck, AlertTriangle, XCircle, RefreshCw,
 } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────
@@ -16,7 +17,7 @@ interface Category {
 }
 
 type ArtifactType = 'skill_pack' | 'mcp_server' | 'ruleset' | 'plugin' | 'extension' | 'tool'
-type SourceType = 'github' | 'markdown'
+type SourceType = 'github' | 'markdown' | 'upload'
 type ReviewTier = 'standard' | 'priority' | 'featured'
 
 const ARTIFACT_TYPES: { type: ArtifactType; name: string; description: string; icon: React.ElementType; allowMarkdown: boolean }[] = [
@@ -117,6 +118,15 @@ interface LivePrices {
   featured: { amount: number } | null
 }
 
+const PRICE_SUGGESTIONS: Record<string, { min: number; max: number }> = {
+  skill_pack: { min: 5, max: 29 },
+  ruleset: { min: 5, max: 29 },
+  mcp_server: { min: 19, max: 99 },
+  plugin: { min: 19, max: 99 },
+  extension: { min: 9, max: 49 },
+  tool: { min: 9, max: 49 },
+}
+
 // ── GA helper ──────────────────────────────────────────────────
 
 function trackEvent(name: string, params?: Record<string, any>) {
@@ -146,6 +156,27 @@ export function SubmitForm() {
   const [reviewTier, setReviewTier] = useState<ReviewTier>('standard')
   const [livePrices, setLivePrices] = useState<LivePrices | null>(null)
 
+  // Paid skill state
+  const [isPaidSkill, setIsPaidSkill] = useState(false)
+  const [skillPrice, setSkillPrice] = useState('')        // dollars for display
+  const [uploadedFilePath, setUploadedFilePath] = useState('')
+  const [uploadedFileName, setUploadedFileName] = useState('')
+  const [uploadProgress, setUploadProgress] = useState(false)
+
+  // Review gate state
+  const [reviewing, setReviewing] = useState(false)
+  const [reviewResult, setReviewResult] = useState<{
+    passed: boolean
+    score: number | null
+    summary?: string
+    strengths?: string[]
+    weaknesses?: string[]
+    message?: string
+    attempt: number
+    maxAttempts: number
+  } | null>(null)
+  const [reviewAttempt, setReviewAttempt] = useState(1)
+
   const selectedArtifact = ARTIFACT_TYPES.find((a) => a.type === artifactType)
 
   // Fetch categories + live Stripe prices on mount
@@ -172,13 +203,105 @@ export function SubmitForm() {
   const canGoToStep2 = !!artifactType
   const canGoToStep3 = sourceType === 'github'
     ? githubUrl.trim().length > 5
-    : markdownContent.trim().length > 20
+    : sourceType === 'upload'
+      ? !!uploadedFilePath
+      : markdownContent.trim().length > 20
+
+  const canPassPricing = !isPaidSkill || (parseFloat(skillPrice) >= 1 && parseFloat(skillPrice) <= 999)
 
   const canSubmit = sourceType === 'github'
     ? githubUrl.trim().length > 5
-    : name.trim().length >= 3 && markdownContent.trim().length > 20
+    : sourceType === 'upload'
+      ? !!uploadedFilePath
+      : name.trim().length >= 3 && markdownContent.trim().length > 20
 
-  const isPaid = reviewTier !== 'standard'
+  const isTierPaid = reviewTier !== 'standard'
+  const skillPriceCents = isPaidSkill ? Math.round(parseFloat(skillPrice || '0') * 100) : 0
+  const creatorEarnings = isPaidSkill ? (parseFloat(skillPrice || '0') * 0.85).toFixed(2) : '0'
+
+  // ── Client-side content pre-checks (free, no API tokens) ────
+
+  const getContentPreCheckErrors = (): string[] => {
+    const errors: string[] = []
+    if (sourceType === 'github') return errors // GitHub content is fetched server-side
+    if (sourceType === 'upload') return errors // Can't inspect uploaded files client-side
+
+    const content = markdownContent.trim()
+    if (content.length < 100) {
+      errors.push('Content is too short (minimum 100 characters). Add more detail to your instructions.')
+    }
+    if (content.length > 0 && content.length < 300 && !content.includes('#')) {
+      errors.push('Add at least one heading (# Section) to structure your content.')
+    }
+    if (content.length > 0 && !content.includes('\n')) {
+      errors.push('Content appears to be a single line. Break it into sections with headings and bullet points.')
+    }
+    // Check for just a URL pasted
+    if (/^https?:\/\/\S+$/.test(content)) {
+      errors.push('Content cannot be just a URL. Paste the actual skill instructions or use the GitHub URL option.')
+    }
+    return errors
+  }
+
+  // ── Run Skill Advisor review ────────────────────────────────
+
+  const runReview = async (): Promise<boolean> => {
+    // Skip review for GitHub/upload — content is validated server-side during import
+    if (sourceType !== 'markdown') return true
+
+    // Client-side pre-checks first (free)
+    const preErrors = getContentPreCheckErrors()
+    if (preErrors.length > 0) {
+      setError(preErrors.join(' '))
+      return false
+    }
+
+    setReviewing(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: markdownContent,
+          artifactType,
+          formatStandard,
+          attempt: reviewAttempt,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Review failed')
+        setReviewing(false)
+        return false
+      }
+
+      setReviewResult(data)
+      setReviewing(false)
+
+      if (!data.passed) {
+        setReviewAttempt((a) => a + 1)
+        trackEvent('submit_review_rejected', {
+          score: data.score,
+          attempt: data.attempt,
+        })
+        return false
+      }
+
+      trackEvent('submit_review_passed', {
+        score: data.score,
+        attempt: data.attempt,
+      })
+      return true
+    } catch {
+      setError('Review service unavailable. Please try again.')
+      setReviewing(false)
+      return false
+    }
+  }
 
   // ── Step navigation with GA tracking ────────────────────────
 
@@ -190,13 +313,18 @@ export function SubmitForm() {
       if (step === 1) {
         trackEvent('submit_step_type', { artifact_type: artifactType })
       } else if (step === 2) {
-        trackEvent('submit_step_content', { source_type: sourceType })
+        trackEvent('submit_step_pricing', {
+          is_paid: isPaidSkill,
+          price: isPaidSkill ? skillPrice : '0',
+        })
       } else if (step === 3) {
+        trackEvent('submit_step_content', { source_type: sourceType })
+      } else if (step === 4) {
         trackEvent('submit_step_details', {
           has_category: !!categorySlug,
           has_format: !!formatStandard,
         })
-      } else if (step === 4) {
+      } else if (step === 5) {
         trackEvent('submit_step_tier', { tier: reviewTier })
       }
     }
@@ -210,10 +338,21 @@ export function SubmitForm() {
     setSubmitting(true)
     setError('')
 
+    // Run Skill Advisor review for markdown submissions (if not already passed)
+    if (sourceType === 'markdown' && (!reviewResult || !reviewResult.passed)) {
+      const passed = await runReview()
+      if (!passed) {
+        setSubmitting(false)
+        return
+      }
+    }
+
     trackEvent('submit_complete', {
       tier: reviewTier,
       artifact_type: artifactType,
       source_type: sourceType,
+      is_paid_skill: isPaidSkill,
+      skill_price: isPaidSkill ? skillPrice : '0',
     })
 
     try {
@@ -230,6 +369,9 @@ export function SubmitForm() {
           description: description.trim() || undefined,
           categorySlug: categorySlug || undefined,
           formatStandard: formatStandard || undefined,
+          isPaid: isPaidSkill,
+          priceAmount: isPaidSkill ? skillPriceCents : undefined,
+          sourceFilePath: uploadedFilePath || undefined,
         }),
       })
 
@@ -242,7 +384,7 @@ export function SubmitForm() {
       }
 
       // Step 2: If paid tier, redirect to Stripe Checkout
-      if (isPaid && data.id) {
+      if (isTierPaid && data.id) {
         const tierPrice = getLivePrice(reviewTier) ?? (reviewTier === 'priority' ? 19 : 49)
 
         trackEvent('submit_payment_start', {
@@ -347,6 +489,11 @@ export function SubmitForm() {
           )
         })}
       </div>
+
+      <p className="mt-5 text-xs text-neutral-400 flex items-center gap-1.5">
+        <DollarSign className="w-3.5 h-3.5" />
+        You can offer this for free or set a price in the next step.
+      </p>
     </div>
   )
 
@@ -356,24 +503,26 @@ export function SubmitForm() {
     <div>
       <h2 className="text-lg font-semibold text-neutral-900 mb-1">Add your content</h2>
       <p className="text-sm text-neutral-500 mb-6">
-        {selectedArtifact?.allowMarkdown
-          ? 'Choose how you want to provide your content.'
-          : 'Provide a GitHub URL to your repository.'}
+        {isPaidSkill
+          ? 'Upload the files buyers will receive after purchase.'
+          : selectedArtifact?.allowMarkdown
+            ? 'Choose how you want to provide your content.'
+            : 'Provide a GitHub URL to your repository.'}
       </p>
 
-      {/* Source type toggle (only for types that allow markdown) */}
-      {selectedArtifact?.allowMarkdown && (
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setSourceType('github')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              sourceType === 'github'
-                ? 'bg-neutral-900 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-            }`}
-          >
-            <Github className="w-4 h-4" /> GitHub URL
-          </button>
+      {/* Source type toggle */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button
+          onClick={() => setSourceType('github')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            sourceType === 'github'
+              ? 'bg-neutral-900 text-white'
+              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+          }`}
+        >
+          <Github className="w-4 h-4" /> GitHub URL
+        </button>
+        {selectedArtifact?.allowMarkdown && (
           <button
             onClick={() => setSourceType('markdown')}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -384,8 +533,18 @@ export function SubmitForm() {
           >
             <FileText className="w-4 h-4" /> Paste Markdown
           </button>
-        </div>
-      )}
+        )}
+        <button
+          onClick={() => setSourceType('upload')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            sourceType === 'upload'
+              ? 'bg-neutral-900 text-white'
+              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+          }`}
+        >
+          <Upload className="w-4 h-4" /> Upload Files
+        </button>
+      </div>
 
       {sourceType === 'github' ? (
         <div>
@@ -403,6 +562,84 @@ export function SubmitForm() {
             Supports full URLs, short form (owner/repo), and tree paths.
           </p>
         </div>
+      ) : sourceType === 'upload' ? (
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+            Upload File
+          </label>
+          {uploadedFilePath ? (
+            <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <Check className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="text-sm font-medium text-green-900">{uploadedFileName}</p>
+                  <p className="text-xs text-green-600">Uploaded successfully</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setUploadedFilePath(''); setUploadedFileName('') }}
+                className="text-xs text-neutral-500 hover:text-neutral-700"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <input
+                type="file"
+                accept=".zip,.md,.txt"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  setUploadProgress(true)
+                  setError('')
+                  try {
+                    const formData = new FormData()
+                    formData.append('file', file)
+                    const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                    const data = await res.json()
+                    if (!res.ok) {
+                      setError(data.error || 'Upload failed')
+                    } else {
+                      setUploadedFilePath(data.storagePath)
+                      setUploadedFileName(data.fileName)
+                    }
+                  } catch {
+                    setError('Upload failed. Please try again.')
+                  } finally {
+                    setUploadProgress(false)
+                  }
+                }}
+                disabled={uploadProgress}
+                className="hidden"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                  uploadProgress
+                    ? 'border-neutral-300 bg-neutral-50'
+                    : 'border-neutral-300 hover:border-neutral-400 bg-white'
+                }`}
+              >
+                {uploadProgress ? (
+                  <Loader2 className="w-8 h-8 text-neutral-400 animate-spin mb-2" />
+                ) : (
+                  <Upload className="w-8 h-8 text-neutral-400 mb-2" />
+                )}
+                <p className="text-sm font-medium text-neutral-700">
+                  {uploadProgress ? 'Uploading...' : 'Click to upload'}
+                </p>
+                <p className="text-xs text-neutral-400 mt-1">
+                  .zip, .md, or .txt — max 50MB
+                </p>
+              </label>
+            </div>
+          )}
+          <p className="mt-1.5 text-xs text-neutral-400">
+            Upload a zip of your project or a single markdown file.
+          </p>
+        </div>
       ) : (
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1.5">
@@ -410,7 +647,7 @@ export function SubmitForm() {
           </label>
           <textarea
             value={markdownContent}
-            onChange={(e) => setMarkdownContent(e.target.value)}
+            onChange={(e) => { setMarkdownContent(e.target.value); setReviewResult(null) }}
             placeholder={`---\nname: My Skill\ndescription: A brief description\n---\n\n# Instructions\n\nYour skill instructions here...`}
             rows={14}
             className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent font-mono text-sm resize-y"
@@ -492,9 +729,109 @@ export function SubmitForm() {
     </div>
   )
 
-  // ── Step 4: Choose Review Tier ────────────────────────────────
+  // ── Step 4: Pricing ─────────────────────────────────────────
+
+  const priceSuggestion = PRICE_SUGGESTIONS[artifactType || ''] || { min: 5, max: 49 }
 
   const renderStep4 = () => (
+    <div>
+      <h2 className="text-lg font-semibold text-neutral-900 mb-1">Pricing</h2>
+      <p className="text-sm text-neutral-500 mb-6">
+        Choose whether to offer this for free or charge for access.
+      </p>
+
+      <div className="grid sm:grid-cols-2 gap-3 mb-6">
+        <button
+          onClick={() => setIsPaidSkill(false)}
+          className={`p-5 rounded-xl border text-left transition-all ${
+            !isPaidSkill
+              ? 'border-neutral-900 bg-white ring-1 ring-neutral-900'
+              : 'border-neutral-200 bg-white hover:border-neutral-300'
+          }`}
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+              !isPaidSkill ? 'bg-green-100' : 'bg-neutral-100'
+            }`}>
+              <Check className={`w-4.5 h-4.5 ${!isPaidSkill ? 'text-green-600' : 'text-neutral-500'}`} />
+            </div>
+            <span className="font-semibold text-neutral-900">Free</span>
+          </div>
+          <p className="text-xs text-neutral-500">
+            Anyone can download and use your skill. Great for building reputation.
+          </p>
+        </button>
+
+        <button
+          onClick={() => setIsPaidSkill(true)}
+          className={`p-5 rounded-xl border text-left transition-all ${
+            isPaidSkill
+              ? 'border-green-500 bg-white ring-1 ring-green-500'
+              : 'border-neutral-200 bg-white hover:border-neutral-300'
+          }`}
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+              isPaidSkill ? 'bg-green-100' : 'bg-neutral-100'
+            }`}>
+              <DollarSign className={`w-4.5 h-4.5 ${isPaidSkill ? 'text-green-600' : 'text-neutral-500'}`} />
+            </div>
+            <span className="font-semibold text-neutral-900">Paid</span>
+          </div>
+          <p className="text-xs text-neutral-500">
+            Charge for access. You set the price, we handle payments.
+          </p>
+        </button>
+      </div>
+
+      {isPaidSkill && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Price (USD)
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">$</span>
+              <input
+                type="number"
+                min="1"
+                max="999"
+                step="1"
+                value={skillPrice}
+                onChange={(e) => setSkillPrice(e.target.value)}
+                placeholder={`${priceSuggestion.min}`}
+                className="w-full pl-7 pr-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-neutral-400">
+              Suggested range for {selectedArtifact?.name || 'this type'}: ${priceSuggestion.min}–${priceSuggestion.max}
+            </p>
+          </div>
+
+          {skillPrice && parseFloat(skillPrice) >= 1 && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-neutral-600">Buyer pays</span>
+                <span className="font-semibold text-neutral-900">${parseFloat(skillPrice).toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-1">
+                <span className="text-neutral-600">Platform fee (15%)</span>
+                <span className="text-neutral-500">-${(parseFloat(skillPrice) * 0.15).toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-1 pt-2 border-t border-green-200">
+                <span className="font-medium text-green-800">You receive</span>
+                <span className="font-bold text-green-800">${creatorEarnings}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+
+  // ── Step 5: Choose Review Tier ────────────────────────────────
+
+  const renderStep5 = () => (
     <div>
       <h2 className="text-lg font-semibold text-neutral-900 mb-1">Choose your review speed</h2>
       <p className="text-sm text-neutral-500 mb-6">
@@ -612,15 +949,15 @@ export function SubmitForm() {
     </div>
   )
 
-  // ── Step 5: Review & Submit ──────────────────────────────────
+  // ── Step 6: Review & Submit ──────────────────────────────────
 
   const tierConfig = REVIEW_TIERS.find((t) => t.tier === reviewTier)!
 
-  const renderStep5 = () => (
+  const renderStep6 = () => (
     <div>
       <h2 className="text-lg font-semibold text-neutral-900 mb-1">Review & Submit</h2>
       <p className="text-sm text-neutral-500 mb-6">
-        {isPaid
+        {isTierPaid
           ? 'Review your submission, then proceed to payment.'
           : 'Review your submission before sending it for review.'}
       </p>
@@ -633,7 +970,7 @@ export function SubmitForm() {
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-neutral-500 uppercase">Source</span>
           <span className="text-sm text-neutral-700">
-            {sourceType === 'github' ? githubUrl : 'Markdown paste'}
+            {sourceType === 'github' ? githubUrl : sourceType === 'upload' ? uploadedFileName || 'File upload' : 'Markdown paste'}
           </span>
         </div>
         {name && (
@@ -659,6 +996,12 @@ export function SubmitForm() {
           </div>
         )}
         <div className="flex items-center justify-between pt-2 border-t border-neutral-200">
+          <span className="text-xs font-medium text-neutral-500 uppercase">Pricing</span>
+          <span className="text-sm font-medium text-neutral-700">
+            {isPaidSkill ? `$${parseFloat(skillPrice).toFixed(2)} (you receive $${creatorEarnings})` : 'Free'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-neutral-500 uppercase">Review Tier</span>
           <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${
             reviewTier === 'featured'
@@ -684,26 +1027,103 @@ export function SubmitForm() {
         </div>
       </div>
 
-      <div className={`mt-6 p-4 rounded-lg border ${
-        isPaid
-          ? 'bg-blue-50 border-blue-200'
-          : 'bg-amber-50 border-amber-200'
-      }`}>
-        <p className={`text-sm ${isPaid ? 'text-blue-800' : 'text-amber-800'}`}>
-          {isPaid ? (
-            <>
-              <strong>What happens next?</strong> Your listing will be created and you&apos;ll be redirected to
-              a secure Stripe checkout. After payment, your submission will automatically be queued for{' '}
-              {tierConfig.reviewSla.toLowerCase()} review.
-            </>
-          ) : (
-            <>
-              <strong>What happens next?</strong> Your listing will be created as a draft and automatically submitted for review.
-              An admin will review it and either approve or request changes. Standard reviews take up to 4 weeks.
-            </>
+      {/* Review result feedback */}
+      {reviewResult && (
+        <div className={`mt-6 p-5 rounded-xl border ${
+          reviewResult.passed
+            ? 'bg-emerald-50 border-emerald-200'
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center gap-2.5 mb-3">
+            {reviewResult.passed ? (
+              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+            ) : (
+              <XCircle className="w-5 h-5 text-red-600" />
+            )}
+            <span className={`text-sm font-semibold ${
+              reviewResult.passed ? 'text-emerald-800' : 'text-red-800'
+            }`}>
+              {reviewResult.passed
+                ? `Quality check passed — ${reviewResult.score?.toFixed(1)}/10`
+                : `Quality check failed — ${reviewResult.score?.toFixed(1)}/10 (minimum ${4.0.toFixed(1)} required)`
+              }
+            </span>
+          </div>
+
+          {reviewResult.summary && (
+            <p className={`text-sm mb-3 ${reviewResult.passed ? 'text-emerald-700' : 'text-red-700'}`}>
+              {reviewResult.summary}
+            </p>
           )}
-        </p>
-      </div>
+
+          {((reviewResult.strengths && reviewResult.strengths.length > 0) || (reviewResult.weaknesses && reviewResult.weaknesses.length > 0)) && (
+            <ul className="space-y-1.5 mb-3">
+              {reviewResult.strengths?.map((s, i) => (
+                <li key={i} className="flex items-start gap-1.5 text-sm text-emerald-700">
+                  <span className="font-medium mt-0.5 shrink-0">+</span> {s}
+                </li>
+              ))}
+              {reviewResult.weaknesses?.map((w, i) => (
+                <li key={`w${i}`} className="flex items-start gap-1.5 text-sm text-red-700">
+                  <span className="font-medium mt-0.5 shrink-0">-</span> {w}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {!reviewResult.passed && (
+            <div className="pt-3 border-t border-red-200">
+              <p className="text-xs text-red-600 mb-3">
+                Attempt {reviewResult.attempt} of {reviewResult.maxAttempts}. Go back to the Content step, improve your skill based on the feedback above, then re-submit.
+              </p>
+              <button
+                onClick={() => {
+                  setReviewResult(null)
+                  setError('')
+                  goToStep(3) // back to content step
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" /> Edit Content & Try Again
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Reviewing spinner */}
+      {reviewing && (
+        <div className="mt-6 p-5 rounded-xl border bg-blue-50 border-blue-200 flex items-center gap-3">
+          <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+          <div>
+            <p className="text-sm font-medium text-blue-800">Running quality check...</p>
+            <p className="text-xs text-blue-600">The Skill Advisor is reviewing your content. This takes a few seconds.</p>
+          </div>
+        </div>
+      )}
+
+      {!reviewResult && !reviewing && (
+        <div className={`mt-6 p-4 rounded-lg border ${
+          isTierPaid
+            ? 'bg-blue-50 border-blue-200'
+            : 'bg-amber-50 border-amber-200'
+        }`}>
+          <p className={`text-sm ${isTierPaid ? 'text-blue-800' : 'text-amber-800'}`}>
+            {isTierPaid ? (
+              <>
+                <strong>What happens next?</strong> Your content will be quality-checked by the Skill Advisor, then
+                you&apos;ll be redirected to a secure Stripe checkout. After payment, your submission will be queued for{' '}
+                {tierConfig.reviewSla.toLowerCase()} review.
+              </>
+            ) : (
+              <>
+                <strong>What happens next?</strong> Your content will be quality-checked by the Skill Advisor.
+                If it passes (score 4.0+), it will be submitted for admin review. Skills scoring 7.0+ get the Verified badge.
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {error && (
         <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200">
@@ -717,10 +1137,11 @@ export function SubmitForm() {
 
   const steps = [
     { num: 1, label: 'Type' },
-    { num: 2, label: 'Content' },
-    { num: 3, label: 'Details' },
-    { num: 4, label: 'Tier' },
-    { num: 5, label: 'Submit' },
+    { num: 2, label: 'Pricing' },
+    { num: 3, label: 'Content' },
+    { num: 4, label: 'Details' },
+    { num: 5, label: 'Tier' },
+    { num: 6, label: 'Submit' },
   ]
 
   return (
@@ -749,10 +1170,11 @@ export function SubmitForm() {
       {/* Step content */}
       <div className="bg-white border border-neutral-200 rounded-xl p-6">
         {step === 1 && renderStep1()}
-        {step === 2 && renderStep2()}
-        {step === 3 && renderStep3()}
-        {step === 4 && renderStep4()}
+        {step === 2 && renderStep4()}
+        {step === 3 && renderStep2()}
+        {step === 4 && renderStep3()}
         {step === 5 && renderStep5()}
+        {step === 6 && renderStep6()}
       </div>
 
       {/* Navigation */}
@@ -765,12 +1187,13 @@ export function SubmitForm() {
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
-        {step < 5 ? (
+        {step < 6 ? (
           <button
             onClick={() => goToStep(step + 1)}
             disabled={
               (step === 1 && !canGoToStep2) ||
-              (step === 2 && !canGoToStep3)
+              (step === 2 && !canPassPricing) ||
+              (step === 3 && !canGoToStep3)
             }
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
@@ -781,16 +1204,16 @@ export function SubmitForm() {
             onClick={handleSubmit}
             disabled={submitting || !canSubmit}
             className={`inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              isPaid
+              isTierPaid
                 ? 'bg-blue-600 hover:bg-blue-700'
                 : 'bg-neutral-900 hover:bg-neutral-800'
             }`}
           >
             {submitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> {isPaid ? 'Processing...' : 'Submitting...'}
+                <Loader2 className="w-4 h-4 animate-spin" /> {isTierPaid ? 'Processing...' : 'Submitting...'}
               </>
-            ) : isPaid ? (
+            ) : isTierPaid ? (
               <>
                 <CreditCard className="w-4 h-4" /> Pay & Submit — {(() => {
                   const live = getLivePrice(reviewTier)

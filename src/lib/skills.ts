@@ -47,6 +47,11 @@ export interface Skill {
   reviewWeaknesses?: string[]
   reviewQualityScore?: number
   reviewGeneratedAt?: string
+  /** Paid skill fields */
+  isPaid?: boolean
+  priceAmount?: number   // cents
+  priceCurrency?: string
+  sourceFilePath?: string
 }
 
 /** DB row shape (snake_case) */
@@ -89,13 +94,17 @@ interface SkillRow {
   review_weaknesses?: string[] | null
   review_quality_score?: number | null
   review_generated_at?: string | null
+  is_paid?: boolean | null
+  price_amount?: number | null
+  price_currency?: string | null
+  source_file_path?: string | null
 }
 
 /** Select columns used in detail queries (includes large text fields) */
-const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, review_summary, review_strengths, review_weaknesses, review_quality_score, review_generated_at, categories(slug, name)'
+const SKILL_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, content, readme, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, perm_filesystem_read, perm_filesystem_write, perm_shell_exec, perm_network_access, perm_git_write, format_standard, review_summary, review_strengths, review_weaknesses, review_quality_score, review_generated_at, is_paid, price_amount, price_currency, source_file_path, submitted_by, categories(slug, name)'
 
 /** Lightweight select for list/card views (excludes content & readme) */
-const LIST_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, format_standard, review_quality_score, categories(slug, name)'
+const LIST_SELECT = 'id, slug, name, description, owner, repo, skill_path, github_url, weekly_installs, tags, platforms, created_at, updated_at, mdskills_upvotes, mdskills_forks, skill_type, has_plugin, has_examples, difficulty, github_stars, github_forks, license, artifact_type, format_standard, review_quality_score, is_paid, price_amount, price_currency, categories(slug, name)'
 
 function mapRow(row: SkillRow, commentsCount?: number): Skill {
   // categories comes back as an array from Supabase joins — normalize to single object
@@ -141,6 +150,10 @@ function mapRow(row: SkillRow, commentsCount?: number): Skill {
     reviewWeaknesses: row.review_weaknesses ?? undefined,
     reviewQualityScore: row.review_quality_score ?? undefined,
     reviewGeneratedAt: row.review_generated_at ?? undefined,
+    isPaid: row.is_paid ?? undefined,
+    priceAmount: row.price_amount ?? undefined,
+    priceCurrency: row.price_currency ?? undefined,
+    sourceFilePath: row.source_file_path ?? undefined,
   }
 }
 
@@ -454,6 +467,21 @@ export async function getArtifactTypesWithListings(minCount = 2): Promise<{ slug
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
+/** Check if a user has purchased a specific skill */
+export async function hasUserPurchased(userId: string, skillId: string): Promise<boolean> {
+  const supabase = await createClient()
+  if (!supabase) return false
+
+  const { data } = await supabase
+    .from('purchases')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('skill_id', skillId)
+    .single()
+
+  return !!data
+}
+
 export async function getSkillBySlug(slug: string): Promise<Skill | null> {
   const supabase = await createClient()
   if (!supabase) return null
@@ -479,4 +507,46 @@ export async function getSkillBySlug(slug: string): Promise<Skill | null> {
     skill.skillContent = `# ${skill.name}\n\n## Description\n${skill.description}\n\n## When to Use This Skill\n\nUse this skill when the user needs help with tasks related to this domain.\n\n## Instructions\n\nAdd your instructions here.`
   }
   return skill
+}
+
+/** Get skill by slug with content gating for paid skills */
+export async function getSkillBySlugWithAccess(
+  slug: string,
+  userId?: string
+): Promise<{ skill: Skill | null; isPurchased: boolean; isCreator: boolean }> {
+  const skill = await getSkillBySlug(slug)
+  if (!skill) return { skill: null, isPurchased: false, isCreator: false }
+
+  // Free skills — no gating needed
+  if (!skill.isPaid) {
+    return { skill, isPurchased: false, isCreator: false }
+  }
+
+  // Check if user is creator
+  const supabase = await createClient()
+  let isCreator = false
+  let isPurchased = false
+
+  if (userId && supabase) {
+    // Check creator status from the raw row (submitted_by)
+    const { data: row } = await supabase
+      .from('skills')
+      .select('submitted_by')
+      .eq('id', skill.id)
+      .single()
+
+    isCreator = row?.submitted_by === userId
+
+    if (!isCreator) {
+      isPurchased = await hasUserPurchased(userId, skill.id)
+    }
+  }
+
+  // If not creator and not purchased, strip content for paid skills
+  if (!isCreator && !isPurchased) {
+    skill.skillContent = undefined
+    skill.sourceFilePath = undefined
+  }
+
+  return { skill, isPurchased, isCreator }
 }
