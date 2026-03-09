@@ -64,7 +64,7 @@ supabase/           # Database migrations
 
 ### Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
+- **Framework:** Next.js 14 (App Router)
 - **Database:** Supabase (PostgreSQL + Auth)
 - **Styling:** Tailwind CSS
 - **i18n:** next-intl (5 locales)
