@@ -1,0 +1,45 @@
+name: Translation Improvement
+description: Report a bad translation or offer to help translate
+labels: ["translation", "good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve translations! You can report a bad translation or volunteer to help with a language.
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Chinese (zh)
+        - French (fr)
+        - German (de)
+        - Korean (ko)
+        - New language (specify below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: What kind of help?
+      options:
+        - Fix incorrect/awkward translation
+        - Add missing translations
+        - Volunteer to maintain a language
+        - Add a new language
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Which text is wrong? What should it say? Or which language do you want to add?
+      placeholder: |
+        Page: /fr/docs/install-skills
+        Current text: "..."
+        Should be: "..."
+    validations:
+      required: true

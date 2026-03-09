@@ -1,31 +1,23 @@
-# mdskills
+# mdskills.ai
 
-Find, browse, and install AI agent skills from the command line.
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![CI](https://github.com/rgourley/mdskills/actions/workflows/ci.yml/badge.svg)](https://github.com/rgourley/mdskills/actions/workflows/ci.yml)
 
-```
-npx mdskills
-```
+The open marketplace for AI agent skills. Browse, install, and share SKILL.md files for Claude Code, Cursor, VS Code Copilot, Codex, and Gemini CLI.
 
-## Quick Start
+**Website:** [mdskills.ai](https://www.mdskills.ai)
+
+## CLI
 
 ```bash
-# Interactive mode
-npx mdskills
-
-# Search for skills
-npx mdskills search "code review"
-
-# Browse popular skills
-npx mdskills list
-
-# Get skill details
-npx mdskills info memory-mcp-1file
-
-# Install a skill
-npx mdskills install anthropics/pdf
+npx mdskills                          # Interactive mode
+npx mdskills search "code review"     # Search skills
+npx mdskills list                     # Browse popular skills
+npx mdskills install anthropics/pdf   # Install a skill
+npx mdskills init                     # Scaffold a new SKILL.md
 ```
 
-## Commands
+### Commands
 
 | Command | Description |
 |---------|-------------|
@@ -37,58 +29,82 @@ npx mdskills install anthropics/pdf
 | `mdskills install <slug>` | Install a skill |
 | `mdskills init` | Scaffold a new SKILL.md |
 
-## List Options
+### Options
 
 ```bash
 mdskills list --category coding      # Filter by category
 mdskills list --sort trending        # Sort: popular, trending, recent
 mdskills list --type mcp_server      # Filter by type
 mdskills list --featured             # Featured skills only
-mdskills list --limit 10             # Limit results
+mdskills list --json                 # Machine-readable output
 ```
 
-## Install
-
-Skills are installed to format-appropriate locations:
-
-| Type | Location |
-|------|----------|
-| Skill packs | `.claude/skills/<slug>/SKILL.md` |
-| Rulesets | Format-specific (`.cursorrules`, `CLAUDE.md`, etc.) |
-| MCP servers | Prints install commands per platform |
+## Development Setup
 
 ```bash
-mdskills install anthropics/pdf          # Interactive confirmation
-mdskills install anthropics/pdf -y       # Skip confirmation
+git clone https://github.com/rgourley/mdskills.git
+cd mdskills
+npm install
+cp .env.example .env                  # Add your Supabase credentials
+npm run dev                           # Start dev server
 ```
 
-## Scripting
+### Project Structure
 
-All read commands support `--json` for machine-readable output:
-
-```bash
-mdskills search pdf --json
-mdskills list --json | jq '.skills[].name'
-mdskills info memory-mcp-1file --json
-mdskills categories --json
+```
+src/
+  app/[locale]/     # Pages with locale-aware routing (next-intl)
+  components/       # Shared React components
+  i18n/             # Internationalization config
+  lib/              # Utilities, DB queries, helpers
+messages/           # Translation files (en, zh, fr, de, ko)
+scripts/            # Data import and maintenance scripts
+supabase/           # Database migrations
 ```
 
-Disable colors with `--no-color` or the `NO_COLOR` environment variable.
+### Tech Stack
 
-## Create a Skill
+- **Framework:** Next.js 15 (App Router)
+- **Database:** Supabase (PostgreSQL + Auth)
+- **Styling:** Tailwind CSS
+- **i18n:** next-intl (5 locales)
+- **Payments:** Stripe
+- **Hosting:** Vercel
 
-```bash
-mdskills init
-```
+## Internationalization
 
-This scaffolds a `SKILL.md` file with frontmatter and sections. Learn more about the format at [mdskills.ai/specs/skill-md](https://www.mdskills.ai/specs/skill-md).
+The site is available in 5 languages:
+
+| Language | Prefix | Example |
+|----------|--------|---------|
+| English | (none) | `/skills` |
+| Chinese | `/zh` | `/zh/skills` |
+| French | `/fr` | `/fr/skills` |
+| German | `/de` | `/de/skills` |
+| Korean | `/ko` | `/ko/skills` |
+
+Translation files are in `messages/`. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to help translate.
+
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+**We pay for high-quality contributions** — especially translations and significant features. Open an issue labeled `bounty` to discuss.
+
+### Quick Links
+
+- [Report a Bug](https://github.com/rgourley/mdskills/issues/new?template=bug_report.yml)
+- [Request a Feature](https://github.com/rgourley/mdskills/issues/new?template=feature_request.yml)
+- [Help Translate](https://github.com/rgourley/mdskills/issues/new?template=translation.yml)
+- [Security Policy](SECURITY.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## Links
 
 - Website: [mdskills.ai](https://www.mdskills.ai)
-- Specs: [mdskills.ai/specs](https://www.mdskills.ai/specs)
-- Issues: [github.com/rgourley/mdskills/issues](https://github.com/rgourley/mdskills/issues)
+- Specs: [SKILL.md Specification](https://www.mdskills.ai/specs/skill-md)
+- Docs: [mdskills.ai/docs](https://www.mdskills.ai/docs)
 
 ## License
 
-MIT
+[AGPL-3.0](LICENSE) — You can view, fork, and contribute freely. If you run a modified version as a service, you must open-source your changes.
