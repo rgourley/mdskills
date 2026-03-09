@@ -328,7 +328,7 @@ export async function getSkills(opts?: GetSkillsOptions): Promise<PaginatedSkill
   if (opts?.query?.trim()) {
     const safe = opts.query.trim().toLowerCase().replace(/,/g, ' ')
     const term = `%${safe}%`
-    q = q.or(`name.ilike.${term},description.ilike.${term}`)
+    q = q.or(`name.ilike.${term},description.ilike.${term},slug.ilike.${term}`)
   }
   if (opts?.tags?.length) {
     q = q.overlaps('tags', opts.tags)

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { Star, Server, Puzzle, Shield, Workflow, Wrench, Package } from 'lucide-react'
 import { getSkillPath } from '@/lib/skills'
 import type { Skill } from '@/lib/skills'

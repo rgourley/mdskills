@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { useState } from 'react'
 import { CopyButton } from '@/components/CopyButton'
 import { Download, Terminal, GitFork, Share2, ShoppingCart, Loader2 } from 'lucide-react'

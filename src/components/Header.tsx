@@ -1,19 +1,20 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { useState, useCallback, useTransition, useRef, useEffect } from 'react'
 import { Menu, X, Search } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { UserMenu } from './UserMenu'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 const NAV_LINKS = [
-  { label: 'Skills', href: '/skills', exact: true },
-  { label: 'MCP Servers', href: '/mcp-servers' },
-  { label: 'Rules', href: '/rules' },
-  { label: 'Plugins', href: '/plugins' },
-  { label: 'Tools', href: '/tools' },
-  { label: 'Use Cases', href: '/use-cases' },
-  { label: 'Docs', href: '/docs' },
+  { key: 'skills' as const, href: '/skills' as const, exact: true },
+  { key: 'mcpServers' as const, href: '/mcp-servers' as const },
+  { key: 'rules' as const, href: '/rules' as const },
+  { key: 'plugins' as const, href: '/plugins' as const },
+  { key: 'tools' as const, href: '/tools' as const },
+  { key: 'useCases' as const, href: '/use-cases' as const },
+  { key: 'docs' as const, href: '/docs' as const },
 ]
 
 /** Check if a nav link is active. Detail pages live under /skills/[slug] regardless of type,
@@ -24,6 +25,7 @@ function isNavActive(pathname: string, link: typeof NAV_LINKS[number]): boolean 
 }
 
 export function Header() {
+  const t = useTranslations('nav')
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -74,7 +76,7 @@ export function Header() {
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
               }`}
             >
-              {link.label}
+              {t(link.key)}
             </Link>
           ))}
         </nav>
@@ -87,6 +89,11 @@ export function Header() {
         >
           <Search className="w-4 h-4" />
         </button>
+
+        {/* Language switcher */}
+        <div className="hidden lg:block flex-shrink-0">
+          <LanguageSwitcher />
+        </div>
 
         {/* Desktop user menu */}
         <div className="hidden lg:block flex-shrink-0">
@@ -105,7 +112,7 @@ export function Header() {
           <button
             onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false) }}
             className="p-2 -mr-2 text-neutral-600 hover:text-neutral-900 transition-colors"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={menuOpen ? t('closeMenu') : t('openMenu')}
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -122,7 +129,7 @@ export function Header() {
                 ref={searchInputRef}
                 name="q"
                 type="search"
-                placeholder="Search skills, plugins, MCP servers..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full pl-9 pr-20 py-2 rounded-lg border border-neutral-200 bg-neutral-50 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent focus:bg-white transition-colors"
               />
               <button
@@ -150,11 +157,12 @@ export function Header() {
                   : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
               }`}
             >
-              {link.label}
+              {t(link.key)}
             </Link>
           ))}
-          <div className="pt-2 border-t border-neutral-100 mt-2">
+          <div className="pt-2 border-t border-neutral-100 mt-2 flex items-center justify-between">
             <UserMenu />
+            <LanguageSwitcher />
           </div>
         </nav>
       )}

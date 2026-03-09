@@ -4,8 +4,9 @@
     {
       "name": "dev",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["next", "dev", "-p", "3003"],
-      "port": 3003
+      "runtimeArgs": ["next", "dev"],
+      "port": 3003,
+      "autoPort": false
     }
   ]
 }

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   if (query) {
     const safe = sanitizeSearch(query)
     if (safe) {
-      q = q.or(`name.ilike.%${safe}%,description.ilike.%${safe}%`)
+      q = q.or(`name.ilike.%${safe}%,description.ilike.%${safe}%,slug.ilike.%${safe}%`)
     }
   }
 

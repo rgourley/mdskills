@@ -1,15 +1,11 @@
+const createNextIntlPlugin = require('next-intl/plugin')
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
-  async rewrites() {
-    // Type-specific detail routes all resolve to the shared /skills/[slug] page
-    return [
-      { source: '/tools/:slug', destination: '/skills/:slug' },
-      { source: '/plugins/:slug', destination: '/skills/:slug' },
-      { source: '/mcp-servers/:slug', destination: '/skills/:slug' },
-      { source: '/rules/:slug', destination: '/skills/:slug' },
-    ]
-  },
+  // Type-specific detail route rewrites (/mcp-servers/:slug → /skills/:slug)
+  // are handled in middleware.ts to work correctly with next-intl locale routing
   async headers() {
     return [
       {
@@ -31,4 +27,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withNextIntl(nextConfig)

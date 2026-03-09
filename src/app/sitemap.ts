@@ -1,122 +1,70 @@
 import type { MetadataRoute } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { locales, defaultLocale } from '@/i18n/config'
 
 const SITE_URL = 'https://www.mdskills.ai'
+
+function localizedUrl(path: string, locale: string): string {
+  return locale === defaultLocale
+    ? `${SITE_URL}${path}`
+    : `${SITE_URL}/${locale}${path}`
+}
+
+function alternates(path: string) {
+  return {
+    languages: Object.fromEntries([
+      ...locales.map(l => [l, localizedUrl(path, l)]),
+      ['x-default', `${SITE_URL}${path}`],
+    ]),
+  }
+}
+
+/** Generate one sitemap entry per locale for a given path */
+function localizedEntry(
+  path: string,
+  opts: { lastModified?: Date; changeFrequency?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'; priority?: number },
+): MetadataRoute.Sitemap {
+  return locales.map(locale => ({
+    url: localizedUrl(path, locale),
+    lastModified: opts.lastModified ?? new Date(),
+    changeFrequency: opts.changeFrequency,
+    priority: locale === defaultLocale ? opts.priority : (opts.priority ?? 0.5) * 0.9,
+    alternates: alternates(path),
+  }))
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient()
 
   // Static pages
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: SITE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${SITE_URL}/skills`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${SITE_URL}/mcp-servers`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${SITE_URL}/rules`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${SITE_URL}/plugins`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${SITE_URL}/clients`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/use-cases`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/tags`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/submit`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${SITE_URL}/docs`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/docs/what-are-skills`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/docs/create-a-skill`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/docs/skill-best-practices`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/docs/skills-vs-mcp`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/docs/install-skills`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/docs/skill-examples`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/specs`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    ...['skill-md', 'agents-md', 'mcp', 'llms-txt', 'cursorrules', 'claude-md', 'soul-md'].map((slug) => ({
-      url: `${SITE_URL}/specs/${slug}`,
-      lastModified: new Date(),
+  const staticPaths: Array<{ path: string; changeFrequency: 'daily' | 'weekly' | 'monthly'; priority: number }> = [
+    { path: '/', changeFrequency: 'daily', priority: 1 },
+    { path: '/skills', changeFrequency: 'daily', priority: 0.9 },
+    { path: '/mcp-servers', changeFrequency: 'daily', priority: 0.9 },
+    { path: '/rules', changeFrequency: 'daily', priority: 0.9 },
+    { path: '/plugins', changeFrequency: 'daily', priority: 0.9 },
+    { path: '/clients', changeFrequency: 'weekly', priority: 0.8 },
+    { path: '/use-cases', changeFrequency: 'weekly', priority: 0.8 },
+    { path: '/tags', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/submit', changeFrequency: 'monthly', priority: 0.6 },
+    { path: '/docs', changeFrequency: 'weekly', priority: 0.8 },
+    { path: '/docs/what-are-skills', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/docs/create-a-skill', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/docs/skill-best-practices', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/docs/skills-vs-mcp', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/docs/install-skills', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/docs/skill-examples', changeFrequency: 'weekly', priority: 0.7 },
+    { path: '/specs', changeFrequency: 'monthly', priority: 0.8 },
+    ...['skill-md', 'agents-md', 'mcp', 'llms-txt', 'cursorrules', 'claude-md', 'soul-md'].map(slug => ({
+      path: `/specs/${slug}`,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
   ]
+
+  const staticPages = staticPaths.flatMap(({ path, changeFrequency, priority }) =>
+    localizedEntry(path, { changeFrequency, priority })
+  )
 
   // Dynamic skill pages
   let skillPages: MetadataRoute.Sitemap = []
@@ -135,12 +83,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         extension: '/tools',
         tool: '/tools',
       }
-      skillPages = skills.map((skill) => ({
-        url: `${SITE_URL}${pathPrefix[skill.artifact_type] || '/skills'}/${skill.slug}`,
-        lastModified: new Date(skill.updated_at),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      }))
+      skillPages = skills.flatMap((skill) =>
+        localizedEntry(
+          `${pathPrefix[skill.artifact_type] || '/skills'}/${skill.slug}`,
+          { lastModified: new Date(skill.updated_at), changeFrequency: 'weekly', priority: 0.8 },
+        )
+      )
     }
   }
 
@@ -153,12 +101,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order('sort_order', { ascending: true })
 
     if (clients) {
-      clientPages = clients.map((client) => ({
-        url: `${SITE_URL}/clients/${client.slug}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.6,
-      }))
+      clientPages = clients.flatMap((client) =>
+        localizedEntry(`/clients/${client.slug}`, { changeFrequency: 'weekly', priority: 0.6 })
+      )
     }
   }
 
@@ -171,12 +116,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order('sort_order', { ascending: true })
 
     if (categories) {
-      categoryPages = categories.map((cat) => ({
-        url: `${SITE_URL}/use-cases/${cat.slug}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.6,
-      }))
+      categoryPages = categories.flatMap((cat) =>
+        localizedEntry(`/use-cases/${cat.slug}`, { changeFrequency: 'weekly', priority: 0.6 })
+      )
     }
   }
 
@@ -196,12 +138,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           if (tag) tagSlugs.add(tag)
         }
       }
-      tagPages = Array.from(tagSlugs).sort().map((tag) => ({
-        url: `${SITE_URL}/tags/${tag}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.5,
-      }))
+      tagPages = Array.from(tagSlugs).sort().flatMap((tag) =>
+        localizedEntry(`/tags/${tag}`, { changeFrequency: 'weekly', priority: 0.5 })
+      )
     }
   }
 

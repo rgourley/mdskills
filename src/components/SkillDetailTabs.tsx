@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from 'next/navigation'
 import { FileText, Code, Download, GitFork, MessageCircle } from 'lucide-react'
 
 export type TabId = 'overview' | 'source' | 'installation' | 'forks' | 'comments'

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { Github, Star, GitFork, Puzzle, FolderOpen, FolderEdit, Terminal, Globe, GitBranch, Info, DollarSign, ShieldCheck } from 'lucide-react'
 import type { Skill } from '@/lib/skills'
 

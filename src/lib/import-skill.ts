@@ -300,12 +300,20 @@ function titleCase(slug: string): string {
 }
 
 /** Reject headings that are clearly not project names */
-function isValidHeading(heading: string): boolean {
-  if (!heading || heading.length < 3 || heading.length > 60) return false
-  if (/^(For|A|An|The|How|Getting|Introduction|Overview|About|README|Table of|Usage|Install|Clone|Deprecated|Sponsor|Platinum|Gold|Silver|Contributors|Contributing|License|Changelog|Features|Prerequisites|Requirements|Documentation|Support|Acknowledgements|Build|Run|Setup|Quick Start|Configuration|Troubleshooting)\b/i.test(heading)) return false
+/** Generic section headings that are never valid project names */
+const SECTION_HEADING_RE = /^(For|A|An|How|What|Why|When|Where|Who|Getting|Introduction|Overview|About|README|Table of|Usage|Install|Clone|Deprecated|Sponsor|Platinum|Gold|Silver|Contributors|Contributing|License|Changelog|Features|Prerequisites|Requirements|Documentation|Support|Acknowledgements|Build|Run|Setup|Quick Start|Configuration|Troubleshooting)\b/i
+
+function isValidHeading(heading: string, isH1 = false): boolean {
+  if (!heading || heading.length < 3 || heading.length > 80) return false
   if (heading.includes('![') || heading.includes('](') || heading.includes('```')) return false
   // Reject headings that are just the generic artifact type name
   if (/^(MCP Server|Skill Pack|Plugin|Extension|Tool)$/i.test(heading)) return false
+  // H1 gets a pass on "The" since many projects are named "The X" (e.g. "The Agency")
+  if (isH1) {
+    if (/^(For|A|An|How|What|Why|When|Where|Who|Getting|Introduction|Overview|About|README|Table of|Usage|Install|Clone|Deprecated|Sponsor|Platinum|Gold|Silver|Contributors|Contributing|License|Changelog|Features|Prerequisites|Requirements|Documentation|Support|Acknowledgements|Build|Run|Setup|Quick Start|Configuration|Troubleshooting)\b/i.test(heading)) return false
+  } else {
+    if (SECTION_HEADING_RE.test(heading) || /^The\b/i.test(heading)) return false
+  }
   return true
 }
 
@@ -329,14 +337,18 @@ function inferDisplayName(repoName: string, fmName: string, readme: string | nul
     const mdH2 = readme.match(/^##\s(?!#)(.+)/m)?.[1]?.trim()
 
     // Try h1 first, then h2 as fallback
-    for (const raw of [htmlH1, mdH1, htmlH2, mdH2]) {
+    const candidates: Array<[string | undefined, boolean]> = [
+      [htmlH1, true], [mdH1, true],   // h1 candidates (lenient)
+      [htmlH2, false], [mdH2, false],  // h2 candidates (strict)
+    ]
+    for (const [raw, isH1] of candidates) {
       if (!raw) continue
       let clean = raw
         .replace(/[*_`]/g, '')
         .replace(/[\ud800-\udfff\uFE0F]/g, '') // strip broken surrogates + variation selectors
         .replace(/^[\s!@#$%^&*()\-=+\[\]{};:'"<>,.?/\\|~]+/, '') // strip leading punctuation
         .trim()
-      if (isValidHeading(clean)) {
+      if (isValidHeading(clean, isH1)) {
         // If the heading looks slug-style (has hyphens but no spaces), titleCase it
         if (clean.includes('-') && !clean.includes(' ')) {
           clean = titleCase(clean)
@@ -599,7 +611,13 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
   // Strip broken Unicode surrogates that break JSON serialization (e.g. emoji decoded incorrectly)
   const sanitize = (s: string) => s.replace(/[\ud800-\udfff]/g, '')
   const displayName = sanitize(opts.name || inferDisplayName(repo, fm.name, readme, skillDir))
-  const description = sanitize(truncateDescription(fm.description || descriptionFromReadme(readme) || meta.description || `${displayName} - AI agent skill`))
+  const isUsableDesc = (s?: string) => !!s && s.replace(/[|_\-*#\s]/g, '').length > 10
+  const description = sanitize(truncateDescription(
+    (isUsableDesc(fm.description) ? fm.description : '') ||
+    descriptionFromReadme(readme) ||
+    (isUsableDesc(meta.description) ? meta.description : '') ||
+    `${displayName} - AI agent skill`
+  ))
   const permissions = detectPermissions(skillContent)
   const artifactType = opts.artifactType || detectArtifactType(fm.raw, repo)
   const formatStandard = opts.formatStandard || (usingReadmeFallback ? 'generic' : 'skill_md')
