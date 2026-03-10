@@ -45,6 +45,8 @@ export interface CreateSubmissionData {
   isPaid?: boolean
   priceAmount?: number   // cents
   sourceFilePath?: string // Supabase Storage path (from upload)
+  /** User's GitHub token for private repo access */
+  userGitHubToken?: string
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -169,6 +171,7 @@ export async function createSubmission(userId: string, data: CreateSubmissionDat
         status: 'draft',
         skipReview: true,
         skipClientLinking: true,
+        userGitHubToken: data.userGitHubToken,
       })
 
       if (!result.success) {
@@ -182,7 +185,7 @@ export async function createSubmission(userId: string, data: CreateSubmissionDat
           const [, owner, repo] = url.pathname.split('/')
           if (owner && repo) {
             const { pullGitHubRepoToStorage } = await import('@/lib/storage')
-            const storageResult = await pullGitHubRepoToStorage(owner, repo, userId, result.id)
+            const storageResult = await pullGitHubRepoToStorage(owner, repo, userId, result.id, data.userGitHubToken)
             const sourceFilePath = 'path' in storageResult ? storageResult.path : undefined
 
             await supabase

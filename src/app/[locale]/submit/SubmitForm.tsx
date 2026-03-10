@@ -561,6 +561,11 @@ export function SubmitForm() {
           <p className="mt-1.5 text-xs text-neutral-400">
             Supports full URLs, short form (owner/repo), and tree paths.
           </p>
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+            <p className="text-xs text-blue-700">
+              <strong>Private repos supported.</strong> Sign in with GitHub to submit from private repositories. Your code stays private — we securely store a copy for buyers.
+            </p>
+          </div>
         </div>
       ) : sourceType === 'upload' ? (
         <div>

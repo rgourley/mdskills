@@ -75,9 +75,10 @@ export async function pullGitHubRepoToStorage(
   owner: string,
   repo: string,
   userId: string,
-  skillId: string
+  skillId: string,
+  userToken?: string
 ): Promise<{ path: string } | { error: string }> {
-  const token = process.env.GITHUB_TOKEN
+  const token = userToken || process.env.GITHUB_TOKEN
   if (!token) return { error: 'GitHub token not configured' }
 
   try {

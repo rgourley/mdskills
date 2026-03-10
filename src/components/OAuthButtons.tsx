@@ -34,7 +34,11 @@ export function OAuthButtons({ next }: OAuthButtonsProps) {
 
     await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo },
+      options: {
+        redirectTo,
+        // Request repo scope for GitHub to enable private repo access for paid skills
+        ...(provider === 'github' ? { scopes: 'repo' } : {}),
+      },
     })
   }
 

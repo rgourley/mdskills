@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createSubmission } from '@/lib/submissions'
+import { getUserGitHubToken } from '@/lib/github-token'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -50,6 +51,13 @@ export async function POST(request: Request) {
       )
     }
 
+    // Retrieve user's GitHub token for private repo access
+    let userGitHubToken: string | undefined
+    if (sourceType === 'github') {
+      const token = await getUserGitHubToken(user.id)
+      if (token) userGitHubToken = token
+    }
+
     const result = await createSubmission(user.id, {
       artifactType,
       sourceType,
@@ -62,6 +70,7 @@ export async function POST(request: Request) {
       isPaid: isPaid || false,
       priceAmount: isPaid ? priceAmount : undefined,
       sourceFilePath: sourceFilePath || undefined,
+      userGitHubToken,
     })
 
     if (!result.success) {

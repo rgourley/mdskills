@@ -5,12 +5,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { extractTagsFromContent } from './extract-tags'
 
-const githubToken = process.env.GITHUB_TOKEN
-
-const githubHeaders: Record<string, string> = {
-  Accept: 'application/vnd.github.v3+json',
-  'User-Agent': 'mdskills-importer',
-  ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
+function getGitHubHeaders(token?: string): Record<string, string> {
+  const effectiveToken = token || process.env.GITHUB_TOKEN
+  return {
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': 'mdskills-importer',
+    ...(effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {}),
+  }
 }
 
 // ── Types ──────────────────────────────────────────────────────
@@ -30,6 +31,8 @@ export interface ImportOptions {
   status?: string
   skipReview?: boolean
   skipClientLinking?: boolean
+  /** User's GitHub token for private repo access */
+  userGitHubToken?: string
 }
 
 export interface ImportResult {
@@ -69,7 +72,25 @@ export function parseGithubUrl(url: string): { owner: string; repo: string; subp
   throw new Error(`Cannot parse GitHub URL: ${url}`)
 }
 
-async function fetchGitHubRaw(owner: string, repo: string, path: string): Promise<string | null> {
+async function fetchGitHubRaw(owner: string, repo: string, path: string, token?: string): Promise<string | null> {
+  if (token) {
+    // Use GitHub API for private repos (raw.githubusercontent.com doesn't support auth)
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
+    try {
+      const res = await fetch(apiUrl, {
+        headers: {
+          ...getGitHubHeaders(token),
+          Accept: 'application/vnd.github.v3.raw',
+        },
+      })
+      if (!res.ok) return null
+      return await res.text()
+    } catch {
+      return null
+    }
+  }
+
+  // Public repo path (no auth needed)
   const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${path}`
   try {
     const res = await fetch(rawUrl, { headers: { 'User-Agent': 'mdskills-importer' } })
@@ -80,30 +101,50 @@ async function fetchGitHubRaw(owner: string, repo: string, path: string): Promis
   }
 }
 
-async function fetchRepoMetadata(owner: string, repo: string) {
+interface RepoMetadataResult {
+  data: {
+    description: string
+    stars: number
+    forks: number
+    topics: string[]
+    license: string | null
+    updatedAt: string
+    defaultBranch: string
+  } | null
+  error?: 'not_found' | 'unauthorized' | 'forbidden' | 'network_error'
+  status?: number
+}
+
+async function fetchRepoMetadata(owner: string, repo: string, token?: string): Promise<RepoMetadataResult> {
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}`
   try {
-    const res = await fetch(apiUrl, { headers: githubHeaders })
-    if (!res.ok) return null
+    const res = await fetch(apiUrl, { headers: getGitHubHeaders(token) })
+    if (res.status === 401) return { data: null, error: 'unauthorized', status: 401 }
+    if (res.status === 403) return { data: null, error: 'forbidden', status: 403 }
+    if (res.status === 404) return { data: null, error: 'not_found', status: 404 }
+    if (!res.ok) return { data: null, error: 'network_error', status: res.status }
     const data = await res.json()
     return {
-      description: (data.description as string) || '',
-      stars: data.stargazers_count as number,
-      forks: data.forks_count as number,
-      topics: (data.topics as string[]) || [],
-      license: (data.license?.spdx_id as string) || null,
-      updatedAt: data.updated_at as string,
-      defaultBranch: (data.default_branch as string) || 'main',
+      data: {
+        description: (data.description as string) || '',
+        stars: data.stargazers_count as number,
+        forks: data.forks_count as number,
+        topics: (data.topics as string[]) || [],
+        license: (data.license?.spdx_id as string) || null,
+        updatedAt: data.updated_at as string,
+        defaultBranch: (data.default_branch as string) || 'main',
+      },
     }
   } catch {
-    return null
+    return { data: null, error: 'network_error' }
   }
 }
 
 async function discoverSkillMd(
   owner: string,
   repo: string,
-  subpath?: string
+  subpath?: string,
+  token?: string
 ): Promise<{ content: string; path: string } | null> {
   const searchPaths: string[] = []
 
@@ -114,7 +155,7 @@ async function discoverSkillMd(
   searchPaths.push('SKILL.md', 'skill.md', '.claude/skills/SKILL.md', 'skills/SKILL.md')
 
   for (const path of searchPaths) {
-    const content = await fetchGitHubRaw(owner, repo, path)
+    const content = await fetchGitHubRaw(owner, repo, path, token)
     if (content) return { content, path }
   }
 
@@ -122,7 +163,7 @@ async function discoverSkillMd(
   for (const dir of skillsDirs) {
     try {
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${dir}`
-      const res = await fetch(apiUrl, { headers: githubHeaders })
+      const res = await fetch(apiUrl, { headers: getGitHubHeaders(token) })
       if (!res.ok) continue
       const items = await res.json()
       if (!Array.isArray(items)) continue
@@ -130,7 +171,7 @@ async function discoverSkillMd(
       for (const item of items) {
         if (item.type === 'dir') {
           const skillPath = `${dir}/${item.name}/SKILL.md`
-          const content = await fetchGitHubRaw(owner, repo, skillPath)
+          const content = await fetchGitHubRaw(owner, repo, skillPath, token)
           if (content) return { content, path: skillPath }
         }
       }
@@ -142,12 +183,12 @@ async function discoverSkillMd(
   return null
 }
 
-async function fetchReadme(owner: string, repo: string, skillDir?: string): Promise<string | null> {
+async function fetchReadme(owner: string, repo: string, skillDir?: string, token?: string): Promise<string | null> {
   if (skillDir) {
-    const dirReadme = await fetchGitHubRaw(owner, repo, `${skillDir}/README.md`)
+    const dirReadme = await fetchGitHubRaw(owner, repo, `${skillDir}/README.md`, token)
     if (dirReadme) return dirReadme
   }
-  return await fetchGitHubRaw(owner, repo, 'README.md')
+  return await fetchGitHubRaw(owner, repo, 'README.md', token)
 }
 
 function parseFrontmatter(content: string): Frontmatter {
@@ -566,17 +607,28 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
 
   log(`Importing from: ${owner}/${repo}${subpath ? `/${subpath}` : ''}`)
 
+  const token = opts.userGitHubToken
+
   // 1. Fetch repo metadata
   log('Fetching repo metadata...')
-  const meta = await fetchRepoMetadata(owner, repo)
-  if (!meta) {
-    return { success: false, error: 'Could not fetch repo metadata. Is the repo public?', logs }
+  const metaResult = await fetchRepoMetadata(owner, repo, token)
+  if (!metaResult.data) {
+    const messages: Record<string, string> = {
+      unauthorized: 'Your GitHub session has expired. Please sign out and sign back in with GitHub.',
+      forbidden: 'Access denied. Your GitHub account may not have permission to access this repository.',
+      not_found: token
+        ? 'Could not access this repository. Verify the URL and that you have read access on GitHub.'
+        : 'Could not fetch repo metadata. Is the repo public? Sign in with GitHub for private repo access.',
+      network_error: 'Could not connect to GitHub. Please try again.',
+    }
+    return { success: false, error: messages[metaResult.error || 'network_error'], logs }
   }
+  const meta = metaResult.data
   log(`${meta.stars} stars, ${meta.forks} forks, license: ${meta.license || 'none'}`)
 
   // 2. Discover SKILL.md
   log('Searching for SKILL.md...')
-  const skill = await discoverSkillMd(owner, repo, subpath)
+  const skill = await discoverSkillMd(owner, repo, subpath, token)
   let skillDir: string | undefined
   let fm: Frontmatter
   let readme: string | null
@@ -587,15 +639,15 @@ export async function importSkill(opts: ImportOptions): Promise<ImportResult> {
     skillDir = skill.path.includes('/') ? skill.path.split('/').slice(0, -1).join('/') : undefined
     fm = parseFrontmatter(skill.content)
     log(`Frontmatter: name="${fm.name}", desc="${fm.description.slice(0, 60)}..."`)
-    readme = await fetchReadme(owner, repo, skillDir)
+    readme = await fetchReadme(owner, repo, skillDir, token)
     log(readme ? `README: ${readme.length} bytes` : 'No README found')
   } else {
     log('No SKILL.md found - falling back to README-based import')
 
-    const agentsMd = await fetchGitHubRaw(owner, repo, 'AGENTS.md')
+    const agentsMd = await fetchGitHubRaw(owner, repo, 'AGENTS.md', token)
     if (agentsMd) log('Found AGENTS.md - using as skill content')
 
-    readme = await fetchReadme(owner, repo, subpath)
+    readme = await fetchReadme(owner, repo, subpath, token)
     if (!readme) {
       return { success: false, error: 'No SKILL.md or README.md found. Cannot import.', logs }
     }
