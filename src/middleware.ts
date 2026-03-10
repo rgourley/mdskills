@@ -39,6 +39,12 @@ const TYPE_PREFIXES = ['/tools/', '/plugins/', '/mcp-servers/', '/rules/']
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  // Skip middleware for auth callback — it's a non-locale API route
+  if (pathname.startsWith('/auth/callback')) {
+    return NextResponse.next()
+  }
+
   const stripped = stripLocale(pathname)
 
   // Rewrite type-specific detail routes → /[locale]/skills/[slug]
