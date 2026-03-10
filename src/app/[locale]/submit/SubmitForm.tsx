@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import {
   Package, Server, Shield, Puzzle, Wrench, FileCode,
   ArrowLeft, ArrowRight, Loader2, Check, Github, FileText,
@@ -561,10 +562,30 @@ export function SubmitForm() {
           <p className="mt-1.5 text-xs text-neutral-400">
             Supports full URLs, short form (owner/repo), and tree paths.
           </p>
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-            <p className="text-xs text-blue-700">
-              <strong>Private repos supported.</strong> To use a private repo, sign out and sign back in using the <strong>Continue with GitHub</strong> button on the login page. This grants repo access so we can securely import your code. Your code stays private — we store a copy for buyers only.
-            </p>
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-3">
+            <div className="flex-1">
+              <p className="text-xs text-blue-700">
+                <strong>Private repos supported.</strong> Connect your GitHub account to import from private repositories. Your code stays private — we store a copy for buyers only.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const supabase = createClient()
+                if (!supabase) return
+                supabase.auth.linkIdentity({
+                  provider: 'github',
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback?next=/submit`,
+                    scopes: 'repo',
+                  },
+                })
+              }}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-lg hover:bg-neutral-800 transition-colors"
+            >
+              <Github className="w-3.5 h-3.5" />
+              Connect GitHub
+            </button>
           </div>
         </div>
       ) : sourceType === 'upload' ? (
