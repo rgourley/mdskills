@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Star, Layout, Users, BarChart3, Zap, Shield, Mail } from 'lucide-react'
 import { setRequestLocale } from 'next-intl/server'
 import type { Metadata } from 'next'
+import { SponsorContactForm } from './SponsorContactForm'
 
 export const metadata: Metadata = {
   title: 'Advertise with mdskills.ai',
@@ -87,6 +88,19 @@ export default async function AdvertisePage({ params }: { params: Promise<{ loca
                 skill authors who want more visibility, and anyone shipping AI integrations.
               </p>
             </div>
+
+            <div className="pt-2">
+              <Link
+                href="/submit"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+              >
+                <Star className="w-4 h-4" />
+                Get a Featured Listing
+              </Link>
+              <p className="mt-2 text-xs text-neutral-500">
+                Select the &ldquo;Featured&rdquo; tier during submission. Starts at $39/mo.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -137,6 +151,11 @@ export default async function AdvertisePage({ params }: { params: Promise<{ loca
                 to DevOps to data engineering.
               </p>
             </div>
+
+            <div className="pt-2 border-t border-neutral-100">
+              <h3 className="text-sm font-semibold text-neutral-900 uppercase tracking-wide mb-3">Interested?</h3>
+              <SponsorContactForm />
+            </div>
           </div>
         </div>
 
@@ -181,22 +200,13 @@ export default async function AdvertisePage({ params }: { params: Promise<{ loca
         </div>
 
         {/* CTA */}
-        <div className="p-6 sm:p-8 rounded-xl bg-blue-50 border border-blue-100 text-center">
-          <h2 className="text-xl font-semibold text-neutral-900">Get in touch</h2>
-          <p className="mt-2 text-neutral-600 max-w-lg mx-auto">
-            Interested in a featured listing, sponsored category, or a custom partnership?
-            We&rsquo;d love to hear from you.
+        <div className="p-6 sm:p-8 rounded-xl bg-neutral-50 border border-neutral-200">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">Custom partnerships</h2>
+          <p className="text-neutral-600 mb-5">
+            Looking for something beyond featured listings and sponsored categories?
+            Tell us what you have in mind.
           </p>
-          <a
-            href="mailto:rgourley@gmail.com?subject=Advertising%20on%20mdskills.ai"
-            className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800 transition-colors"
-          >
-            <Mail className="w-4 h-4" />
-            Contact us
-          </a>
-          <p className="mt-3 text-xs text-neutral-500">
-            We also offer custom packages &mdash; let us know what you have in mind.
-          </p>
+          <SponsorContactForm type="partnership" />
         </div>
 
         {/* Back link */}

@@ -98,7 +98,7 @@ const REVIEW_TIERS: {
     priceNote: 'one-time',
     reviewSla: '48 hours',
     icon: Zap,
-    perks: ['Everything in Standard', 'Priority review turnaround', 'Priority badge during review'],
+    perks: ['Everything in Standard', '48-hour review turnaround', 'Verified badge on your listing'],
     highlight: true,
     accent: 'blue',
   },
@@ -106,10 +106,10 @@ const REVIEW_TIERS: {
     tier: 'featured',
     label: 'Featured',
     regularPrice: 49,
-    priceNote: 'per month',
+    priceNote: '/mo',
     reviewSla: '24 hours',
     icon: Crown,
-    perks: ['Priority review', 'Gold featured badge', 'Priority search placement', 'Homepage spotlight'],
+    perks: ['24-hour review turnaround', 'Featured on homepage & search results', 'Gold verified badge', 'Top placement in category pages'],
     accent: 'amber',
   },
 ]
@@ -881,9 +881,9 @@ export function SubmitForm() {
 
   const renderStep5 = () => (
     <div>
-      <h2 className="text-lg font-semibold text-neutral-900 mb-1">Choose your review speed</h2>
+      <h2 className="text-lg font-semibold text-neutral-900 mb-1">Choose your review tier</h2>
       <p className="text-sm text-neutral-500 mb-6">
-        All submissions get the same quality listing. Paid tiers get faster reviews and extra visibility.
+        All submissions get the same quality listing. Paid tiers get faster reviews, badges, and extra visibility on the marketplace.
       </p>
 
       <div className="grid gap-3">
