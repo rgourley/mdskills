@@ -563,7 +563,7 @@ export function SubmitForm() {
           </p>
           <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
             <p className="text-xs text-blue-700">
-              <strong>Private repos supported.</strong> Sign in with GitHub to submit from private repositories. Your code stays private — we securely store a copy for buyers.
+              <strong>Private repos supported.</strong> To use a private repo, sign out and sign back in using the <strong>Continue with GitHub</strong> button on the login page. This grants repo access so we can securely import your code. Your code stays private — we store a copy for buyers only.
             </p>
           </div>
         </div>
