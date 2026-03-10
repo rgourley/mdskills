@@ -180,7 +180,10 @@ export function SubmitForm() {
 
   const selectedArtifact = ARTIFACT_TYPES.find((a) => a.type === artifactType)
 
-  // Fetch categories + live Stripe prices on mount
+  // Track whether user has GitHub connected
+  const [hasGitHub, setHasGitHub] = useState(false)
+
+  // Fetch categories + live Stripe prices on mount, check GitHub connection
   useEffect(() => {
     fetch('/api/categories')
       .then((res) => res.json())
@@ -190,6 +193,16 @@ export function SubmitForm() {
       .then((res) => res.json())
       .then((data) => setLivePrices(data))
       .catch(() => {})
+    // Check if user has GitHub identity linked
+    const supabase = createClient()
+    if (supabase) {
+      supabase.auth.getUser().then(({ data }) => {
+        const identities = data.user?.identities || []
+        if (identities.some(i => i.provider === 'github')) {
+          setHasGitHub(true)
+        }
+      })
+    }
   }, [])
 
   // Helper: get the display price for a tier
@@ -562,31 +575,40 @@ export function SubmitForm() {
           <p className="mt-1.5 text-xs text-neutral-400">
             Supports full URLs, short form (owner/repo), and tree paths.
           </p>
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-3">
-            <div className="flex-1">
-              <p className="text-xs text-blue-700">
-                <strong>Private repos supported.</strong> Connect your GitHub account to import from private repositories. Your code stays private — we store a copy for buyers only.
+          {hasGitHub ? (
+            <div className="mt-3 p-3 bg-green-50 border border-green-100 rounded-lg flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-600 shrink-0" />
+              <p className="text-xs text-green-700">
+                <strong>GitHub connected.</strong> You can import from both public and private repositories.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                const supabase = createClient()
-                if (!supabase) return
-                supabase.auth.linkIdentity({
-                  provider: 'github',
-                  options: {
-                    redirectTo: `${window.location.origin}/auth/callback?next=/submit`,
-                    scopes: 'repo',
-                  },
-                })
-              }}
-              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-lg hover:bg-neutral-800 transition-colors"
-            >
-              <Github className="w-3.5 h-3.5" />
-              Connect GitHub
-            </button>
-          </div>
+          ) : (
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-3">
+              <div className="flex-1">
+                <p className="text-xs text-blue-700">
+                  <strong>Private repos supported.</strong> Connect your GitHub account to import from private repositories. Your code stays private — we store a copy for buyers only.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const supabase = createClient()
+                  if (!supabase) return
+                  supabase.auth.linkIdentity({
+                    provider: 'github',
+                    options: {
+                      redirectTo: `${window.location.origin}/auth/callback?next=/submit`,
+                      scopes: 'repo',
+                    },
+                  })
+                }}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-lg hover:bg-neutral-800 transition-colors"
+              >
+                <Github className="w-3.5 h-3.5" />
+                Connect GitHub
+              </button>
+            </div>
+          )}
         </div>
       ) : sourceType === 'upload' ? (
         <div>
