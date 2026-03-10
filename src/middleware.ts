@@ -40,39 +40,44 @@ const TYPE_PREFIXES = ['/tools/', '/plugins/', '/mcp-servers/', '/rules/']
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  // Skip middleware for auth callback — it's a non-locale API route
+  // Auth callback is a non-locale API route — skip entirely
   if (pathname.startsWith('/auth/callback')) {
     return NextResponse.next()
   }
+
+  // For API routes, skip intl middleware but still run Supabase cookie refresh
+  const isApiRoute = pathname.startsWith('/api/')
 
   const stripped = stripLocale(pathname)
 
   // Rewrite type-specific detail routes → /[locale]/skills/[slug]
   // e.g. /mcp-servers/foo → /en/skills/foo, /fr/rules/bar → /fr/skills/bar
-  const matchedPrefix = TYPE_PREFIXES.find(p => stripped.startsWith(p))
-  if (matchedPrefix) {
-    const slug = stripped.slice(matchedPrefix.length)
-    if (slug && !slug.includes('/')) {
-      const locale = extractLocale(pathname) || defaultLocale
-      const url = request.nextUrl.clone()
-      url.pathname = `/${locale}/skills/${slug}`
-      return NextResponse.rewrite(url)
+  if (!isApiRoute) {
+    const matchedPrefix = TYPE_PREFIXES.find(p => stripped.startsWith(p))
+    if (matchedPrefix) {
+      const slug = stripped.slice(matchedPrefix.length)
+      if (slug && !slug.includes('/')) {
+        const locale = extractLocale(pathname) || defaultLocale
+        const url = request.nextUrl.clone()
+        url.pathname = `/${locale}/skills/${slug}`
+        return NextResponse.rewrite(url)
+      }
     }
   }
 
-  // Step 1: Run intl middleware for locale detection, redirects, rewrites
-  const intlResponse = intlMiddleware(request)
+  // Step 1: Run intl middleware for locale detection (skip for API routes)
+  const baseResponse = isApiRoute ? NextResponse.next() : intlMiddleware(request)
 
-  // Step 2: Run Supabase auth logic
+  // Step 2: Run Supabase auth logic (cookie refresh)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return intlResponse
+    return baseResponse
   }
 
-  // Preserve intl response headers/cookies while allowing Supabase to add cookies
-  let supabaseResponse = intlResponse
+  // Preserve response headers/cookies while allowing Supabase to add cookies
+  let supabaseResponse = baseResponse
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
